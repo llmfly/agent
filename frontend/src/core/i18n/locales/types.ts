@@ -157,6 +157,11 @@ export interface Translations {
       mysql: string;
       postgresql: string;
       elasticsearch: string;
+      pdf: string;
+      docx: string;
+      txt: string;
+      xlsx: string;
+      csv: string;
     };
     status: {
       ready: string;

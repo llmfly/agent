@@ -5,7 +5,6 @@ import {
   CheckIcon,
   GraduationCapIcon,
   LightbulbIcon,
-  PaperclipIcon,
   PlusIcon,
   RocketIcon,
   XIcon,
@@ -35,7 +34,6 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
-  usePromptInputAttachments,
   usePromptInputController,
   type PromptInputMessage,
 } from "@/components/ai-elements/prompt-input";
@@ -80,7 +78,6 @@ import {
 
 import { useThread } from "./messages/context";
 import { ModeHoverGuide } from "./mode-hover-guide";
-import { Tooltip } from "./tooltip";
 
 type InputMode = "flash" | "thinking" | "pro" | "ultra";
 
@@ -517,7 +514,6 @@ export function InputBox({
               />
             </PromptInputActionMenuContent>
           </PromptInputActionMenu> */}
-            <AddAttachmentsButton className="px-2!" />
             <PromptInputActionMenu>
               <ModeHoverGuide
                 mode={
@@ -923,20 +919,5 @@ function SuggestionList() {
         />
       ))}
     </Suggestions>
-  );
-}
-
-function AddAttachmentsButton({ className }: { className?: string }) {
-  const { t } = useI18n();
-  const attachments = usePromptInputAttachments();
-  return (
-    <Tooltip content={t.inputBox.addAttachments}>
-      <PromptInputButton
-        className={cn("px-2!", className)}
-        onClick={() => attachments.openFileDialog()}
-      >
-        <PaperclipIcon className="size-3" />
-      </PromptInputButton>
-    </Tooltip>
   );
 }

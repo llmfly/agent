@@ -88,6 +88,11 @@ const TYPE_CONFIG_FIELDS: Record<
       type: "password",
     },
   ],
+  pdf: [{ key: "description", label: "文件说明", placeholder: "可选，描述该 PDF 数据源的内容", type: "text" }],
+  docx: [{ key: "description", label: "文件说明", placeholder: "可选，描述该 Word 数据源的内容", type: "text" }],
+  txt: [{ key: "description", label: "文件说明", placeholder: "可选，描述该文本数据源的内容", type: "text" }],
+  xlsx: [{ key: "description", label: "文件说明", placeholder: "可选，描述该 Excel 数据源的内容", type: "text" }],
+  csv: [{ key: "description", label: "文件说明", placeholder: "可选，描述该 CSV 数据源的内容", type: "text" }],
 };
 
 function defaultConfig(type: DataSourceType): Record<string, unknown> {
@@ -210,6 +215,21 @@ export default function NewDataSourcePage() {
                     </SelectItem>
                     <SelectItem value="elasticsearch">
                       {t.dataAssets.types.elasticsearch}
+                    </SelectItem>
+                    <SelectItem value="pdf">
+                      {t.dataAssets.types.pdf}
+                    </SelectItem>
+                    <SelectItem value="docx">
+                      {t.dataAssets.types.docx}
+                    </SelectItem>
+                    <SelectItem value="txt">
+                      {t.dataAssets.types.txt}
+                    </SelectItem>
+                    <SelectItem value="xlsx">
+                      {t.dataAssets.types.xlsx}
+                    </SelectItem>
+                    <SelectItem value="csv">
+                      {t.dataAssets.types.csv}
                     </SelectItem>
                   </SelectContent>
                 </Select>

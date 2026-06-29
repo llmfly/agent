@@ -1,4 +1,12 @@
-export type DataSourceType = "mysql" | "postgresql" | "elasticsearch";
+export type DataSourceType =
+  | "mysql"
+  | "postgresql"
+  | "elasticsearch"
+  | "pdf"
+  | "docx"
+  | "txt"
+  | "xlsx"
+  | "csv";
 
 export type DataSourceStatus = "ready" | "error" | "testing";
 

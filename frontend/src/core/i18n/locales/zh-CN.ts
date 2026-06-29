@@ -207,6 +207,11 @@ export const zhCN: Translations = {
       mysql: "MySQL",
       postgresql: "PostgreSQL",
       elasticsearch: "Elasticsearch",
+      pdf: "PDF",
+      docx: "Word",
+      txt: "文本",
+      xlsx: "Excel",
+      csv: "CSV",
     },
     status: {
       ready: "就绪",

@@ -113,6 +113,11 @@ export default function DataAssetsPage() {
             <SelectItem value="elasticsearch">
               {t.dataAssets.types.elasticsearch}
             </SelectItem>
+            <SelectItem value="pdf">{t.dataAssets.types.pdf}</SelectItem>
+            <SelectItem value="docx">{t.dataAssets.types.docx}</SelectItem>
+            <SelectItem value="txt">{t.dataAssets.types.txt}</SelectItem>
+            <SelectItem value="xlsx">{t.dataAssets.types.xlsx}</SelectItem>
+            <SelectItem value="csv">{t.dataAssets.types.csv}</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -212,6 +212,11 @@ export const enUS: Translations = {
       mysql: "MySQL",
       postgresql: "PostgreSQL",
       elasticsearch: "Elasticsearch",
+      pdf: "PDF",
+      docx: "Word",
+      txt: "Text",
+      xlsx: "Excel",
+      csv: "CSV",
     },
     status: {
       ready: "Ready",
