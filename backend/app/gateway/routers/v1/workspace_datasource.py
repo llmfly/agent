@@ -14,7 +14,7 @@ import logging
 import os
 import uuid
 from collections.abc import AsyncIterator
-from pathlib import Path
+from pathlib import Path as FsPath
 
 from fastapi import APIRouter, Depends, File, HTTPException, Path, Request, UploadFile
 
@@ -60,7 +60,7 @@ async def _require_user(request: Request) -> AsyncIterator[str]:
 
 # ── DataSource File Upload ────────────────────────────────────────────────
 
-_DATA_SOURCE_UPLOAD_DIR = Path("/data/intelli/engine/.deer-flow/data/datasource-files")
+_DATA_SOURCE_UPLOAD_DIR = FsPath("/data/intelli/engine/.deer-flow/data/datasource-files")
 
 
 @router.post("/data-sources/upload", response_model=DataSourceUploadResponse)
