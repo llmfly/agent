@@ -9,6 +9,29 @@ from deerflow.tools.types import Runtime
 
 logger = logging.getLogger(__name__)
 
+# ── Per-thread tool call guard ────────────────────────────────────────
+# Prevents the LLM from looping on query_data_source in the same turn.
+# Key: thread_id, Value: {"count": int, "sources": list | None}
+_tool_call_registry: dict[str, dict] = {}
+_MAX_TOOL_CALLS = 3
+
+
+def _get_call_state(thread_id: str) -> dict:
+    """Get or create per-thread call state, with auto-cleanup after 120s."""
+    import time
+
+    now = time.monotonic()
+    state = _tool_call_registry.get(thread_id)
+    if state is None or now - state.get("_ts", 0) > 120:
+        state = {"count": 0, "sources": None, "_ts": now}
+        _tool_call_registry[thread_id] = state
+        # Clean stale entries
+        stale = [k for k, v in _tool_call_registry.items() if now - v.get("_ts", 0) > 120]
+        for k in stale:
+            _tool_call_registry.pop(k, None)
+    return state
+
+
 # ── Report-intent detection ─────────────────────────────────────────────
 # If the user's query looks like they want a report or to understand
 # the data structure, redirect them to generate_report instead.
@@ -17,6 +40,33 @@ _REPORT_INTENT_PATTERNS = re.compile(
     r"|表结构|数据库结构|有哪些表|有什么表|schema|表名|字段名"
     r"|列名|所有表|数据字典|数据目录|元数据|表信息)"
 )
+
+
+def _build_schema_block(sources: list[dict]) -> str:
+    """Build a human-readable schema summary from data source list."""
+    schema_summaries = []
+    for ds in sources:
+        ss = ds.get("schema_summary") or {}
+        name = ds.get("name", "?")
+        ds_type = ds.get("type", "?")
+        tables = ss.get("tables", [])
+        if tables:
+            summary_parts = [f"📦 {name} ({ds_type})"]
+            for t in tables[:5]:
+                cols = ", ".join(
+                    f"{c['name']}({c['type']})"
+                    for c in t.get("columns", [])[:6]
+                )
+                summary_parts.append(f"  - {t['name']} : {cols}")
+            schema_summaries.append("\n".join(summary_parts))
+
+    if schema_summaries:
+        return "\n".join(schema_summaries)
+    # Fallback: basic info only
+    return "\n".join(
+        f"  {ds.get('name', '?')} ({ds.get('type', '?')})"
+        for ds in sources
+    )
 
 def _get_thread_id(runtime: Runtime) -> str | None:
     """Resolve the current conversation/thread id from runtime context."""
@@ -65,80 +115,93 @@ async def query_data_source_tool(
         datasource_id: Optional ID of the data source to query. If not provided, it will search the list of active data sources.
         datasource_name: Optional name of the data source to query. If not provided, it will search the list of active data sources.
     """
+    conversation_id = _get_thread_id(runtime)
+
+    # ── Per-thread call guard ──────────────────────────────────────
+    # Prevents the LLM from spinning in a loop calling this tool.
+    state = None
+    if conversation_id:
+        state = _get_call_state(conversation_id)
+        state["count"] += 1
+        if state["count"] > _MAX_TOOL_CALLS:
+            logger.warning(
+                "query_data_source called %d times for thread %s — throttling",
+                state["count"], conversation_id,
+            )
+            # Include available schema so LLM can still make informed decisions
+            cached_sources = state.get("sources")
+            if cached_sources:
+                summary = _build_schema_block(cached_sources)
+                return (
+                    f"⚠️ **query_data_source 已调用太多次（{state['count']}次）**\n\n"
+                    f"已掌握的数据源结构：\n{summary}\n\n"
+                    f"如需生成报告，请直接调用 `generate_report(title=..., user_query=...)`，"
+                    f"无需手动查询数据。如确实需要数据查询，请整合到一个问题中。"
+                )
+            return (
+                f"⚠️ **query_data_source 已调用太多次（{state['count']}次）**\n\n"
+                f"如需生成报告，请直接调用 `generate_report`，无需逐个查询数据源。"
+            )
+
     # 1. Resolve selected data sources
     # Priority: runtime context → runtime config → memory cache (v1 API registered)
     selected_sources = None
-    if runtime.context:
-        selected_sources = runtime.context.get("selected_data_sources")
+
+    # ── Try in-process cache first ─────────────────────────────────
+    if state and state.get("sources"):
+        selected_sources = state["sources"]
+        logger.debug("query_data_source: using cached sources for thread %s", conversation_id)
+
     if not selected_sources:
-        selected_sources = runtime.config.get("configurable", {}).get("selected_data_sources")
-    if not selected_sources:
-        selected_sources = runtime.config.get("context", {}).get("selected_data_sources")
+        if runtime.context:
+            selected_sources = runtime.context.get("selected_data_sources")
+        if not selected_sources:
+            selected_sources = runtime.config.get("configurable", {}).get("selected_data_sources")
+        if not selected_sources:
+            selected_sources = runtime.config.get("context", {}).get("selected_data_sources")
 
     # Fallback: try reading from workspace data source service
-    # (covers case where data source was registered via workspace API)
-    if not selected_sources:
+    if not selected_sources and conversation_id:
         try:
-            conversation_id = _get_thread_id(runtime)
-            if conversation_id:
-                from app.gateway.services_v1.workspace_datasource_service import workspace_datasource_service
+            from app.gateway.services_v1.workspace_datasource_service import workspace_datasource_service
 
-                selected_sources = await workspace_datasource_service.get_data_sources_for_conversation(conversation_id)
+            selected_sources = await workspace_datasource_service.get_data_sources_for_conversation(conversation_id)
 
-                # Fallback: old v1 memory cache (DataAsset not yet attached)
+            # Fallback: old v1 memory cache
+            if not selected_sources:
+                from app.gateway.services_v1.data_source_service import (
+                    get_data_sources_for_conversation,
+                    get_data_sources_for_conversation_db,
+                )
+                selected_sources = get_data_sources_for_conversation(conversation_id)
                 if not selected_sources:
-                    from app.gateway.services_v1.data_source_service import (
-                        get_data_sources_for_conversation,
-                        get_data_sources_for_conversation_db,
-                    )
-                    selected_sources = get_data_sources_for_conversation(conversation_id)
-                    if not selected_sources:
-                        selected_sources = await get_data_sources_for_conversation_db(conversation_id)
+                    selected_sources = await get_data_sources_for_conversation_db(conversation_id)
 
-                if selected_sources:
-                    logger.info(
-                        "query_data_source: loaded %d data sources "
-                        "for conversation %s (workspace/v1 fallback)",
-                        len(selected_sources), conversation_id,
-                    )
+            if selected_sources:
+                logger.info(
+                    "query_data_source: loaded %d data sources "
+                    "for conversation %s (workspace/v1 fallback)",
+                    len(selected_sources), conversation_id,
+                )
         except ImportError:
-            pass  # Not running in app context
+            pass
         except Exception as e:
             logger.warning("query_data_source: fallback lookup failed: %s", e)
 
     if not selected_sources:
         return "Error: No data sources are selected or configured for this conversation."
 
+    # ── Cache resolved sources for subsequent calls in this turn ──
+    if state and not state.get("sources"):
+        state["sources"] = selected_sources
+        logger.debug("query_data_source: cached %d sources for thread %s", len(selected_sources), conversation_id)
+
     # ── Report-intent guard ────────────────────────────────────────
     # If the query looks like "give me a report" or "show me the table
     # structure", refuse and direct to generate_report. This tool is
     # for ad-hoc data exploration, not report generation.
     if _REPORT_INTENT_PATTERNS.search(query):
-        schema_summaries = []
-        for ds in selected_sources:
-            ss = ds.get("schema_summary") or {}
-            name = ds.get("name", "?")
-            ds_type = ds.get("type", "?")
-            tables = ss.get("tables", [])
-            if tables:
-                summary_parts = [f"📦 {name} ({ds_type})"]
-                for t in tables[:5]:
-                    cols = ", ".join(
-                        f"{c['name']}({c['type']})"
-                        for c in t.get("columns", [])[:6]
-                    )
-                    summary_parts.append(f"  - {t['name']} : {cols}")
-                schema_summaries.append("\n".join(summary_parts))
-
-        if schema_summaries:
-            schema_block = "\n".join(schema_summaries)
-        else:
-            # No schema_summary available yet — fall back to basic info
-            schema_block = "\n".join(
-                f"  {ds.get('name', '?')} ({ds.get('type', '?')})"
-                for ds in selected_sources
-            )
-
+        schema_block = _build_schema_block(selected_sources)
         return (
             f"⚠️ **请使用 `generate_report` 工具生成报告**\n\n"
             f"已了解的数据源结构：\n{schema_block}\n\n"
