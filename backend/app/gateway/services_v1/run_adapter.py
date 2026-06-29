@@ -206,10 +206,16 @@ def _format_data_sources_for_prompt(ds_list: list[dict[str, Any]]) -> str:
         doc_summary = schema_summary.get("document_summary")
         if doc_summary:
             chapters = doc_summary.get("chapters") or doc_summary.get("key_topics") or []
+            content_preview = doc_summary.get("content_preview", "")
+            filename = doc_summary.get("filename", "") or doc_summary.get("file_path", "")
             lines.append(f"    <document type=\"{doc_summary.get('type', ds_type)}\""
-                         f" filename=\"{doc_summary.get('filename', '')}\">")
+                         f" filename=\"{filename}\""
+                         f" pages=\"{doc_summary.get('page_count', '?')}\""
+                         f" size=\"{doc_summary.get('file_size', '?')}\">")
             if chapters:
                 lines.append(f"      <topics>{', '.join(chapters)}</topics>")
+            if content_preview:
+                lines.append(f"      <preview>{content_preview[:300]}</preview>")
             lines.append("    </document>")
 
         # ── Status note when extraction is still pending ──────────

@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import re
 import uuid
 from datetime import UTC, datetime
@@ -219,32 +220,208 @@ class WorkspaceDataSourceService:
           - Count rows per table
           - Store as structured JSON
 
-        For file types (pdf, docx, xlsx, csv):
-          - Currently a no-op; the report pipeline's PdfWorker/DocxWorker
-            handles content extraction at generation time.
+        For file types (pdf, docx, txt, xlsx, csv):
+          - Extract page count, content preview (~800 chars), and key topics
+          - Store as document_summary so the LLM knows what the file contains
         """
         try:
             if ds_type in ("mysql", "postgresql"):
                 tables = await self._extract_sql_schema(ds_id, config)
                 await self._update_schema_summary(ds_id, "ready", tables=tables)
             elif ds_type in ("pdf", "docx", "txt", "xlsx", "csv", "markdown", "ppt"):
-                # File types defer content extraction to the report pipeline.
-                # Store minimal metadata so the agent knows the file exists.
-                await self._update_schema_summary(
-                    ds_id,
-                    "ready",
-                    document_summary={
-                        "type": ds_type,
-                        "filename": config.get("object_key", config.get("name", "")),
-                        "content_extracted": False,
-                        "note": "文档内容将在报告生成时由 pipeline 自动解析",
-                    },
-                )
+                document_summary = await self._extract_file_summary(ds_id, config, ds_type)
+                await self._update_schema_summary(ds_id, "ready", document_summary=document_summary)
             else:
                 await self._update_schema_summary(ds_id, "ready", tables=[])
         except Exception as e:
             logger.exception("Schema extraction failed for %s (type=%s)", ds_id, ds_type)
             await self._update_schema_summary(ds_id, "error", error=str(e))
+
+    async def _extract_file_summary(
+        self,
+        ds_id: str,
+        config: dict[str, Any],
+        ds_type: str,
+    ) -> dict[str, Any]:
+        """Extract basic metadata and content preview from a file-type data source.
+
+        Returns a dict like:
+            {
+                "type": "pdf",
+                "filename": "2024年报.pdf",
+                "page_count": 15,
+                "content_preview": "第一章 公司概况...",
+                "key_topics": ["公司概况", "财务数据"],
+            }
+        """
+        file_path_str = config.get("file_path", "")
+        filename = config.get("filename", config.get("name", ""))
+        file_size = config.get("file_size", 0)
+
+        result: dict[str, Any] = {
+            "type": ds_type,
+            "filename": filename,
+            "file_size": file_size,
+            "page_count": 0,
+            "content_preview": "",
+            "key_topics": [],
+            "chapters": [],
+        }
+
+        if not file_path_str or not os.path.isfile(file_path_str):
+            result["error"] = f"File not found at {file_path_str}"
+            logger.warning("File not found for datasource %s: %s", ds_id, file_path_str)
+            return result
+
+        try:
+            if ds_type == "pdf":
+                result.update(self._extract_pdf_summary(file_path_str))
+            elif ds_type == "docx":
+                result.update(self._extract_docx_summary(file_path_str))
+            elif ds_type == "txt":
+                result.update(self._extract_txt_summary(file_path_str))
+            elif ds_type == "xlsx" or ds_type == "csv":
+                result.update(self._extract_spreadsheet_summary(file_path_str, ds_type))
+        except Exception as e:
+            logger.warning("File summary extraction failed for %s: %s", ds_id, e)
+            result["error"] = str(e)
+
+        logger.info(
+            "Extracted file summary for %s: %s (%d pages, %d chars preview)",
+            ds_id, filename, result.get("page_count", 0), len(result.get("content_preview", "")),
+        )
+        return result
+
+    @staticmethod
+    def _extract_pdf_summary(file_path: str) -> dict[str, Any]:
+        """Extract page count and content preview from a PDF file."""
+        result: dict[str, Any] = {}
+        try:
+            import fitz  # pymupdf
+            doc = fitz.open(file_path)
+            result["page_count"] = doc.page_count
+
+            preview_chars = []
+            for page_num in range(min(doc.page_count, 3)):
+                page = doc[page_num]
+                text = page.get_text()
+                if text:
+                    preview_chars.append(text.strip())
+            doc.close()
+
+            preview = "\n".join(preview_chars)
+            if len(preview) > 800:
+                preview = preview[:800] + "..."
+
+            result["content_preview"] = preview
+
+            lines = preview.splitlines()
+            topics = []
+            for line in lines:
+                line = line.strip()
+                if line and (line.isupper() or line.startswith("第") or
+                             any(kw in line for kw in ("章", "节", "篇", "部分"))):
+                    topics.append(line[:40])
+            result["chapters"] = topics[:8]
+            result["key_topics"] = topics[:4] if topics else []
+
+        except ImportError:
+            logger.warning("pymupdf not available, falling back to pdfplumber")
+            try:
+                import pdfplumber
+                with pdfplumber.open(file_path) as pdf:
+                    result["page_count"] = len(pdf.pages)
+                    preview_text = []
+                    for page in pdf.pages[:3]:
+                        text = page.extract_text() or ""
+                        preview_text.append(text.strip())
+                    preview = "\n".join(preview_text)
+                    if len(preview) > 800:
+                        preview = preview[:800] + "..."
+                    result["content_preview"] = preview
+            except ImportError:
+                logger.warning("no PDF library available")
+        return result
+
+    @staticmethod
+    def _extract_docx_summary(file_path: str) -> dict[str, Any]:
+        """Extract basic info from a DOCX file."""
+        result: dict[str, Any] = {}
+        try:
+            from docx import Document as DocxDocument
+            doc = DocxDocument(file_path)
+            result["page_count"] = len(doc.paragraphs) // 10 or 1
+
+            preview_parts = []
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    preview_parts.append(para.text.strip())
+                if len("".join(preview_parts)) > 800:
+                    break
+
+            preview = "\n".join(preview_parts[:20])
+            if len(preview) > 800:
+                preview = preview[:800] + "..."
+            result["content_preview"] = preview
+
+            chapters = []
+            for para in doc.paragraphs:
+                if para.style and para.style.name and "Heading" in para.style.name:
+                    chapters.append(para.text.strip()[:40])
+            result["chapters"] = chapters[:8]
+            result["key_topics"] = chapters[:4] if chapters else []
+        except ImportError:
+            logger.warning("python-docx not available")
+        return result
+
+    @staticmethod
+    def _extract_txt_summary(file_path: str) -> dict[str, Any]:
+        """Extract basic info from a text file."""
+        result: dict[str, Any] = {}
+        try:
+            with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read(2000)
+            lines = content.splitlines()
+            result["page_count"] = max(1, len(lines) // 40)
+            preview = content[:800]
+            if len(content) > 800:
+                preview += "..."
+            result["content_preview"] = preview
+        except Exception as e:
+            logger.warning("Failed to read text file: %s", e)
+        return result
+
+    @staticmethod
+    def _extract_spreadsheet_summary(file_path: str, ds_type: str) -> dict[str, Any]:
+        """Extract basic info from a spreadsheet file."""
+        result: dict[str, Any] = {}
+        try:
+            if ds_type == "xlsx":
+                import openpyxl
+                wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
+                sheet_names = wb.sheetnames
+                result["page_count"] = len(sheet_names)
+                result["chapters"] = sheet_names[:8]
+                result["key_topics"] = sheet_names[:4]
+                ws = wb[sheet_names[0]]
+                headers = []
+                for row in ws.iter_rows(max_row=1, values_only=True):
+                    headers = [str(c) if c is not None else "" for c in row]
+                    break
+                result["content_preview"] = f"Sheet: {sheet_names[0]}, Columns: {', '.join(headers[:10])}"
+                wb.close()
+            elif ds_type == "csv":
+                import csv
+                with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+                    reader = csv.reader(f)
+                    headers = next(reader, [])
+                    result["content_preview"] = f"Columns: {', '.join(headers[:10])}"
+                    result["page_count"] = 1
+        except ImportError:
+            logger.warning("openpyxl not available for spreadsheet summary")
+        except Exception as e:
+            logger.warning("Failed to read spreadsheet: %s", e)
+        return result
 
     async def _extract_sql_schema(
         self,
