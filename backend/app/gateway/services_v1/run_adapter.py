@@ -155,15 +155,15 @@ def _format_data_sources_for_prompt(ds_list: list[dict[str, Any]]) -> str:
 - **有 SQL 数据源时**: generate_report(title="报告标题", user_query="分析需求描述")
   工具会全自动完成数据查询、分析、DOCX 渲染全流程
 - **有文件类型数据源时**: generate_report(title="报告标题", document_path="<文件路径>")
-  工具会自动解析该文件，document_path 可以在下方附带的 <datasources> 系统消息中获取
-  ⚠️ **文件路径已在 <datasources> 中提供，不要要求用户上传或去文件系统查找**
-- **同时有 SQL 和文件数据源时**: 两个参数都传
+  工具会自动解析该文件，document_path 可以在下方的 <uploaded_files> 或 <datasources> 系统消息中获取
+  ⚠️ **工作区关联的文件在 <uploaded_files> 中已列出，直接使用其中的 Path 即可**
 
 工具会全自动完成六层流程：Planning → Execution (Worker) → Evidence → Analysis → Composition → Rendering
 
 ### ⚠️ 关键行为约束
-- ✅ **优先使用已关联的数据源**：如果数据源中已有 PDF/DOCX 文件，直接从 <datasources> 中提取 `file_path` 调用 `generate_report`，**不要要求用户上传文件**
-- ❌ **禁止执行 bash/Python 命令**来查看文件系统目录（如 `/mnt/user-data/uploads/`、`/mnt/user-data/outputs/`）以寻找数据源文件——数据源文件的路径已在 <datasources> 中提供
+- ✅ **优先使用已关联的数据源**：如果 <uploaded_files> 或 <datasources> 中已有 PDF/DOCX 文件，直接从其中提取 `file_path` 或 `Path` 调用 `generate_report`，**不要要求用户上传文件**
+- ✅ 文件数据源的类型包括：PDF、DOCX、Excel（xlsx）、CSV、TXT
+- ❌ **禁止执行 bash/Python 命令**来查看文件系统目录（如 `/mnt/user-data/uploads/`、`/mnt/user-data/outputs/`）以寻找数据源文件——文件路径已在 <uploaded_files> 中提供
 - ❌ **禁止要求用户上传文件**——如果当前对话已关联文件类型数据源，直接使用它
 
 ### 禁止行为
@@ -235,6 +235,54 @@ def _build_datasource_system_message(ds_list: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
+_FILE_DATA_SOURCE_TYPES = {"pdf", "docx", "txt", "xlsx", "csv"}
+
+
+def _build_workspace_file_upload_block(ds_list: list[dict[str, Any]]) -> str:
+    """Build an ``<uploaded_files>`` block for workspace-attached file-type data sources.
+
+    These are files that were attached via the data source management page,
+    NOT uploaded through the frontend upload endpoint. The ``UploadsMiddleware``
+    only lists files physically in ``/mnt/user-data/uploads/``, so we inject
+    them here as a synthetic block so the LLM sees them in the familiar
+    uploaded-files context.
+    """
+    file_entries = []
+    for ds in ds_list:
+        ds_type = ds.get("type", "")
+        if ds_type not in _FILE_DATA_SOURCE_TYPES:
+            continue
+        meta = ds.get("metadata") or {}
+        file_path = meta.get("file_path", "")
+        if not file_path:
+            continue
+        ds_name = ds.get("name", "?")
+        ss = ds.get("schema_summary") or {}
+        doc_summary = ss.get("document_summary") or {}
+        page_count = doc_summary.get("page_count")
+        chapters = doc_summary.get("chapters") or doc_summary.get("key_topics") or []
+
+        entry = f"- {ds_name} ({ds_type})"
+        entry += f"\n  Path: {file_path}"
+        if page_count:
+            entry += f"\n  Page count: {page_count}"
+        if chapters:
+            entry += f"\n  Topics: {', '.join(chapters[:5])}"
+        file_entries.append(entry)
+
+    if not file_entries:
+        return ""
+
+    lines = [
+        '<uploaded_files>',
+        'The following files are attached to this conversation as data sources:',
+        '',
+    ]
+    lines.extend(file_entries)
+    lines.append('</uploaded_files>')
+    return '\n'.join(lines)
+
+
 def build_run_create_request(
     body: ConversationMessageRequest,
     external_context: ExternalContext,
@@ -275,6 +323,15 @@ def build_run_create_request(
         # [A] System instructions (compact, every turn — ~400 tokens)
         ds_block = _format_data_sources_for_prompt(selected_data_sources)
         user_content = f"{ds_block}\n\n{body.content}"
+
+        # [A2] Workspace-attached file data sources → also inject into
+        # <uploaded_files> block so the LLM sees them in the familiar
+        # uploaded-files context (not just in <datasources> XML).
+        # The UploadsMiddleware only lists files physically in the uploads
+        # directory; workspace-attached files live elsewhere.
+        file_ds_entries = _build_workspace_file_upload_block(selected_data_sources)
+        if file_ds_entries:
+            user_content = file_ds_entries + "\n\n" + user_content
 
         # [B] Data source detail system message
         # Compact schema snapshot so the LLM knows table names, columns,
