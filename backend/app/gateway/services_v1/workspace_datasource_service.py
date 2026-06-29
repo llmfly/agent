@@ -9,8 +9,10 @@ Implements the design from ``docs/design/data-source-management.md``:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
+import re
 import uuid
 from datetime import UTC, datetime
 from typing import Any
@@ -122,7 +124,12 @@ class WorkspaceDataSourceService:
         user_id: str,
         request: DataSourceCreateRequest,
     ) -> DataSourceResponse:
-        """Create a new data source for a user."""
+        """Create a new data source for a user.
+
+        Saves the connection info, then triggers async schema extraction
+        (table structures for SQL, content summary for documents) so the
+        agent has immediate visibility into the data structure.
+        """
         sf = _get_session_factory()
         if sf is None:
             raise RuntimeError("Session factory not available")
@@ -130,10 +137,13 @@ class WorkspaceDataSourceService:
         ds_id = f"ds_{uuid.uuid4().hex[:12]}"
         now = datetime.now(UTC)
 
+        # Inject schema_summary placeholder — will be filled asynchronously
+        raw_config = request.config or {}
+        raw_config["schema_summary"] = {"status": "pending"}
+
         # SQLite stores config_json as String (not native JSONB), so
         # we need to serialize the dict to a JSON string. Postgres JSONB
         # accepts dict natively.
-        raw_config = request.config or {}
         config_value: dict | str = raw_config
         if _is_sqlite():
             config_value = json.dumps(raw_config, ensure_ascii=False)
@@ -155,7 +165,202 @@ class WorkspaceDataSourceService:
             await session.commit()
             await session.refresh(row)
             logger.info("DataSource created: %s (type=%s, user=%s)", ds_id, request.type, user_id)
-            return _ds_row_to_response(row)
+
+        # ════════════════════════════════════════════════════════════
+        # Async schema extraction — non-blocking background task
+        # ════════════════════════════════════════════════════════════
+        asyncio.create_task(self._extract_schema(ds_id, raw_config, request.type))
+
+        return _ds_row_to_response(row)
+
+    # ── Async Schema Extraction ───────────────────────────────────────
+
+    async def _update_schema_summary(  # noqa: PLR0913
+        self,
+        ds_id: str,
+        status: str,
+        *,
+        tables: list[dict[str, Any]] | None = None,
+        document_summary: dict[str, Any] | None = None,
+        error: str | None = None,
+    ) -> None:
+        """Persist schema_summary back into the datasource's config_json."""
+        sf = _get_session_factory()
+        if sf is None:
+            return
+        async with sf() as session:
+            row = await session.get(DataSourceRow, ds_id)
+            if row is None:
+                return
+            config = _ensure_config_dict(row.config_json)
+            config["schema_summary"] = {
+                "status": status,
+                "extracted_at": datetime.now(UTC).isoformat(),
+                "tables": tables or [],
+                "document_summary": document_summary,
+                "error": error,
+            }
+            if _is_sqlite():
+                row.config_json = json.dumps(config, ensure_ascii=False)  # type: ignore[assignment]
+            else:
+                row.config_json = config  # type: ignore[assignment]
+            await session.commit()
+            logger.info(
+                "Schema summary updated for %s: status=%s, tables=%d",
+                ds_id, status, len(tables or []),
+            )
+
+    async def _extract_schema(self, ds_id: str, config: dict[str, Any], ds_type: str) -> None:
+        """Background task: extract schema or document summary for a data source.
+
+        For SQL types (mysql, postgresql, clickhouse):
+          - Fetch all table names
+          - Fetch column info (name, type, PK, comment, nullable)
+          - Count rows per table
+          - Store as structured JSON
+
+        For file types (pdf, docx, xlsx, csv):
+          - Currently a no-op; the report pipeline's PdfWorker/DocxWorker
+            handles content extraction at generation time.
+        """
+        try:
+            if ds_type in ("mysql", "postgresql"):
+                tables = await self._extract_sql_schema(ds_id, config)
+                await self._update_schema_summary(ds_id, "ready", tables=tables)
+            elif ds_type in ("pdf", "docx", "txt", "xlsx", "csv", "markdown", "ppt"):
+                # File types defer content extraction to the report pipeline.
+                # Store minimal metadata so the agent knows the file exists.
+                await self._update_schema_summary(
+                    ds_id,
+                    "ready",
+                    document_summary={
+                        "type": ds_type,
+                        "filename": config.get("object_key", config.get("name", "")),
+                        "content_extracted": False,
+                        "note": "文档内容将在报告生成时由 pipeline 自动解析",
+                    },
+                )
+            else:
+                await self._update_schema_summary(ds_id, "ready", tables=[])
+        except Exception as e:
+            logger.exception("Schema extraction failed for %s (type=%s)", ds_id, ds_type)
+            await self._update_schema_summary(ds_id, "error", error=str(e))
+
+    async def _extract_sql_schema(
+        self,
+        ds_id: str,
+        config: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        """Connect to a SQL database and extract table/column metadata.
+
+        Returns a list of table dicts:
+            [{
+                "name": "orders",
+                "row_count": 125000,
+                "columns": [
+                    {"name": "id", "type": "int", "pk": True, "nullable": False, "comment": "主键"},
+                    ...
+                ]
+            }]
+        """
+        try:
+            from app.gateway.services_v1.db_utils import (
+                fetch_all_table_names,
+                fetch_schema_for_tables,
+            )
+
+            table_names = fetch_all_table_names(config)
+            if not table_names:
+                logger.info("No tables found for datasource %s", ds_id)
+                return []
+
+            schema_text = fetch_schema_for_tables(config, table_names)
+            tables = self._parse_schema_text(schema_text, table_names, config)
+            logger.info(
+                "Extracted schema for %s: %d tables",
+                ds_id, len(tables),
+            )
+            return tables
+        except Exception as e:
+            logger.warning("SQL schema extraction failed for %s: %s", ds_id, e)
+            return []
+
+    @staticmethod
+    def _parse_schema_text(
+        schema_text: str,
+        table_names: list[str],
+        config: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        """Parse the schema text from fetch_schema_for_tables into structured JSON.
+
+        Input format (from db_utils):
+            ### orders (行数:~125000)
+              - id (int) [PK]  -- 主键
+              - name (varchar(128))
+              - ...
+
+        Output: list[dict] with table name, columns, row_count.
+        """
+        tables: list[dict[str, Any]] = []
+        current_table: dict[str, Any] | None = None
+
+        # Helper to count from the actual DB if config has db_type=mysql
+        def _try_get_row_count(conn, tname: str) -> int:
+            try:
+                import pymysql
+
+                c = pymysql.connect(
+                    host=config.get("host", "localhost"),
+                    port=int(config.get("port", 3306)),
+                    user=config.get("username", ""),
+                    password=config.get("password", ""),
+                    database=config.get("database", ""),
+                    connect_timeout=3,
+                )
+                with c:
+                    with c.cursor() as cur:
+                        cur.execute(f"SELECT COUNT(*) FROM `{tname}`")
+                        return cur.fetchone()[0] or 0
+            except Exception:
+                return 0
+
+        col_re = re.compile(
+            r"^\s*-\s+`?(?P<name>\w+)`?\s+\((?P<type>[^)]+)\)"
+            r"(?:\s+\[(?P<flags>[^\]]+)\])?"
+            r"(?:\s+--\s+(?P<comment>.+))?"
+        )
+
+        for line in schema_text.splitlines():
+            if line.startswith("### "):
+                # New table header
+                header = line[4:]
+                tname_match = re.match(r"(\S+)", header)
+                tname = tname_match.group(1) if tname_match else "unknown"
+                row_match = re.search(r"行数:~(\d+)", header)
+                row_count = int(row_match.group(1)) if row_match else 0
+                if current_table and current_table.get("columns"):
+                    tables.append(current_table)
+                current_table = {
+                    "name": tname,
+                    "row_count": row_count or _try_get_row_count(None, tname),
+                    "columns": [],
+                }
+            elif current_table is not None and line.strip():
+                m = col_re.match(line)
+                if m:
+                    flags = (m.group("flags") or "").upper()
+                    current_table["columns"].append({
+                        "name": m.group("name"),
+                        "type": m.group("type"),
+                        "pk": "PK" in flags,
+                        "nullable": "NULL" not in flags,
+                        "comment": (m.group("comment") or "").strip(),
+                    })
+
+        if current_table and current_table.get("columns"):
+            tables.append(current_table)
+
+        return tables
 
     async def list_datasources(
         self,
@@ -552,12 +757,16 @@ class WorkspaceDataSourceService:
                 alias = ref.alias or ds.name
                 config = _ensure_config_dict(ds.config_json)
 
+                # Include schema_summary for LLM visibility
+                schema_summary = config.pop("schema_summary", {"status": "pending"})
+
                 item: dict[str, Any] = {
                     "datasource_id": ds.id,
                     "type": ds.type,
                     "name": alias,
                     "content": "",
                     "metadata": config,
+                    "schema_summary": schema_summary,
                 }
 
                 if ds.type in ("sql", "mysql", "postgresql"):

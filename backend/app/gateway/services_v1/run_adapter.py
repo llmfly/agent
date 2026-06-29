@@ -119,7 +119,12 @@ def _context_from_options(body: ConversationMessageRequest) -> dict[str, Any]:
 
 
 def _format_data_sources_for_prompt(ds_list: list[dict[str, Any]]) -> str:
-    """Format data sources into an XML block with workflow guidance for the LLM."""
+    """Format data sources into an XML block with workflow guidance for the LLM.
+
+    Includes structured schema_summary (table/column metadata, document overview)
+    so the agent and downstream pipeline (e.g. ReportPlanner) understand exactly
+    what data is available without needing to probe the source.
+    """
     lines = [
         "<system_instructions>",
         "当前对话已关联以下数据源。",
@@ -162,20 +167,53 @@ def _format_data_sources_for_prompt(ds_list: list[dict[str, Any]]) -> str:
         ds_type = ds.get("type", "?")
         ds_name = ds.get("name", "?")
         meta = ds.get("metadata") or {}
-        if ds_type == "sql":
+        schema_summary = ds.get("schema_summary") or {}
+
+        lines.append(f'  <datasource id="{ds_id}" type="{ds_type}" name="{ds_name}">')
+
+        # ── Connection info for SQL types ────────────────────────
+        if ds_type in ("sql", "mysql", "postgresql"):
             host = meta.get("host", "?")
             port = meta.get("port", "?")
             database = meta.get("database", "?")
-            tables = meta.get("tables", [])
-            lines.append(f'  <datasource id="{ds_id}" type="sql" name="{ds_name}">')
             lines.append(f"    <connection>mysql://{host}:{port}/{database}</connection>")
-            if tables:
-                lines.append(f"    <tables>{', '.join(tables)}</tables>")
-            lines.append("  </datasource>")
-        elif ds_type == "file":
-            lines.append(f'  <datasource id="{ds_id}" type="file" name="{ds_name}"/>')
-        else:
-            lines.append(f'  <datasource id="{ds_id}" type="{ds_type}" name="{ds_name}"/>')
+
+        # ── Schema detail (table structures for SQL) ──────────────
+        tables = schema_summary.get("tables", [])
+        if tables:
+            lines.append("    <schema>")
+            for t in tables:
+                tname = t.get("name", "?")
+                rows = t.get("row_count", "?")
+                lines.append(f'      <table name="{tname}" rows="{rows}">')
+                for col in t.get("columns", []):
+                    cname = col.get("name", "")
+                    ctype = col.get("type", "")
+                    pk = ' pk="true"' if col.get("pk") else ""
+                    lines.append(f'        <column name="{cname}" type="{ctype}"{pk}/>')
+                lines.append("      </table>")
+            lines.append("    </schema>")
+
+        # ── Document summary for file types ──────────────────────
+        doc_summary = schema_summary.get("document_summary")
+        if doc_summary:
+            chapters = doc_summary.get("chapters") or doc_summary.get("key_topics") or []
+            lines.append(f"    <document type=\"{doc_summary.get('type', ds_type)}\""
+                         f" filename=\"{doc_summary.get('filename', '')}\">")
+            if chapters:
+                lines.append(f"      <topics>{', '.join(chapters)}</topics>")
+            lines.append("    </document>")
+
+        # ── Status note when extraction is still pending ──────────
+        status = schema_summary.get("status", "pending")
+        if status == "pending":
+            lines.append("    <note>数据源元数据正在提取中，稍后即可使用</note>")
+        elif status == "error":
+            err_msg = schema_summary.get("error", "unknown error")
+            lines.append(f"    <note>数据源元数据提取失败: {err_msg}</note>")
+
+        lines.append("  </datasource>")
+
     lines.append("</data_sources>")
     return "\n".join(lines)
 
