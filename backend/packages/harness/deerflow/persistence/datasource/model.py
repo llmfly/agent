@@ -77,7 +77,6 @@ class ConversationDataSourceRow(Base):
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     conversation_id: Mapped[str] = mapped_column(
         String(64),
-        ForeignKey("threads_meta.thread_id", ondelete="CASCADE"),
         index=True,
         nullable=False,
     )
