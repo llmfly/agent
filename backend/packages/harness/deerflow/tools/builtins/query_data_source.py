@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from pathlib import Path
 
 from langchain.tools import tool
@@ -7,6 +8,15 @@ from langchain.tools import tool
 from deerflow.tools.types import Runtime
 
 logger = logging.getLogger(__name__)
+
+# ── Report-intent detection ─────────────────────────────────────────────
+# If the user's query looks like they want a report or to understand
+# the data structure, redirect them to generate_report instead.
+_REPORT_INTENT_PATTERNS = re.compile(
+    r"(报告|报表|生成.*报告|写.*报告|出.*报告|分析.*报告"
+    r"|表结构|数据库结构|有哪些表|有什么表|schema|表名|字段名"
+    r"|列名|所有表|数据字典|数据目录|元数据|表信息)"
+)
 
 def _get_thread_id(runtime: Runtime) -> str | None:
     """Resolve the current conversation/thread id from runtime context."""
@@ -98,6 +108,45 @@ async def query_data_source_tool(
 
     if not selected_sources:
         return "Error: No data sources are selected or configured for this conversation."
+
+    # ── Report-intent guard ────────────────────────────────────────
+    # If the query looks like "give me a report" or "show me the table
+    # structure", refuse and direct to generate_report. This tool is
+    # for ad-hoc data exploration, not report generation.
+    if _REPORT_INTENT_PATTERNS.search(query):
+        schema_summaries = []
+        for ds in selected_sources:
+            ss = ds.get("schema_summary") or {}
+            name = ds.get("name", "?")
+            ds_type = ds.get("type", "?")
+            tables = ss.get("tables", [])
+            if tables:
+                summary_parts = [f"📦 {name} ({ds_type})"]
+                for t in tables[:5]:
+                    cols = ", ".join(
+                        f"{c['name']}({c['type']})"
+                        for c in t.get("columns", [])[:6]
+                    )
+                    summary_parts.append(f"  - {t['name']} : {cols}")
+                schema_summaries.append("\n".join(summary_parts))
+
+        if schema_summaries:
+            schema_block = "\n".join(schema_summaries)
+        else:
+            # No schema_summary available yet — fall back to basic info
+            schema_block = "\n".join(
+                f"  {ds.get('name', '?')} ({ds.get('type', '?')})"
+                for ds in selected_sources
+            )
+
+        return (
+            f"⚠️ **请使用 `generate_report` 工具生成报告**\n\n"
+            f"已了解的数据源结构：\n{schema_block}\n\n"
+            f"直接调用 `generate_report(title=..., user_query=...)` 即可自动完成"
+            f"数据查询→分析→报告渲染全流程，无需手动查询数据。"
+            f"\n\n(query_data_source 返回了以上数据源信息，但查询内容 '{query[:80]}' 看起来像是报告需求，"
+            f"请切换到 generate_report。如确实需要查询原始数据，请使用具体的数据查询语句。)"
+        )
 
     # 2. Match target data source
     target_ds = None

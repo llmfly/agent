@@ -137,6 +137,7 @@ class ReportPipeline:
         title: str,
         user_query: str,
         datasource_metadata: dict[str, Any],
+        schema_summary: dict[str, Any] | None = None,
         document_path: str = "",
         user_id: str = "anonymous",
         conversation_id: str = "",
@@ -190,6 +191,7 @@ class ReportPipeline:
                 user_query,
                 context={
                     "datasource_metadata": datasource_metadata,
+                    "schema_summary": schema_summary or {},
                     "document_path": document_path,
                 },
             )

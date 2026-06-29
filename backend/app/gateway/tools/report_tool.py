@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Annotated
+from typing import Annotated, Any
 
 from langchain.tools import InjectedToolCallId, tool
 from langchain_core.messages import ToolMessage
@@ -48,6 +48,26 @@ def _get_sql_sources(runtime: Runtime) -> list[dict]:
     if not selected_sources:
         return []
     return [ds for ds in selected_sources if ds.get("type") == "sql"]
+
+
+def _get_schema_summary(runtime: Runtime) -> dict[str, Any]:
+    """Extract schema_summary from the first SQL data source (if any)."""
+    selected_sources = None
+    if runtime.context:
+        selected_sources = runtime.context.get("selected_data_sources")
+    if not selected_sources:
+        cfg = getattr(runtime, "config", None) or {}
+        selected_sources = (
+            cfg.get("configurable", {}).get("selected_data_sources")
+            or cfg.get("context", {}).get("selected_data_sources")
+        )
+    if not selected_sources:
+        return {}
+    sql_sources = [ds for ds in selected_sources if ds.get("type") == "sql"]
+    if not sql_sources:
+        return {}
+    ss = sql_sources[0].get("schema_summary") or {}
+    return ss
 
 
 def _get_server_base_url(runtime: Runtime) -> str:
@@ -128,8 +148,10 @@ async def generate_report(
 
     sql_sources = _get_sql_sources(runtime)
     datasource_metadata = {}
+    schema_summary: dict[str, Any] = {}
     if sql_sources:
         datasource_metadata = sql_sources[0].get("metadata") or {}
+        schema_summary = sql_sources[0].get("schema_summary") or {}
 
     user_id = runtime.context.get("user_id", "anonymous") if runtime.context else "anonymous"
 
@@ -138,6 +160,7 @@ async def generate_report(
         title=title,
         user_query=user_query or title,
         datasource_metadata=datasource_metadata,
+        schema_summary=schema_summary,
         document_path=document_path,
         user_id=user_id,
         conversation_id=conversation_id,
