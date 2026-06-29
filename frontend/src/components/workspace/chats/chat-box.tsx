@@ -135,13 +135,13 @@ const ChatBox: React.FC<{ children: React.ReactNode; threadId: string }> = ({
           !dsPanelOpen && "opacity-0 overflow-hidden",
         )}
         id="datasources"
-        defaultSize={0}
-        minSize={20}
-        maxSize={40}
+        defaultSize={200}
+        minSize={200}
+        maxSize={200}
       >
         <div
           className={cn(
-            "h-full border-l border-sidebar-border transition-transform duration-300 ease-in-out",
+            "h-full transition-transform duration-300 ease-in-out",
             dsPanelOpen ? "translate-x-0" : "translate-x-full",
           )}
         >
