@@ -3,12 +3,14 @@
 import {
   ArrowLeftIcon,
   CheckIcon,
+  FileUpIcon,
   Loader2,
+  Trash2,
   WifiIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -28,11 +30,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { testConnection } from "@/core/datasource/api";
+import { testConnection, uploadDataSourceFile } from "@/core/datasource/api";
 import type { DataSourceType } from "@/core/datasource/types";
 import { useI18n } from "@/core/i18n/hooks";
+import { cn } from "@/lib/utils";
 
 import { useDataSources } from "../use-data-sources";
+
+// ── File-type data sources that require file upload ──────────────────────
+const FILE_DATA_SOURCE_TYPES = new Set<DataSourceType>([
+  "pdf", "docx", "txt", "xlsx", "csv",
+]);
 
 const TYPE_CONFIG_FIELDS: Record<
   DataSourceType,
@@ -116,6 +124,11 @@ export default function NewDataSourcePage() {
     defaultConfig("mysql"),
   );
   const [testing, setTesting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isFileType = FILE_DATA_SOURCE_TYPES.has(type);
 
   const updateConfig = useCallback((key: string, value: string) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
@@ -125,6 +138,7 @@ export default function NewDataSourcePage() {
     (newType: DataSourceType) => {
       setType(newType);
       setConfig(defaultConfig(newType));
+      setSelectedFile(null);
     },
     [],
   );
@@ -154,20 +168,36 @@ export default function NewDataSourcePage() {
       return;
     }
 
+    if (isFileType && !selectedFile) {
+      toast.error("Please select a file to upload");
+      return;
+    }
+
     try {
+      let finalConfig = { ...config };
+
+      // Upload file first for file-type data sources
+      if (isFileType && selectedFile) {
+        setUploading(true);
+        const uploadResult = await uploadDataSourceFile(selectedFile);
+        finalConfig = uploadResult.config as Record<string, unknown>;
+        setUploading(false);
+      }
+
       const result = await createMutate.mutateAsync({
         name: name.trim(),
         description: description.trim(),
         type,
-        config,
+        config: finalConfig,
       });
       toast.success("Data source created!");
       router.push(`/workspace/data-assets/${result.id}`);
     } catch (err: unknown) {
+      setUploading(false);
       const msg = err instanceof Error ? err.message : String(err);
       toast.error(`Failed to create: ${msg}`);
     }
-  }, [name, description, type, config, createMutate, router]);
+  }, [name, description, type, config, isFileType, selectedFile, createMutate, router]);
 
   return (
     <div className="flex h-full flex-col">
@@ -254,56 +284,127 @@ export default function NewDataSourcePage() {
             </CardContent>
           </Card>
 
-          {/* Connection Config */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
-                {t.dataAssets.connectionConfig}
-              </CardTitle>
-              <CardDescription>
-                Configure the connection parameters for your {type} data source.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {TYPE_CONFIG_FIELDS[type].map((field) => (
-                <div key={field.key} className="space-y-2">
-                  <span className="text-sm font-medium">{field.label}</span>
-                  <Input
-                    type={field.type}
-                    placeholder={field.placeholder}
-                    value={String(config[field.key] ?? "")}
-                    onChange={(e) => updateConfig(field.key, e.target.value)}
-                  />
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                onClick={handleTest}
-                disabled={testing}
-              >
-                {testing ? (
-                  <Loader2 className="mr-2 size-4 animate-spin" />
+          {isFileType ? (
+            /* ── File Upload Section (for pdf/docx/txt/xlsx/csv) ───── */
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  {t.dataAssets.fileUpload}
+                </CardTitle>
+                <CardDescription>
+                  选择对应类型的文件上传，系统将自动解析文件内容。
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={{
+                    pdf: ".pdf",
+                    docx: ".docx,.doc",
+                    txt: ".txt",
+                    xlsx: ".xlsx,.xls",
+                    csv: ".csv",
+                  }[type] || undefined}
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) setSelectedFile(file);
+                  }}
+                />
+                {selectedFile ? (
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center space-y-3">
+                    <div className="text-sm font-medium text-foreground">
+                      {selectedFile.name}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        if (fileInputRef.current) fileInputRef.current.value = "";
+                      }}
+                    >
+                      <Trash2 className="mr-1 size-3" />
+                      重新选择
+                    </Button>
+                  </div>
                 ) : (
-                  <WifiIcon className="mr-2 size-4" />
+                  <div
+                    className={cn(
+                      "border-2 border-dashed rounded-lg p-10 text-center cursor-pointer",
+                      "transition-colors hover:border-primary hover:bg-accent/30",
+                    )}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <FileUpIcon className="mx-auto mb-3 size-10 text-muted-foreground" />
+                    <div className="text-sm font-medium text-foreground">
+                      点击或拖拽上传文件
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      支持 {
+                        { pdf: "PDF (.pdf)", docx: "Word (.docx/.doc)", txt: "Text (.txt)", xlsx: "Excel (.xlsx/.xls)", csv: "CSV (.csv)" }[type]
+                      } 格式（最大 50MB）
+                    </div>
+                  </div>
                 )}
-                {t.dataAssets.testConnection}
-              </Button>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            /* ── Connection Config Section (for SQL types) ─────────── */
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  {t.dataAssets.connectionConfig}
+                </CardTitle>
+                <CardDescription>
+                  Configure the connection parameters for your {type} data source.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {TYPE_CONFIG_FIELDS[type].map((field) => (
+                  <div key={field.key} className="space-y-2">
+                    <span className="text-sm font-medium">{field.label}</span>
+                    <Input
+                      type={field.type}
+                      placeholder={field.placeholder}
+                      value={String(config[field.key] ?? "")}
+                      onChange={(e) => updateConfig(field.key, e.target.value)}
+                    />
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  onClick={handleTest}
+                  disabled={testing}
+                >
+                  {testing ? (
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                  ) : (
+                    <WifiIcon className="mr-2 size-4" />
+                  )}
+                  {t.dataAssets.testConnection}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Actions */}
           <div className="flex items-center gap-3 pb-8">
             <Button
               size="lg"
               onClick={handleSubmit}
-              disabled={createMutate.isPending}
+              disabled={createMutate.isPending || uploading}
             >
-              {createMutate.isPending ? (
+              {uploading || createMutate.isPending ? (
                 <Loader2 className="mr-2 size-4 animate-spin" />
               ) : (
                 <CheckIcon className="mr-2 size-4" />
               )}
-              {t.common.create}
+              {uploading ? "上传中..." : t.common.create}
             </Button>
             <Button variant="outline" size="lg" asChild>
               <Link href="/workspace/data-assets">{t.common.cancel}</Link>

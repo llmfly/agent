@@ -52,6 +52,13 @@ export interface DataSourceTestResponse {
   message?: string;
 }
 
+export interface DataSourceUploadResponse {
+  filename: string;
+  file_path: string;
+  file_size: number;
+  config: Record<string, unknown>;
+}
+
 export interface AttachDataSourceRequest {
   datasource_id: string;
   alias?: string;

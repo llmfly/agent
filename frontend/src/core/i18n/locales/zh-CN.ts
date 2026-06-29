@@ -184,6 +184,7 @@ export const zhCN: Translations = {
     testConnection: "测试连接",
     testSuccess: "连接成功！",
     testFailed: "连接失败：{error}",
+    fileUpload: "文件上传",
     connectionConfig: "连接配置",
     basicInfo: "基本信息",
     name: "名称",

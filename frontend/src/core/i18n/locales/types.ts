@@ -134,6 +134,7 @@ export interface Translations {
     testConnection: string;
     testSuccess: string;
     testFailed: string;
+    fileUpload: string;
     connectionConfig: string;
     basicInfo: string;
     name: string;

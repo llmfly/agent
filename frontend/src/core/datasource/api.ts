@@ -11,6 +11,7 @@ import type {
   DataSourceTestRequest,
   DataSourceTestResponse,
   DataSourceUpdateRequest,
+  DataSourceUploadResponse,
   UpdateAttachRequest,
 } from "./types";
 
@@ -73,6 +74,20 @@ export async function testConnection(
     body: JSON.stringify(req),
   });
   return res.json() as Promise<DataSourceTestResponse>;
+}
+
+// ---- File Upload for Data Sources ----
+
+export async function uploadDataSourceFile(
+  file: File,
+): Promise<DataSourceUploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`${BASE}/data-sources/upload`, {
+    method: "POST",
+    body: formData,
+  });
+  return res.json() as Promise<DataSourceUploadResponse>;
 }
 
 // ---- Attach / Detach ----

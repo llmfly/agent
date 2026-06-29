@@ -11,9 +11,12 @@ Key concepts:
 from __future__ import annotations
 
 import logging
+import os
+import uuid
 from collections.abc import AsyncIterator
+from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Request
+from fastapi import APIRouter, Depends, File, HTTPException, Path, Request, UploadFile
 
 from app.gateway.schemas.v1.datasource_workspace import (
     AttachDataSourceRequest,
@@ -25,6 +28,7 @@ from app.gateway.schemas.v1.datasource_workspace import (
     DataSourceTestRequest,
     DataSourceTestResponse,
     DataSourceUpdateRequest,
+    DataSourceUploadResponse,
     UpdateAttachRequest,
 )
 from app.gateway.services_v1.workspace_datasource_service import workspace_datasource_service
@@ -52,6 +56,58 @@ async def _require_user(request: Request) -> AsyncIterator[str]:
         yield str(user.id)
     finally:
         reset_current_user(token)
+
+
+# ── DataSource File Upload ────────────────────────────────────────────────
+
+_DATA_SOURCE_UPLOAD_DIR = Path("/data/intelli/engine/.deer-flow/data/datasource-files")
+
+
+@router.post("/data-sources/upload", response_model=DataSourceUploadResponse)
+async def upload_datasource_file(
+    file: UploadFile = File(...),
+    user_id: str = Depends(_require_user),
+) -> DataSourceUploadResponse:
+    """Upload a file for a file-type data source (pdf, docx, etc.)."""
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No file provided")
+
+    # Determine file extension
+    ext = os.path.splitext(file.filename)[1].lower()
+    # Guard: only allow known file types
+    ALLOWED_EXTS = {".pdf", ".docx", ".doc", ".txt", ".xlsx", ".xls", ".csv", ".pptx", ".ppt", ".md"}
+    if ext not in ALLOWED_EXTS:
+        raise HTTPException(status_code=400, detail=f"Unsupported file type: {ext}")
+
+    # Create user-level upload directory
+    user_upload_dir = _DATA_SOURCE_UPLOAD_DIR / user_id
+    user_upload_dir.mkdir(parents=True, exist_ok=True)
+
+    # Save file with unique name to avoid collisions
+    safe_name = f"{uuid.uuid4().hex[:12]}_{file.filename}"
+    file_path = user_upload_dir / safe_name
+
+    content = await file.read()
+    file_size = len(content)
+    if file_size > 50 * 1024 * 1024:  # 50MB limit
+        raise HTTPException(status_code=413, detail="File too large (max 50MB)")
+
+    file_path.write_bytes(content)
+
+    config = {
+        "file_path": str(file_path),
+        "filename": file.filename,
+        "file_size": file_size,
+    }
+
+    logger.info("File uploaded for datasource: %s (%d bytes) by user %s", safe_name, file_size, user_id)
+
+    return DataSourceUploadResponse(
+        filename=file.filename,
+        file_path=str(file_path),
+        file_size=file_size,
+        config=config,
+    )
 
 
 # ── DataSource CRUD ─────────────────────────────────────────────────────────

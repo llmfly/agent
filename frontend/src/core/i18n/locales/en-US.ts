@@ -189,6 +189,7 @@ export const enUS: Translations = {
     testConnection: "Test Connection",
     testSuccess: "Connection successful!",
     testFailed: "Connection failed: {error}",
+    fileUpload: "File Upload",
     connectionConfig: "Connection Configuration",
     basicInfo: "Basic Information",
     name: "Name",

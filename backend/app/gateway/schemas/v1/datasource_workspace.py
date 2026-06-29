@@ -69,6 +69,15 @@ class DataSourceTestResponse(BaseModel):
     details: dict[str, Any] = {}
 
 
+class DataSourceUploadResponse(BaseModel):
+    """File upload result for file-type data sources."""
+
+    filename: str
+    file_path: str
+    file_size: int
+    config: dict[str, Any]
+
+
 # ── ConversationDataSource (Attach/Detach) ────────────────────────────────
 
 
