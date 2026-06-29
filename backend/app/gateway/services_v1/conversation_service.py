@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import logging
+import shutil
 import uuid
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from fastapi import HTTPException, Request
@@ -26,9 +27,80 @@ from app.gateway.services_v1.data_source_service import (
 )
 from app.gateway.services_v1.external_context import ExternalContext, build_external_metadata
 from app.gateway.services_v1.run_adapter import build_run_create_request
+from deerflow.config.paths import get_paths
 from deerflow.utils.time import coerce_iso, now_iso
 
 logger = logging.getLogger(__name__)
+
+_FILE_DATA_SOURCE_TYPES = {"pdf", "docx", "txt", "xlsx", "csv"}
+
+
+def _sync_workspace_files_to_uploads(
+    data_sources: list[dict[str, Any]],
+    conversation_id: str,
+    user_id: str | None,
+) -> None:
+    """Copy workspace-attached file data sources into the sandbox uploads directory.
+
+    The sandbox uploads dir (`/mnt/user-data/uploads/`) is where the LLM's
+    environment expects files. Workspace data source files live elsewhere on
+    the host filesystem. This function copies them so the ``UploadsMiddleware``
+    picks them up and the LLM can find them.
+
+    This is a best-effort operation: failures to resolve paths or copy files
+    are logged but do not block message sending.
+    """
+    if not user_id or user_id == "anonymous":
+        logger.debug("_sync_workspace_files_to_uploads: no valid user_id, skipping")
+        return
+
+    try:
+        paths = get_paths()
+        uploads_dir = paths.sandbox_uploads_dir(conversation_id, user_id=user_id)
+        uploads_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as exc:
+        logger.warning("_sync_workspace_files_to_uploads: failed to resolve uploads dir: %s", exc)
+        return
+
+    file_sources = [
+        ds for ds in data_sources
+        if ds.get("type") in _FILE_DATA_SOURCE_TYPES
+    ]
+    if not file_sources:
+        return
+
+    for ds in file_sources:
+        meta = ds.get("metadata") or {}
+        src_path_str = meta.get("file_path", "")
+        if not src_path_str:
+            continue
+
+        src = Path(src_path_str)
+        if not src.is_file():
+            logger.warning(
+                "_sync_workspace_files_to_uploads: source file not found: %s (ds=%s)",
+                src_path_str, ds.get("datasource_id"),
+            )
+            continue
+
+        dest = uploads_dir / src.name
+        try:
+            if dest.exists():
+                # Avoid redundant copy — skip if same size
+                if dest.stat().st_size == src.stat().st_size:
+                    logger.debug("_sync_workspace_files_to_uploads: already synced %s", src.name)
+                    continue
+                dest.unlink()
+            shutil.copy2(src, dest)
+            logger.info(
+                "_sync_workspace_files_to_uploads: copied %s -> %s (size=%d)",
+                src.name, dest, dest.stat().st_size,
+            )
+        except Exception as exc:
+            logger.warning(
+                "_sync_workspace_files_to_uploads: failed to copy %s: %s",
+                src_path_str, exc,
+            )
 
 
 async def _enrich_conversation_artifacts(record: dict[str, Any]) -> dict[str, Any]:
@@ -277,6 +349,14 @@ async def send_message(request: Request, conversation_id: str, body: Conversatio
             "send_message: merged %d workspace data sources for conversation %s (total=%d)",
             len(workspace_sources), conversation_id, len(selected_data_sources),
         )
+
+    # ════════════════════════════════════════════════════════════════
+    # Copy workspace file-type data sources into sandbox uploads dir
+    # so the LLM sees them in <uploaded_files> and via `ls /mnt/...`
+    # ════════════════════════════════════════════════════════════════
+    user_id = request.headers.get("x-user-id", "anonymous")
+    if selected_data_sources and user_id:
+        _sync_workspace_files_to_uploads(selected_data_sources, conversation_id, user_id)
 
     run_body = build_run_create_request(body, context, selected_data_sources=selected_data_sources)
     logger.info("run_body: assistant_id=%s context_keys=%s stream_mode=%s", run_body.assistant_id, list(run_body.context or {}), run_body.stream_mode)

@@ -324,15 +324,6 @@ def build_run_create_request(
         ds_block = _format_data_sources_for_prompt(selected_data_sources)
         user_content = f"{ds_block}\n\n{body.content}"
 
-        # [A2] Workspace-attached file data sources → also inject into
-        # <uploaded_files> block so the LLM sees them in the familiar
-        # uploaded-files context (not just in <datasources> XML).
-        # The UploadsMiddleware only lists files physically in the uploads
-        # directory; workspace-attached files live elsewhere.
-        file_ds_entries = _build_workspace_file_upload_block(selected_data_sources)
-        if file_ds_entries:
-            user_content = file_ds_entries + "\n\n" + user_content
-
         # [B] Data source detail system message
         # Compact schema snapshot so the LLM knows table names, columns,
         # file paths, etc. This is always injected on each new run — it
