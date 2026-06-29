@@ -70,6 +70,43 @@ def _get_schema_summary(runtime: Runtime) -> dict[str, Any]:
     return ss
 
 
+_FILE_DATA_SOURCE_TYPES = {"pdf", "docx", "txt", "xlsx", "csv"}
+
+
+def _resolve_file_data_sources(runtime: Runtime) -> list[dict]:
+    """Extract file-type data sources with their file_path from the runtime context.
+
+    Returns a list of dicts like:
+        [{"name": "...", "type": "pdf", "file_path": "/data/..."}]
+    """
+    selected_sources = None
+    if runtime.context:
+        selected_sources = runtime.context.get("selected_data_sources")
+    if not selected_sources:
+        cfg = getattr(runtime, "config", None) or {}
+        selected_sources = (
+            cfg.get("configurable", {}).get("selected_data_sources")
+            or cfg.get("context", {}).get("selected_data_sources")
+        )
+    if not selected_sources:
+        return []
+
+    file_sources = []
+    for ds in selected_sources:
+        ds_type = ds.get("type", "")
+        if ds_type not in _FILE_DATA_SOURCE_TYPES:
+            continue
+        meta = ds.get("metadata") or {}
+        file_path = meta.get("file_path", "")
+        if file_path:
+            file_sources.append({
+                "name": ds.get("name", "?"),
+                "type": ds_type,
+                "file_path": file_path,
+            })
+    return file_sources
+
+
 def _get_server_base_url(runtime: Runtime) -> str:
     """Get the server base URL for constructing absolute download links.
 
@@ -152,6 +189,25 @@ async def generate_report(
     if sql_sources:
         datasource_metadata = sql_sources[0].get("metadata") or {}
         schema_summary = sql_sources[0].get("schema_summary") or {}
+
+    # ════════════════════════════════════════════════════════════════
+    # Auto-resolve document_path from file-type data sources
+    # ════════════════════════════════════════════════════════════════
+    if not document_path:
+        file_sources = _resolve_file_data_sources(runtime)
+        if len(file_sources) == 1:
+            document_path = file_sources[0]["file_path"]
+            logger.info(
+                "[generate_report] auto-resolved document_path from file data source '%s': %s",
+                file_sources[0]["name"], document_path,
+            )
+        elif len(file_sources) > 1:
+            # Multiple file data sources — use the first one and log a warning
+            document_path = file_sources[0]["file_path"]
+            logger.warning(
+                "[generate_report] %d file data sources found, auto-using first: %s",
+                len(file_sources), document_path,
+            )
 
     user_id = runtime.context.get("user_id", "anonymous") if runtime.context else "anonymous"
 

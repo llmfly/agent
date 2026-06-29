@@ -143,9 +143,11 @@ def _format_data_sources_for_prompt(ds_list: list[dict[str, Any]]) -> str:
         "### generate_report 的使用方法",
         "- **有 SQL 数据源时**: generate_report(title=\"报告标题\", user_query=\"分析需求描述\")",
         "  工具会全自动完成数据查询、分析、DOCX 渲染全流程",
-        "- **有上传的文档时**: generate_report(title=\"报告标题\", document_path=\"/mnt/user-data/uploads/文件名\")",
-        "  **禁止先调 parse_pdf/parse_docx**——generate_report 内部自动解析",
-        "- **同时有数据源和文档时**: 两个参数都传",
+        "- **有文件类型数据源时（XML 中包含 <file_path> 的 datasource）**: "
+        "generate_report(title=\"报告标题\", document_path=\"<file_path 的值>\")",
+        "  工具会自动解析该文件",
+        "- **同时有 SQL 和文件数据源时**: 两个参数都传",
+        "  例如: generate_report(title=\"分析报告\", user_query=\"结合文档分析\", document_path=\"/data/.../file.pdf\")",
         "",
         "工具会全自动完成六层流程：Planning → Execution (Worker) → Evidence → Analysis → Composition → Rendering",
         "",
@@ -177,6 +179,12 @@ def _format_data_sources_for_prompt(ds_list: list[dict[str, Any]]) -> str:
             port = meta.get("port", "?")
             database = meta.get("database", "?")
             lines.append(f"    <connection>mysql://{host}:{port}/{database}</connection>")
+
+        # ── File path for file-type data sources ──────────────────
+        if ds_type in ("pdf", "docx", "txt", "xlsx", "csv"):
+            file_path = meta.get("file_path", "")
+            if file_path:
+                lines.append(f"    <file_path>{file_path}</file_path>")
 
         # ── Schema detail (table structures for SQL) ──────────────
         tables = schema_summary.get("tables", [])
