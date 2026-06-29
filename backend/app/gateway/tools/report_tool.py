@@ -209,12 +209,36 @@ async def generate_report(
                 len(file_sources), document_path,
             )
 
+    # ════════════════════════════════════════════════════════════════
+    # Auto-enrich user_query with all available data sources
+    # ════════════════════════════════════════════════════════════════
+    enriched_query = user_query or title
+    sql_sources_for_prompt = _get_sql_sources(runtime)
+    file_sources = _resolve_file_data_sources(runtime)
+    if sql_sources_for_prompt or file_sources:
+        hints = []
+        if file_sources:
+            names = ", ".join(f"{s['name']}({s['type']})" for s in file_sources)
+            hints.append(f"[已关联的文件数据源: {names}]")
+        if sql_sources_for_prompt:
+            ss = schema_summary
+            if ss:
+                table_names = list(ss.keys())
+                hints.append(f"[已关联的SQL数据库，包含 {len(table_names)} 张表: {', '.join(table_names[:8])}{'...' if len(table_names) > 8 else ''}]")
+            else:
+                hints.append("[已关联的SQL数据库]")
+        # Only append if user_query didn't already mention the sources
+        hint_text = " ".join(hints)
+        if hint_text:
+            enriched_query = f"{enriched_query}\n\n注意：{hint_text} 请充分利用所有已关联的数据源进行综合分析。"
+            logger.info("[generate_report] enriched user_query with data source hints")
+
     user_id = runtime.context.get("user_id", "anonymous") if runtime.context else "anonymous"
 
     pipeline = ReportPipeline()
     result = await pipeline.run(
         title=title,
-        user_query=user_query or title,
+        user_query=enriched_query,
         datasource_metadata=datasource_metadata,
         schema_summary=schema_summary,
         document_path=document_path,
