@@ -1,0 +1,3894 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "intelli-engine v1 External API",
+    "version": "0.1.0",
+    "description": "AI Agent Backend Platform API\n\n提供数据源管理、自然语言查询（Text-to-SQL/ES）、报告生成等 AI 能力。\n\n## 核心流程\n1. 注册数据源 (text/file/url/sql/es)\n2. 自然语言查询数据源 → 自动生成 SQL/ES DSL 并执行\n3. 基于数据源生成报告 → 输出 DOCX/HTML\n4. 下载报告产物"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8081",
+      "description": "本地开发"
+    }
+  ],
+  "paths": {
+    "/api/v1/auth/login/local": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login Local",
+        "description": "Local email/password login.",
+        "operationId": "login_local_api_v1_auth_login_local_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_login_local_api_v1_auth_login_local_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Register",
+        "description": "Register a new user account (always 'user' role).\n\nThe first admin is created explicitly through /initialize. This endpoint creates regular users.\nAuto-login by setting the session cookie.",
+        "operationId": "register_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logout",
+        "description": "Logout current user by clearing the cookie.",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/change-password": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Change Password",
+        "description": "Change password for the currently authenticated user.\n\nAlso handles the first-boot setup flow:\n- If new_email is provided, updates email (checks uniqueness)\n- If user.needs_setup is True and new_email is given, clears needs_setup\n- Always increments token_version to invalidate old sessions\n- Re-issues session cookie with new token_version",
+        "operationId": "change_password_api_v1_auth_change_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Get Me",
+        "description": "Get current authenticated user info.",
+        "operationId": "get_me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/setup-status": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Setup Status",
+        "description": "Check if an admin account exists. Returns needs_setup=True when no admin exists.",
+        "operationId": "setup_status_api_v1_auth_setup_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/initialize": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Initialize Admin",
+        "description": "Create the first admin account on initial system setup.\n\nOnly callable when no admin exists. Returns 409 Conflict if an admin\nalready exists.\n\nOn success, the admin account is created with ``needs_setup=False`` and\nthe session cookie is set.",
+        "operationId": "initialize_admin_api_v1_auth_initialize_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitializeAdminRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/oauth/{provider}": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Oauth Login",
+        "description": "Initiate OAuth login flow.\n\nRedirects to the OAuth provider's authorization URL.\nCurrently a placeholder - requires OAuth provider implementation.",
+        "operationId": "oauth_login_api_v1_auth_oauth__provider__get",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/callback/{provider}": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Oauth Callback",
+        "description": "OAuth callback endpoint.\n\nHandles the OAuth provider's callback after user authorization.\nCurrently a placeholder.",
+        "operationId": "oauth_callback_api_v1_auth_callback__provider__get",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Code"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "State"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agents": {
+      "get": {
+        "tags": [
+          "v1-agents"
+        ],
+        "summary": "List Agents",
+        "description": "List all available agents.\n\nReturns predefined system agents and any user-created custom agents.",
+        "operationId": "list_agents_api_v1_agents_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response List Agents Api V1 Agents Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/capabilities": {
+      "get": {
+        "tags": [
+          "v1-capabilities"
+        ],
+        "summary": "Get Capabilities",
+        "description": "List all capabilities supported by this intelli-engine instance.\n\nExternal applications can use this endpoint to discover available\nfeatures and plan their integration accordingly.",
+        "operationId": "get_capabilities_api_v1_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Capabilities Api V1 Capabilities Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{conversation_id}/data-sources": {
+      "post": {
+        "tags": [
+          "v1-data-sources"
+        ],
+        "summary": "Create Datasource",
+        "description": "Register a new data source for a conversation.\n\nSupports five types of data sources:\n\n- **text**: Direct text content provided in the request body.\n- **url**: A URL to be fetched (content stored as reference).\n- **file**: A file previously uploaded to the conversation.\n- **sql**: A SQL database connection. Metadata must include:\n  - `db_type`: `mysql`, `postgresql`, `sqlite`, `mssql`, or `oracle`\n  - `host`, `port`, `database`, `username`, `password`\n  - Schema is auto-discovered on query (no need to provide manually).\n- **es**: An Elasticsearch connection. Metadata must include:\n  - `hosts`: List of ES node URLs (e.g., `[\"http://localhost:9200\"]`)\n  - `index`: Default index to query\n  - `username`, `password` (optional)",
+        "operationId": "create_datasource_api_v1_conversations__conversation_id__data_sources_post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Conversation ID",
+              "title": "Conversation Id"
+            },
+            "description": "Conversation ID"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataSourceCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSourceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "v1-data-sources"
+        ],
+        "summary": "List Datasources",
+        "description": "List all data sources registered for a conversation.",
+        "operationId": "list_datasources_api_v1_conversations__conversation_id__data_sources_get",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Conversation ID",
+              "title": "Conversation Id"
+            },
+            "description": "Conversation ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSourceListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{conversation_id}/data-sources/{datasource_id}": {
+      "get": {
+        "tags": [
+          "v1-data-sources"
+        ],
+        "summary": "Get Datasource",
+        "description": "Get a specific data source by ID.",
+        "operationId": "get_datasource_api_v1_conversations__conversation_id__data_sources__datasource_id__get",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Conversation ID",
+              "title": "Conversation Id"
+            },
+            "description": "Conversation ID"
+          },
+          {
+            "name": "datasource_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Data source ID",
+              "title": "Datasource Id"
+            },
+            "description": "Data source ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSourceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{conversation_id}/data-sources/{datasource_id}/query": {
+      "post": {
+        "tags": [
+          "v1-data-sources"
+        ],
+        "summary": "Query Datasource",
+        "description": "Query a data source using natural language.\n\nFor **SQL** data sources, converts natural language to SQL, executes it,\nand returns structured results (Text-to-SQL).\n\nFor **Elasticsearch** data sources, converts natural language to ES query DSL,\nexecutes it, and returns structured results (Text-to-ES).\n\nFor **text/file/url** data sources, returns the stored content.\n\n### Example\n```json\n{\n  \"query\": \"上个月销量最高的10款产品\",\n  \"max_results\": 50\n}\n```",
+        "operationId": "query_datasource_api_v1_conversations__conversation_id__data_sources__datasource_id__query_post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Conversation ID",
+              "title": "Conversation Id"
+            },
+            "description": "Conversation ID"
+          },
+          {
+            "name": "datasource_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Data source ID",
+              "title": "Datasource Id"
+            },
+            "description": "Data source ID"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataSourceQueryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSourceQueryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{conversation_id}/reports": {
+      "post": {
+        "tags": [
+          "v1-reports"
+        ],
+        "summary": "Create Report",
+        "description": "Generate a report based on data sources and conversation context.\n\nThis is an **asynchronous** endpoint. It creates a report generation job\nand returns immediately with a `report_id`. Use `GET /api/v1/reports/{report_id}`\nto poll for completion.\n\n### Request body\n- **title**: Report title.\n- **format**: List of output formats. Supported: `docx`, `html`, `pdf`.\n- **report_type**: Type of report. Options: `analysis`, `summary`, `research`, `meeting_notes`, `decision_memo`.\n- **datasource_ids**: List of data source IDs to include.\n- **include_conversation**: Whether to include QA from the conversation.\n- **sections**: Optional custom section list. Uses defaults based on `report_type` if omitted.",
+        "operationId": "create_report_api_v1_conversations__conversation_id__reports_post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Conversation ID",
+              "title": "Conversation Id"
+            },
+            "description": "Conversation ID"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/{report_id}": {
+      "get": {
+        "tags": [
+          "v1-reports"
+        ],
+        "summary": "Get Report",
+        "description": "Get report generation status and download URLs.\n\nPoll this endpoint to check the status of a report generation job.\nWhen status is `success`, the response includes the artifact download URLs.\n\n### Status values\n- `queued`: Job is waiting to be processed.\n- `processing`: Report is being generated.\n- `success`: Report is ready. Check `artifacts` for download URLs.\n- `failed`: Generation failed. Check `error` for details.",
+        "operationId": "get_report_api_v1_reports__report_id__get",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Report ID",
+              "title": "Report Id"
+            },
+            "description": "Report ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/artifacts/{artifact_id}": {
+      "get": {
+        "tags": [
+          "v1-artifacts"
+        ],
+        "summary": "Download Artifact",
+        "description": "Download a generated report artifact.\n\nReturns the file content with appropriate Content-Type.\nUse `?download=true` to force download as attachment.\n\n### Example\n- View inline: `GET /api/v1/artifacts/art_xxx`\n- Download: `GET /api/v1/artifacts/art_xxx?download=true`",
+        "operationId": "download_artifact_api_v1_artifacts__artifact_id__get",
+        "parameters": [
+          {
+            "name": "artifact_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Artifact ID",
+              "title": "Artifact Id"
+            },
+            "description": "Artifact ID"
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Download"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AgentCreateRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Agent name (must match ^[A-Za-z0-9-]+$, stored as lowercase)"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Agent description",
+            "default": ""
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "Optional model override"
+          },
+          "tool_groups": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Groups",
+            "description": "Optional tool group whitelist"
+          },
+          "skills": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skills",
+            "description": "Optional skill whitelist (None=all enabled, []=none)"
+          },
+          "soul": {
+            "type": "string",
+            "title": "Soul",
+            "description": "SOUL.md content — agent personality and behavioral guardrails",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "AgentCreateRequest",
+        "description": "Request body for creating a custom agent."
+      },
+      "AgentResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Agent name (hyphen-case)"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Agent description",
+            "default": ""
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "Optional model override"
+          },
+          "tool_groups": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Groups",
+            "description": "Optional tool group whitelist"
+          },
+          "skills": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skills",
+            "description": "Optional skill whitelist (None=all, []=none)"
+          },
+          "soul": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Soul",
+            "description": "SOUL.md content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "AgentResponse",
+        "description": "Response model for a custom agent."
+      },
+      "AgentUpdateRequest": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Updated description"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "Updated model override"
+          },
+          "tool_groups": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Groups",
+            "description": "Updated tool group whitelist"
+          },
+          "skills": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skills",
+            "description": "Updated skill whitelist (None=all, []=none)"
+          },
+          "soul": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Soul",
+            "description": "Updated SOUL.md content"
+          }
+        },
+        "type": "object",
+        "title": "AgentUpdateRequest",
+        "description": "Request body for updating a custom agent."
+      },
+      "AgentsListResponse": {
+        "properties": {
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/AgentResponse"
+            },
+            "type": "array",
+            "title": "Agents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agents"
+        ],
+        "title": "AgentsListResponse",
+        "description": "Response model for listing all custom agents."
+      },
+      "AssistantResponse": {
+        "properties": {
+          "assistant_id": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "graph_id": {
+            "type": "string",
+            "title": "Graph Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Config"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "default": ""
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At",
+            "default": ""
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "assistant_id",
+          "graph_id",
+          "name"
+        ],
+        "title": "AssistantResponse"
+      },
+      "AssistantSearchRequest": {
+        "properties": {
+          "graph_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Graph Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "default": 10
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "AssistantSearchRequest"
+      },
+      "Body_login_local_api_v1_auth_login_local_post": {
+        "properties": {
+          "grant_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^password$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grant Type"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "title": "Password"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "default": ""
+          },
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "format": "password",
+            "title": "Client Secret"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Body_login_local_api_v1_auth_login_local_post"
+      },
+      "Body_upload_files_api_threads__thread_id__uploads_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "contentMediaType": "application/octet-stream"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "Body_upload_files_api_threads__thread_id__uploads_post"
+      },
+      "ChangePasswordRequest": {
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "title": "Current Password"
+          },
+          "new_password": {
+            "type": "string",
+            "minLength": 8,
+            "title": "New Password"
+          },
+          "new_email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "ChangePasswordRequest",
+        "description": "Request model for password change (also handles setup flow)."
+      },
+      "ChannelRestartResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "ChannelRestartResponse"
+      },
+      "ChannelStatusResponse": {
+        "properties": {
+          "service_running": {
+            "type": "boolean",
+            "title": "Service Running"
+          },
+          "channels": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Channels"
+          }
+        },
+        "type": "object",
+        "required": [
+          "service_running",
+          "channels"
+        ],
+        "title": "ChannelStatusResponse"
+      },
+      "ContextSection": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "description": "Summary content",
+            "default": ""
+          },
+          "updatedAt": {
+            "type": "string",
+            "title": "Updatedat",
+            "description": "Last update timestamp",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "ContextSection",
+        "description": "Model for context sections (user and history)."
+      },
+      "CustomSkillContentResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Name of the skill"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Description of what the skill does"
+          },
+          "license": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License",
+            "description": "License information"
+          },
+          "category": {
+            "$ref": "#/components/schemas/SkillCategory",
+            "description": "Category of the skill (public or custom)"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Whether this skill is enabled",
+            "default": true
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Raw SKILL.md content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "category",
+          "content"
+        ],
+        "title": "CustomSkillContentResponse"
+      },
+      "CustomSkillHistoryResponse": {
+        "properties": {
+          "history": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "history"
+        ],
+        "title": "CustomSkillHistoryResponse"
+      },
+      "CustomSkillUpdateRequest": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Replacement SKILL.md content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "CustomSkillUpdateRequest"
+      },
+      "DataSourceCreateRequest": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "file",
+              "url",
+              "sql",
+              "es"
+            ],
+            "title": "Type",
+            "description": "Data source type: text, file, url, sql, es"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Display name for the data source"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content",
+            "description": "Content for text type data source"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url",
+            "description": "URL for url type data source"
+          },
+          "file_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Id",
+            "description": "Upload file ID for file type data source"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata",
+            "description": "Optional metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "name"
+        ],
+        "title": "DataSourceCreateRequest",
+        "description": "Request to register a data source."
+      },
+      "DataSourceListResponse": {
+        "properties": {
+          "datasources": {
+            "items": {
+              "$ref": "#/components/schemas/DataSourceResponse"
+            },
+            "type": "array",
+            "title": "Datasources"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "datasources"
+        ],
+        "title": "DataSourceListResponse",
+        "description": "List of data sources for a conversation."
+      },
+      "DataSourceQueryRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "description": "Natural language query to execute against the data source"
+          },
+          "max_results": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Max Results",
+            "description": "Maximum results to return",
+            "default": 50
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "DataSourceQueryRequest",
+        "description": "Request to query a data source with natural language."
+      },
+      "DataSourceQueryResponse": {
+        "properties": {
+          "datasource_id": {
+            "type": "string",
+            "title": "Datasource Id"
+          },
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "generated_query": {
+            "type": "string",
+            "title": "Generated Query",
+            "description": "The generated SQL/ES query"
+          },
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Columns",
+            "description": "Column names"
+          },
+          "rows": {
+            "items": {
+              "items": {},
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Rows",
+            "description": "Query result rows"
+          },
+          "row_count": {
+            "type": "integer",
+            "title": "Row Count",
+            "default": 0
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "datasource_id",
+          "query",
+          "generated_query"
+        ],
+        "title": "DataSourceQueryResponse",
+        "description": "Response containing query results from a data source."
+      },
+      "DataSourceResponse": {
+        "properties": {
+          "datasource_id": {
+            "type": "string",
+            "title": "Datasource Id",
+            "description": "Unique data source identifier"
+          },
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id",
+            "description": "Parent conversation ID"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "file",
+              "url",
+              "sql",
+              "es"
+            ],
+            "title": "Type",
+            "description": "Data source type"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Display name"
+          },
+          "content_preview": {
+            "type": "string",
+            "title": "Content Preview",
+            "description": "Preview of the content (first 200 chars)",
+            "default": ""
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Status: ready, processing, error",
+            "default": "ready"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "description": "ISO timestamp",
+            "default": ""
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "datasource_id",
+          "conversation_id",
+          "type",
+          "name"
+        ],
+        "title": "DataSourceResponse",
+        "description": "Response model for a data source."
+      },
+      "Fact": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique identifier for the fact"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Fact content"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "description": "Fact category",
+            "default": "context"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence",
+            "description": "Confidence score (0-1)",
+            "default": 0.5
+          },
+          "createdAt": {
+            "type": "string",
+            "title": "Createdat",
+            "description": "Creation timestamp",
+            "default": ""
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "Source thread ID",
+            "default": "unknown"
+          },
+          "sourceError": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourceerror",
+            "description": "Optional description of the prior mistake or wrong approach"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "content"
+        ],
+        "title": "Fact",
+        "description": "Model for a memory fact."
+      },
+      "FactCreateRequest": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Content",
+            "description": "Fact content"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "description": "Fact category",
+            "default": "context"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "description": "Confidence score (0-1)",
+            "default": 0.5
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "FactCreateRequest",
+        "description": "Request model for creating a memory fact."
+      },
+      "FactPatchRequest": {
+        "properties": {
+          "content": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content",
+            "description": "Fact content"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "Fact category"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence",
+            "description": "Confidence score (0-1)"
+          }
+        },
+        "type": "object",
+        "title": "FactPatchRequest",
+        "description": "PATCH request model that preserves existing values for omitted fields."
+      },
+      "FeedbackCreateRequest": {
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "title": "Rating",
+            "description": "Feedback rating: +1 (positive) or -1 (negative)"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment",
+            "description": "Optional text feedback"
+          },
+          "message_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Id",
+            "description": "Optional: scope feedback to a specific message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rating"
+        ],
+        "title": "FeedbackCreateRequest"
+      },
+      "FeedbackResponse": {
+        "properties": {
+          "feedback_id": {
+            "type": "string",
+            "title": "Feedback Id"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "message_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Id"
+          },
+          "rating": {
+            "type": "integer",
+            "title": "Rating"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "feedback_id",
+          "run_id",
+          "thread_id",
+          "rating"
+        ],
+        "title": "FeedbackResponse"
+      },
+      "FeedbackStatsResponse": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "default": 0
+          },
+          "positive": {
+            "type": "integer",
+            "title": "Positive",
+            "default": 0
+          },
+          "negative": {
+            "type": "integer",
+            "title": "Negative",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id"
+        ],
+        "title": "FeedbackStatsResponse"
+      },
+      "FeedbackUpsertRequest": {
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "title": "Rating",
+            "description": "Feedback rating: +1 (positive) or -1 (negative)"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment",
+            "description": "Optional text feedback"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rating"
+        ],
+        "title": "FeedbackUpsertRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HistoryContext": {
+        "properties": {
+          "recentMonths": {
+            "$ref": "#/components/schemas/ContextSection"
+          },
+          "earlierContext": {
+            "$ref": "#/components/schemas/ContextSection"
+          },
+          "longTermBackground": {
+            "$ref": "#/components/schemas/ContextSection"
+          }
+        },
+        "type": "object",
+        "title": "HistoryContext",
+        "description": "Model for history context."
+      },
+      "HistoryEntry": {
+        "properties": {
+          "checkpoint_id": {
+            "type": "string",
+            "title": "Checkpoint Id"
+          },
+          "parent_checkpoint_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Checkpoint Id"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "values": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Values"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "next": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Next"
+          }
+        },
+        "type": "object",
+        "required": [
+          "checkpoint_id"
+        ],
+        "title": "HistoryEntry",
+        "description": "Single checkpoint history entry."
+      },
+      "InitializeAdminRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "InitializeAdminRequest",
+        "description": "Request model for first-boot admin account creation."
+      },
+      "LoginResponse": {
+        "properties": {
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          },
+          "needs_setup": {
+            "type": "boolean",
+            "title": "Needs Setup",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "expires_in"
+        ],
+        "title": "LoginResponse",
+        "description": "Response model for login — token only lives in HttpOnly cookie."
+      },
+      "McpConfigResponse": {
+        "properties": {
+          "mcp_servers": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/McpServerConfigResponse"
+            },
+            "type": "object",
+            "title": "Mcp Servers",
+            "description": "Map of MCP server name to configuration"
+          }
+        },
+        "type": "object",
+        "title": "McpConfigResponse",
+        "description": "Response model for MCP configuration."
+      },
+      "McpConfigUpdateRequest": {
+        "properties": {
+          "mcp_servers": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/McpServerConfigResponse"
+            },
+            "type": "object",
+            "title": "Mcp Servers",
+            "description": "Map of MCP server name to configuration"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mcp_servers"
+        ],
+        "title": "McpConfigUpdateRequest",
+        "description": "Request model for updating MCP configuration."
+      },
+      "McpOAuthConfigResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Whether OAuth token injection is enabled",
+            "default": true
+          },
+          "token_url": {
+            "type": "string",
+            "title": "Token Url",
+            "description": "OAuth token endpoint URL",
+            "default": ""
+          },
+          "grant_type": {
+            "type": "string",
+            "enum": [
+              "client_credentials",
+              "refresh_token"
+            ],
+            "title": "Grant Type",
+            "description": "OAuth grant type",
+            "default": "client_credentials"
+          },
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id",
+            "description": "OAuth client ID"
+          },
+          "client_secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Secret",
+            "description": "OAuth client secret"
+          },
+          "refresh_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token",
+            "description": "OAuth refresh token"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope",
+            "description": "OAuth scope"
+          },
+          "audience": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audience",
+            "description": "OAuth audience"
+          },
+          "token_field": {
+            "type": "string",
+            "title": "Token Field",
+            "description": "Token response field containing access token",
+            "default": "access_token"
+          },
+          "token_type_field": {
+            "type": "string",
+            "title": "Token Type Field",
+            "description": "Token response field containing token type",
+            "default": "token_type"
+          },
+          "expires_in_field": {
+            "type": "string",
+            "title": "Expires In Field",
+            "description": "Token response field containing expires-in seconds",
+            "default": "expires_in"
+          },
+          "default_token_type": {
+            "type": "string",
+            "title": "Default Token Type",
+            "description": "Default token type when response omits token_type",
+            "default": "Bearer"
+          },
+          "refresh_skew_seconds": {
+            "type": "integer",
+            "title": "Refresh Skew Seconds",
+            "description": "Refresh this many seconds before expiry",
+            "default": 60
+          },
+          "extra_token_params": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Extra Token Params",
+            "description": "Additional form params sent to token endpoint"
+          }
+        },
+        "type": "object",
+        "title": "McpOAuthConfigResponse",
+        "description": "OAuth configuration for an MCP server."
+      },
+      "McpServerConfigResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Whether this MCP server is enabled",
+            "default": true
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "Transport type: 'stdio', 'sse', or 'http'",
+            "default": "stdio"
+          },
+          "command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Command",
+            "description": "Command to execute to start the MCP server (for stdio type)"
+          },
+          "args": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Args",
+            "description": "Arguments to pass to the command (for stdio type)"
+          },
+          "env": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Env",
+            "description": "Environment variables for the MCP server"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url",
+            "description": "URL of the MCP server (for sse or http type)"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Headers",
+            "description": "HTTP headers to send (for sse or http type)"
+          },
+          "oauth": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/McpOAuthConfigResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "OAuth configuration for MCP HTTP/SSE servers"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Human-readable description of what this MCP server provides",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "McpServerConfigResponse",
+        "description": "Response model for MCP server configuration."
+      },
+      "MemoryConfigResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Whether memory is enabled"
+          },
+          "storage_path": {
+            "type": "string",
+            "title": "Storage Path",
+            "description": "Path to memory storage file"
+          },
+          "debounce_seconds": {
+            "type": "integer",
+            "title": "Debounce Seconds",
+            "description": "Debounce time for memory updates"
+          },
+          "max_facts": {
+            "type": "integer",
+            "title": "Max Facts",
+            "description": "Maximum number of facts to store"
+          },
+          "fact_confidence_threshold": {
+            "type": "number",
+            "title": "Fact Confidence Threshold",
+            "description": "Minimum confidence threshold for facts"
+          },
+          "injection_enabled": {
+            "type": "boolean",
+            "title": "Injection Enabled",
+            "description": "Whether memory injection is enabled"
+          },
+          "max_injection_tokens": {
+            "type": "integer",
+            "title": "Max Injection Tokens",
+            "description": "Maximum tokens for memory injection"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "storage_path",
+          "debounce_seconds",
+          "max_facts",
+          "fact_confidence_threshold",
+          "injection_enabled",
+          "max_injection_tokens"
+        ],
+        "title": "MemoryConfigResponse",
+        "description": "Response model for memory configuration."
+      },
+      "MemoryResponse": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Memory schema version",
+            "default": "1.0"
+          },
+          "lastUpdated": {
+            "type": "string",
+            "title": "Lastupdated",
+            "description": "Last update timestamp",
+            "default": ""
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserContext"
+          },
+          "history": {
+            "$ref": "#/components/schemas/HistoryContext"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/Fact"
+            },
+            "type": "array",
+            "title": "Facts"
+          }
+        },
+        "type": "object",
+        "title": "MemoryResponse",
+        "description": "Response model for memory data."
+      },
+      "MemoryStatusResponse": {
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/MemoryConfigResponse"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MemoryResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "config",
+          "data"
+        ],
+        "title": "MemoryStatusResponse",
+        "description": "Response model for memory status."
+      },
+      "MessageResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "MessageResponse",
+        "description": "Generic message response."
+      },
+      "ModelResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Unique identifier for the model"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Actual provider model identifier"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name",
+            "description": "Human-readable name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Model description"
+          },
+          "supports_thinking": {
+            "type": "boolean",
+            "title": "Supports Thinking",
+            "description": "Whether model supports thinking mode",
+            "default": false
+          },
+          "supports_reasoning_effort": {
+            "type": "boolean",
+            "title": "Supports Reasoning Effort",
+            "description": "Whether model supports reasoning effort",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "model"
+        ],
+        "title": "ModelResponse",
+        "description": "Response model for model information."
+      },
+      "ModelsListResponse": {
+        "properties": {
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelResponse"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "token_usage": {
+            "$ref": "#/components/schemas/TokenUsageResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "models",
+          "token_usage"
+        ],
+        "title": "ModelsListResponse",
+        "description": "Response model for listing all models."
+      },
+      "RegisterRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "RegisterRequest",
+        "description": "Request model for user registration."
+      },
+      "ReportArtifact": {
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "title": "Artifact Id",
+            "description": "Artifact ID for download"
+          },
+          "format": {
+            "type": "string",
+            "title": "Format",
+            "description": "File format: docx, pdf, html"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename",
+            "description": "File name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url",
+            "description": "Download URL"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "format",
+          "filename",
+          "url"
+        ],
+        "title": "ReportArtifact",
+        "description": "A report output artifact."
+      },
+      "ReportCreateRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Report title"
+          },
+          "format": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "docx",
+                "pdf",
+                "html"
+              ]
+            },
+            "type": "array",
+            "title": "Format",
+            "description": "Output formats",
+            "default": [
+              "docx",
+              "html"
+            ]
+          },
+          "report_type": {
+            "type": "string",
+            "enum": [
+              "analysis",
+              "summary",
+              "research",
+              "meeting_notes",
+              "decision_memo"
+            ],
+            "title": "Report Type",
+            "description": "Report type",
+            "default": "analysis"
+          },
+          "datasource_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Datasource Ids",
+            "description": "Data source IDs to include"
+          },
+          "user_query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Query",
+            "description": "Natural language query for SQL/ES data sources. Used to trigger Text-to-SQL/ES queries before report generation."
+          },
+          "include_conversation": {
+            "type": "boolean",
+            "title": "Include Conversation",
+            "description": "Include conversation QA in report",
+            "default": true
+          },
+          "include_citations": {
+            "type": "boolean",
+            "title": "Include Citations",
+            "description": "Include citations",
+            "default": true
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "description": "Report language",
+            "default": "zh-CN"
+          },
+          "style": {
+            "type": "string",
+            "title": "Style",
+            "description": "Report style",
+            "default": "business"
+          },
+          "sections": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sections",
+            "description": "Custom section list (overrides defaults)"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata",
+            "description": "Optional metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "ReportCreateRequest",
+        "description": "Request to generate a report."
+      },
+      "ReportResponse": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "title": "Report Id",
+            "description": "Unique report ID"
+          },
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id",
+            "description": "Parent conversation ID"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Status: queued, processing, success, failed",
+            "default": "queued"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "description": "ISO timestamp",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "report_id",
+          "conversation_id"
+        ],
+        "title": "ReportResponse",
+        "description": "Response for report creation (async)."
+      },
+      "ReportStatusResponse": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "title": "Report Id"
+          },
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "default": ""
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "default": ""
+          },
+          "artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/ReportArtifact"
+            },
+            "type": "array",
+            "title": "Artifacts"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "default": ""
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At",
+            "default": ""
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "report_id",
+          "conversation_id",
+          "status"
+        ],
+        "title": "ReportStatusResponse",
+        "description": "Full report status including artifacts on completion."
+      },
+      "RunCreateRequest": {
+        "properties": {
+          "assistant_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assistant Id",
+            "description": "Agent / assistant to use"
+          },
+          "input": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input",
+            "description": "Graph input (e.g. {messages: [...]})"
+          },
+          "command": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Command",
+            "description": "LangGraph Command"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata",
+            "description": "Run metadata"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config",
+            "description": "RunnableConfig overrides"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "DeerFlow context overrides (model_name, thinking_enabled, etc.)"
+          },
+          "webhook": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook",
+            "description": "Completion callback URL"
+          },
+          "checkpoint_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkpoint Id",
+            "description": "Resume from checkpoint"
+          },
+          "checkpoint": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkpoint",
+            "description": "Full checkpoint object"
+          },
+          "interrupt_before": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string",
+                "const": "*"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interrupt Before",
+            "description": "Nodes to interrupt before"
+          },
+          "interrupt_after": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string",
+                "const": "*"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interrupt After",
+            "description": "Nodes to interrupt after"
+          },
+          "stream_mode": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream Mode",
+            "description": "Stream mode(s)"
+          },
+          "stream_subgraphs": {
+            "type": "boolean",
+            "title": "Stream Subgraphs",
+            "description": "Include subgraph events",
+            "default": false
+          },
+          "stream_resumable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream Resumable",
+            "description": "SSE resumable mode"
+          },
+          "on_disconnect": {
+            "type": "string",
+            "enum": [
+              "cancel",
+              "continue"
+            ],
+            "title": "On Disconnect",
+            "description": "Behaviour on SSE disconnect",
+            "default": "cancel"
+          },
+          "on_completion": {
+            "type": "string",
+            "enum": [
+              "delete",
+              "keep"
+            ],
+            "title": "On Completion",
+            "description": "Delete temp thread on completion",
+            "default": "keep"
+          },
+          "multitask_strategy": {
+            "type": "string",
+            "enum": [
+              "reject",
+              "rollback",
+              "interrupt",
+              "enqueue"
+            ],
+            "title": "Multitask Strategy",
+            "description": "Concurrency strategy",
+            "default": "reject"
+          },
+          "after_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After Seconds",
+            "description": "Delayed execution"
+          },
+          "if_not_exists": {
+            "type": "string",
+            "enum": [
+              "reject",
+              "create"
+            ],
+            "title": "If Not Exists",
+            "description": "Thread creation policy",
+            "default": "create"
+          },
+          "feedback_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback Keys",
+            "description": "LangSmith feedback keys"
+          }
+        },
+        "type": "object",
+        "title": "RunCreateRequest"
+      },
+      "RunResponse": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "assistant_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assistant Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "kwargs": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Kwargs"
+          },
+          "multitask_strategy": {
+            "type": "string",
+            "title": "Multitask Strategy",
+            "default": "reject"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "default": ""
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At",
+            "default": ""
+          },
+          "total_input_tokens": {
+            "type": "integer",
+            "title": "Total Input Tokens",
+            "default": 0
+          },
+          "total_output_tokens": {
+            "type": "integer",
+            "title": "Total Output Tokens",
+            "default": 0
+          },
+          "total_tokens": {
+            "type": "integer",
+            "title": "Total Tokens",
+            "default": 0
+          },
+          "llm_call_count": {
+            "type": "integer",
+            "title": "Llm Call Count",
+            "default": 0
+          },
+          "lead_agent_tokens": {
+            "type": "integer",
+            "title": "Lead Agent Tokens",
+            "default": 0
+          },
+          "subagent_tokens": {
+            "type": "integer",
+            "title": "Subagent Tokens",
+            "default": 0
+          },
+          "middleware_tokens": {
+            "type": "integer",
+            "title": "Middleware Tokens",
+            "default": 0
+          },
+          "message_count": {
+            "type": "integer",
+            "title": "Message Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "thread_id",
+          "status"
+        ],
+        "title": "RunResponse"
+      },
+      "SkillCategory": {
+        "type": "string",
+        "enum": [
+          "public",
+          "custom"
+        ],
+        "title": "SkillCategory",
+        "description": "Source category for a skill.\n\n- ``PUBLIC``: built-in skill bundled with the platform, read-only.\n- ``CUSTOM``: user-authored skill that can be edited or deleted."
+      },
+      "SkillInstallRequest": {
+        "properties": {
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id",
+            "description": "The thread ID where the .skill file is located"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path",
+            "description": "Virtual path to the .skill file (e.g., mnt/user-data/outputs/my-skill.skill)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "thread_id",
+          "path"
+        ],
+        "title": "SkillInstallRequest",
+        "description": "Request model for installing a skill from a .skill file."
+      },
+      "SkillInstallResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Whether the installation was successful"
+          },
+          "skill_name": {
+            "type": "string",
+            "title": "Skill Name",
+            "description": "Name of the installed skill"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Installation result message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "skill_name",
+          "message"
+        ],
+        "title": "SkillInstallResponse",
+        "description": "Response model for skill installation."
+      },
+      "SkillResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Name of the skill"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Description of what the skill does"
+          },
+          "license": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License",
+            "description": "License information"
+          },
+          "category": {
+            "$ref": "#/components/schemas/SkillCategory",
+            "description": "Category of the skill (public or custom)"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Whether this skill is enabled",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "category"
+        ],
+        "title": "SkillResponse",
+        "description": "Response model for skill information."
+      },
+      "SkillRollbackRequest": {
+        "properties": {
+          "history_index": {
+            "type": "integer",
+            "title": "History Index",
+            "description": "History entry index to restore from, defaulting to the latest change.",
+            "default": -1
+          }
+        },
+        "type": "object",
+        "title": "SkillRollbackRequest"
+      },
+      "SkillUpdateRequest": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Whether to enable or disable the skill"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled"
+        ],
+        "title": "SkillUpdateRequest",
+        "description": "Request model for updating a skill."
+      },
+      "SkillsListResponse": {
+        "properties": {
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/SkillResponse"
+            },
+            "type": "array",
+            "title": "Skills"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skills"
+        ],
+        "title": "SkillsListResponse",
+        "description": "Response model for listing all skills."
+      },
+      "SuggestionMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "Message role: user|assistant"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Message content as plain text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "SuggestionMessage"
+      },
+      "SuggestionsRequest": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestionMessage"
+            },
+            "type": "array",
+            "title": "Messages",
+            "description": "Recent conversation messages"
+          },
+          "n": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "N",
+            "description": "Number of suggestions to generate",
+            "default": 3
+          },
+          "model_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Name",
+            "description": "Optional model override"
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "SuggestionsRequest"
+      },
+      "SuggestionsResponse": {
+        "properties": {
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions",
+            "description": "Suggested follow-up questions"
+          }
+        },
+        "type": "object",
+        "title": "SuggestionsResponse"
+      },
+      "ThreadCreateRequest": {
+        "properties": {
+          "thread_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Id",
+            "description": "Optional thread ID (auto-generated if omitted)"
+          },
+          "assistant_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assistant Id",
+            "description": "Associate thread with an assistant"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata",
+            "description": "Initial metadata"
+          }
+        },
+        "type": "object",
+        "title": "ThreadCreateRequest",
+        "description": "Request body for creating a thread."
+      },
+      "ThreadDeleteResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "ThreadDeleteResponse",
+        "description": "Response model for thread cleanup."
+      },
+      "ThreadHistoryRequest": {
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "description": "Maximum entries",
+            "default": 10
+          },
+          "before": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before",
+            "description": "Cursor for pagination"
+          }
+        },
+        "type": "object",
+        "title": "ThreadHistoryRequest",
+        "description": "Request body for checkpoint history."
+      },
+      "ThreadPatchRequest": {
+        "properties": {
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata",
+            "description": "Metadata to merge"
+          }
+        },
+        "type": "object",
+        "title": "ThreadPatchRequest",
+        "description": "Request body for patching thread metadata."
+      },
+      "ThreadResponse": {
+        "properties": {
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id",
+            "description": "Unique thread identifier"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Thread status: idle, busy, interrupted, error",
+            "default": "idle"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "description": "ISO timestamp",
+            "default": ""
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At",
+            "description": "ISO timestamp",
+            "default": ""
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata",
+            "description": "Thread metadata"
+          },
+          "values": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Values",
+            "description": "Current state channel values"
+          },
+          "interrupts": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Interrupts",
+            "description": "Pending interrupts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "thread_id"
+        ],
+        "title": "ThreadResponse",
+        "description": "Response model for a single thread."
+      },
+      "ThreadSearchRequest": {
+        "properties": {
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata",
+            "description": "Metadata filter (exact match)"
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "description": "Maximum results",
+            "default": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset",
+            "description": "Pagination offset",
+            "default": 0
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status",
+            "description": "Filter by thread status"
+          }
+        },
+        "type": "object",
+        "title": "ThreadSearchRequest",
+        "description": "Request body for searching threads."
+      },
+      "ThreadStateResponse": {
+        "properties": {
+          "values": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Values",
+            "description": "Current channel values"
+          },
+          "next": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Next",
+            "description": "Next tasks to execute"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata",
+            "description": "Checkpoint metadata"
+          },
+          "checkpoint": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Checkpoint",
+            "description": "Checkpoint info"
+          },
+          "checkpoint_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkpoint Id",
+            "description": "Current checkpoint ID"
+          },
+          "parent_checkpoint_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Checkpoint Id",
+            "description": "Parent checkpoint ID"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At",
+            "description": "Checkpoint timestamp"
+          },
+          "tasks": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Tasks",
+            "description": "Interrupted task details"
+          }
+        },
+        "type": "object",
+        "title": "ThreadStateResponse",
+        "description": "Response model for thread state."
+      },
+      "ThreadStateUpdateRequest": {
+        "properties": {
+          "values": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Values",
+            "description": "Channel values to merge"
+          },
+          "checkpoint_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkpoint Id",
+            "description": "Checkpoint to branch from"
+          },
+          "checkpoint": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkpoint",
+            "description": "Full checkpoint object"
+          },
+          "as_node": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Node",
+            "description": "Node identity for the update"
+          }
+        },
+        "type": "object",
+        "title": "ThreadStateUpdateRequest",
+        "description": "Request body for updating thread state (human-in-the-loop resume)."
+      },
+      "ThreadTokenUsageCallerBreakdown": {
+        "properties": {
+          "lead_agent": {
+            "type": "integer",
+            "title": "Lead Agent",
+            "default": 0
+          },
+          "subagent": {
+            "type": "integer",
+            "title": "Subagent",
+            "default": 0
+          },
+          "middleware": {
+            "type": "integer",
+            "title": "Middleware",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "ThreadTokenUsageCallerBreakdown"
+      },
+      "ThreadTokenUsageModelBreakdown": {
+        "properties": {
+          "tokens": {
+            "type": "integer",
+            "title": "Tokens",
+            "default": 0
+          },
+          "runs": {
+            "type": "integer",
+            "title": "Runs",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "ThreadTokenUsageModelBreakdown"
+      },
+      "ThreadTokenUsageResponse": {
+        "properties": {
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "total_tokens": {
+            "type": "integer",
+            "title": "Total Tokens",
+            "default": 0
+          },
+          "total_input_tokens": {
+            "type": "integer",
+            "title": "Total Input Tokens",
+            "default": 0
+          },
+          "total_output_tokens": {
+            "type": "integer",
+            "title": "Total Output Tokens",
+            "default": 0
+          },
+          "total_runs": {
+            "type": "integer",
+            "title": "Total Runs",
+            "default": 0
+          },
+          "by_model": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ThreadTokenUsageModelBreakdown"
+            },
+            "type": "object",
+            "title": "By Model"
+          },
+          "by_caller": {
+            "$ref": "#/components/schemas/ThreadTokenUsageCallerBreakdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "thread_id"
+        ],
+        "title": "ThreadTokenUsageResponse"
+      },
+      "TokenUsageResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Whether token usage display is enabled",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "TokenUsageResponse",
+        "description": "Token usage display configuration."
+      },
+      "UploadLimits": {
+        "properties": {
+          "max_files": {
+            "type": "integer",
+            "title": "Max Files"
+          },
+          "max_file_size": {
+            "type": "integer",
+            "title": "Max File Size"
+          },
+          "max_total_size": {
+            "type": "integer",
+            "title": "Max Total Size"
+          }
+        },
+        "type": "object",
+        "required": [
+          "max_files",
+          "max_file_size",
+          "max_total_size"
+        ],
+        "title": "UploadLimits",
+        "description": "Application-level upload limits exposed to clients."
+      },
+      "UploadResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "files": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "skipped_files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Skipped Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "files",
+          "message"
+        ],
+        "title": "UploadResponse",
+        "description": "Response model for file upload."
+      },
+      "UserContext": {
+        "properties": {
+          "workContext": {
+            "$ref": "#/components/schemas/ContextSection"
+          },
+          "personalContext": {
+            "$ref": "#/components/schemas/ContextSection"
+          },
+          "topOfMind": {
+            "$ref": "#/components/schemas/ContextSection"
+          }
+        },
+        "type": "object",
+        "title": "UserContext",
+        "description": "Model for user context."
+      },
+      "UserProfileResponse": {
+        "properties": {
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content",
+            "description": "USER.md content, or null if not yet created"
+          }
+        },
+        "type": "object",
+        "title": "UserProfileResponse",
+        "description": "Response model for the global user profile (USER.md)."
+      },
+      "UserProfileUpdateRequest": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "USER.md content — describes the user's background and preferences",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "UserProfileUpdateRequest",
+        "description": "Request body for setting the global user profile."
+      },
+      "UserResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "system_role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "user"
+            ],
+            "title": "System Role"
+          },
+          "needs_setup": {
+            "type": "boolean",
+            "title": "Needs Setup",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "system_role"
+        ],
+        "title": "UserResponse",
+        "description": "Response model for user info endpoint."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  },
+  "tags": []
+}

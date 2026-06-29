@@ -1,0 +1,66 @@
+{
+  "run_id": "3a30f0d2-64b2-48bc-98dd-0d41860077ae",
+  "conversation_id": "dcf4c2a5-3fc0-419f-9fbd-3726643f663b",
+  "agent_id": null,
+  "status": "success",
+  "message": {
+    "message_id": "18",
+    "run_id": "3a30f0d2-64b2-48bc-98dd-0d41860077ae",
+    "role": "assistant",
+    "content": "以上就是完整的海关交易数据统计结果！请问您是否需要我对报告做以下调整：\n\n- 🔍 **深入分析** — 聚焦某个国家/商品/时间段的详细数据\n- 📄 **导出PDF** — 将报告转为PDF格式\n- ➕ **补充数据** — 查询其他关联表（如 `trade_records_hs_code`、`hs_code_collection`）\n- 🎨 **修改格式** — 调整报告结构或语言风格\n\n请告诉我您的具体需求！",
+    "created_at": "2026-06-24T08:16:30.463173+00:00",
+    "metadata": {
+      "caller": "lead_agent",
+      "usage": {
+        "input_tokens": 27236,
+        "output_tokens": 147,
+        "total_tokens": 27383,
+        "input_token_details": {
+          "cache_read": 27136
+        },
+        "output_token_details": {
+          "reasoning": 40
+        }
+      },
+      "latency_ms": 2313,
+      "llm_call_index": 2
+    }
+  },
+  "artifacts": [
+    {
+      "artifact_id": "art_file_636fe771daae",
+      "conversation_id": "dcf4c2a5-3fc0-419f-9fbd-3726643f663b",
+      "run_id": "3a30f0d2-64b2-48bc-98dd-0d41860077ae",
+      "filename": "海关交易数据统计分析报告.md",
+      "mime_type": null,
+      "url": "/api/v1/artifacts/art_file_636fe771daae/download",
+      "created_at": "2026-06-24T08:16:30.515705",
+      "metadata": {
+        "format": "md",
+        "name": "海关交易数据统计分析报告.md",
+        "status": "success",
+        "artifact_id": "art_1fc47a0f6a2b"
+      }
+    },
+    {
+      "artifact_id": "art_file_2d724b84dcee",
+      "conversation_id": "dcf4c2a5-3fc0-419f-9fbd-3726643f663b",
+      "run_id": "3a30f0d2-64b2-48bc-98dd-0d41860077ae",
+      "filename": "中国海关贸易统计数据分析报告.md",
+      "mime_type": null,
+      "url": "/api/v1/artifacts/art_file_2d724b84dcee/download",
+      "created_at": "2026-06-24T08:16:30.508651",
+      "metadata": {
+        "format": "md",
+        "name": "中国海关贸易统计数据分析报告.md",
+        "status": "success",
+        "artifact_id": "art_269bc23786dd"
+      }
+    }
+  ],
+  "usage": {
+    "input_tokens": 53361,
+    "output_tokens": 1242,
+    "total_tokens": 54603
+  }
+}

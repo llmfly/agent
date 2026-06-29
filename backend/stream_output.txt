@@ -1,0 +1,1198 @@
+Stream output for conversation: bbaf7b91-2422-455f-a38d-a74220df07da
+Response status: 200
+
+[Event: run.started] Data: {"run_id": "03edbb38-64fc-4539-a023-c71a3e970480", "conversation_id": "bbaf7b91-2422-455f-a38d-a74220df07da", "agent_id": null}
+[Event: message.delta] 帮我统计海关交易数据，并帮我生成报告。
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 好的
+[Event: message.delta] ！
+[Event: message.delta] 让我
+[Event: message.delta] 先
+[Event: message.delta] 了解一下
+[Event: message.delta] 当前
+[Event: message.delta] 可
+[Event: message.delta] 用的
+[Event: message.delta] 数据
+[Event: message.delta] 源
+[Event: message.delta] 和
+[Event: message.delta] 已有的
+[Event: message.delta] 工作
+[Event: message.delta] 成果
+[Event: message.delta] 。
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 海关
+[Event: message.delta] 交易
+[Event: message.delta] 数据
+[Event: message.delta] 统计
+[Event: message.delta] 请求
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] (empty)
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] SELECT
+[Event: message.delta]  `
+[Event: message.delta] TABLE
+[Event: message.delta] _NAME
+[Event: message.delta] `,
+[Event: message.delta]  `
+[Event: message.delta] TABLE
+[Event: message.delta] _RO
+[Event: message.delta] WS
+[Event: message.delta] `,
+[Event: message.delta]  `
+[Event: message.delta] TABLE
+[Event: message.delta] _COMM
+[Event: message.delta] ENT
+[Event: message.delta] `
+[Event: message.delta]  FROM
+[Event: message.delta]  `
+[Event: message.delta] information
+[Event: message.delta] _s
+[Event: message.delta] chema
+[Event: message.delta] `.`
+[Event: message.delta] t
+[Event: message.delta] ables
+[Event: message.delta] `
+[Event: message.delta]  WHERE
+[Event: message.delta]  `
+[Event: message.delta] TABLE
+[Event: message.delta] _SC
+[Event: message.delta] HE
+[Event: message.delta] MA
+[Event: message.delta] `
+[Event: message.delta]  =
+[Event: message.delta]  DAT
+[Event: message.delta] ABASE
+[Event: message.delta] ()
+[Event: message.delta]  LIM
+[Event: message.delta] IT
+[Event: message.delta]  
+[Event: message.delta] 50
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] Successfully queried database '本地测试MySQL'
+SQL Statement: SELECT `TABLE_NAME`, `TABLE_ROWS`, `TABLE_COMMENT` FROM `information_schema`.`tables` WHERE `TABLE_SCHEMA` = DATABASE() LIMIT 50
+Returned 16 rows:
+TABLE_NAME | TABLE_ROWS | TABLE_COMMENT
+---------------------------------------
+hs_code_collection | 6796 | 数据采集任务表
+hs_code_collection_special | 280 | 数据采集任务表
+hs_code_crawl_task | 219759 | HS编码爬虫抓取任务表
+hs_code_crawl_task_special | 185937 | HS编码爬虫抓取任务表
+similar_trade_records | 2747 | 相似交易记录表
+similar_trade_records_hs_code | 375859 | 相似交易记录表
+similar_trade_records_qr | 23381 | 相似交易记录表
+spider_crawl_tasks | 8008 | 爬虫待爬任务列表
+spider_crawl_tasks_qr | 7158 | 爬虫待爬任务列表
+spider_crawl_tasks_special | 855 | 爬虫待爬任务列表
+spider_queue_company_list | 577 | 公司列表表
+spider_queue_company_list_qr | 225 | 公司列表表
+trade_records | 25294 | 海关交易记录表
+trade_records_hs_code | 140689 | 海关交易记录表
+trade_records_hs_code_special | 3421370 | 海关交易记录表
+trade_records_qr | 151970 | 海关交易记录表
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 太好了
+[Event: message.delta] ！
+[Event: message.delta] 当前
+[Event: message.delta] 数据库
+[Event: message.delta] 中共
+[Event: message.delta] 有
+[Event: message.delta]  **
+[Event: message.delta] 16
+[Event: message.delta] 张
+[Event: message.delta] 表
+[Event: message.delta] **
+[Event: message.delta] ，
+[Event: message.delta] 主要的
+[Event: message.delta] 交易
+[Event: message.delta] 数据
+[Event: message.delta] 表
+[Event: message.delta] 包括
+[Event: message.delta] ：
+
+
+[Event: message.delta] |
+[Event: message.delta]  
+[Event: message.delta] 表
+[Event: message.delta] 名
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 记录
+[Event: message.delta] 数
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 说明
+[Event: message.delta]  |
+
+[Event: message.delta] |
+[Event: message.delta] ------
+[Event: message.delta] |
+[Event: message.delta] --------
+[Event: message.delta] |
+[Event: message.delta] ------
+[Event: message.delta] |
+
+[Event: message.delta] |
+[Event: message.delta]  `
+[Event: message.delta] trade
+[Event: message.delta] _rec
+[Event: message.delta] ords
+[Event: message.delta] `
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 25
+[Event: message.delta] ,
+[Event: message.delta] 294
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 基础
+[Event: message.delta] 海关
+[Event: message.delta] 交易
+[Event: message.delta] 记录
+[Event: message.delta]  |
+
+[Event: message.delta] |
+[Event: message.delta]  `
+[Event: message.delta] trade
+[Event: message.delta] _rec
+[Event: message.delta] ords
+[Event: message.delta] _h
+[Event: message.delta] s
+[Event: message.delta] _code
+[Event: message.delta] `
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 140
+[Event: message.delta] ,
+[Event: message.delta] 689
+[Event: message.delta]  |
+[Event: message.delta]  HS
+[Event: message.delta] 编码
+[Event: message.delta] 交易
+[Event: message.delta] 记录
+[Event: message.delta]  |
+
+[Event: message.delta] |
+[Event: message.delta]  `
+[Event: message.delta] trade
+[Event: message.delta] _rec
+[Event: message.delta] ords
+[Event: message.delta] _h
+[Event: message.delta] s
+[Event: message.delta] _code
+[Event: message.delta] _s
+[Event: message.delta] pecial
+[Event: message.delta] `
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 3
+[Event: message.delta] ,
+[Event: message.delta] 421
+[Event: message.delta] ,
+[Event: message.delta] 370
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 大型
+[Event: message.delta] HS
+[Event: message.delta] 编码
+[Event: message.delta] 交易
+[Event: message.delta] 记录
+[Event: message.delta] （
+[Event: message.delta] 含
+[Event: message.delta] 202
+[Event: message.delta] 5
+[Event: message.delta] Q
+[Event: message.delta] 4
+[Event: message.delta] -
+[Event: message.delta] 202
+[Event: message.delta] 6
+[Event: message.delta] H
+[Event: message.delta] 1
+[Event: message.delta] 数据
+[Event: message.delta] ）
+[Event: message.delta]  |
+
+[Event: message.delta] |
+[Event: message.delta]  `
+[Event: message.delta] trade
+[Event: message.delta] _rec
+[Event: message.delta] ords
+[Event: message.delta] _q
+[Event: message.delta] r
+[Event: message.delta] `
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 151
+[Event: message.delta] ,
+[Event: message.delta] 970
+[Event: message.delta]  |
+[Event: message.delta]  QR
+[Event: message.delta] 交易
+[Event: message.delta] 记录
+[Event: message.delta]  |
+
+[Event: message.delta] |
+[Event: message.delta]  `
+[Event: message.delta] similar
+[Event: message.delta] _t
+[Event: message.delta] rade
+[Event: message.delta] _rec
+[Event: message.delta] ords
+[Event: message.delta] `
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 2
+[Event: message.delta] ,
+[Event: message.delta] 747
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 相似
+[Event: message.delta] 交易
+[Event: message.delta] 记录
+[Event: message.delta]  |
+
+[Event: message.delta] |
+[Event: message.delta]  `
+[Event: message.delta] similar
+[Event: message.delta] _t
+[Event: message.delta] rade
+[Event: message.delta] _rec
+[Event: message.delta] ords
+[Event: message.delta] _h
+[Event: message.delta] s
+[Event: message.delta] _code
+[Event: message.delta] `
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 375
+[Event: message.delta] ,
+[Event: message.delta] 859
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 相似
+[Event: message.delta] HS
+[Event: message.delta] 编码
+[Event: message.delta] 交易
+[Event: message.delta] 记录
+[Event: message.delta]  |
+
+[Event: message.delta] |
+[Event: message.delta]  `
+[Event: message.delta] similar
+[Event: message.delta] _t
+[Event: message.delta] rade
+[Event: message.delta] _rec
+[Event: message.delta] ords
+[Event: message.delta] _q
+[Event: message.delta] r
+[Event: message.delta] `
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 23
+[Event: message.delta] ,
+[Event: message.delta] 381
+[Event: message.delta]  |
+[Event: message.delta]  
+[Event: message.delta] 相似
+[Event: message.delta] QR
+[Event: message.delta] 交易
+[Event: message.delta] 记录
+[Event: message.delta]  |
+
+
+[Event: message.delta] 根据
+[Event: message.delta] 历史
+[Event: message.delta] 记录
+[Event: message.delta] ，
+[Event: message.delta] 您
+[Event: message.delta] 之前
+[Event: message.delta] 已经
+[Event: message.delta] 生成
+[Event: message.delta] 过
+[Event: message.delta] 一份
+[Event: message.delta] 综合
+[Event: message.delta] 报告
+[Event: message.delta] （
+[Event: message.delta] 含
+[Event: message.delta]  `
+[Event: message.delta] trade
+[Event: message.delta] _rec
+[Event: message.delta] ords
+[Event: message.delta] `
+[Event: message.delta]  +
+[Event: message.delta]  `
+[Event: message.delta] trade
+[Event: message.delta] _rec
+[Event: message.delta] ords
+[Event: message.delta] _h
+[Event: message.delta] s
+[Event: message.delta] _code
+[Event: message.delta] _s
+[Event: message.delta] pecial
+[Event: message.delta] `
+[Event: message.delta] ）。
+[Event: message.delta] 这次的
+[Event: message.delta] 统计分析
+[Event: message.delta] ，
+[Event: message.delta] 我想
+[Event: message.delta] 先
+[Event: message.delta] 明确
+[Event: message.delta] 一下
+[Event: message.delta] 您的
+[Event: message.delta] 需求
+[Event: message.delta] ：
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 
+[Event: message.delta] 🔀 之前已生成过 trade_records（2.5万条）和 trade_records_hs_code_special（342万条）的综合报告，这次可以根据不同侧重点重新分析
+
+您希望这次从哪些方面进行分析和报告？以下是一些可选方向：
+
+  1. 1. 聚焦 trade_records_hs_code（14万条）做独立的 HS 编码深度分析
+  2. 2. 聚焦 trade_records_qr（15万条）做新数据源的分析
+  3. 3. 整合所有交易表（trade_records + trade_records_hs_code + trade_records_hs_code_special + trade_records_qr）做超级综合分析
+  4. 4. 针对特定国家/商品/时间段的深度专题分析
+  5. 5. 从相似交易记录表（similar_trade_records 系列）分析相似交易模式
+  6. 6. 您有其他想法，请直接告诉我
+Stream finished successfully.

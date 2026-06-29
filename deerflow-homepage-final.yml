@@ -1,0 +1,43 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "DeerFlow DeerFlow" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img "DeerFlow" [ref=e5]
+        - generic [ref=e6]: DeerFlow
+      - button [ref=e64] [cursor=pointer]:
+        - img [ref=e65]
+    - main [ref=e9]:
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - heading "让智能体可构建、可编排、可推理" [level=1] [ref=e13]
+          - paragraph [ref=e14]: 本体智能，让智能体可构建、可编排、可推理
+          - button "开始体验" [ref=e16] [cursor=pointer]
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - generic [ref=e19]:
+              - img [ref=e21]
+              - generic [ref=e25]: RAG + 图谱
+            - paragraph [ref=e26]: 知识库管理
+            - paragraph [ref=e27]: 融合检索增强生成与知识图谱技术
+          - generic [ref=e28]:
+            - generic [ref=e29]:
+              - img [ref=e31]
+              - generic [ref=e36]: LangGraph
+            - paragraph [ref=e37]: 智能体编排
+            - paragraph [ref=e38]: 基于 LangGraph 的多智能体协作框架
+          - generic [ref=e39]:
+            - generic [ref=e40]:
+              - img [ref=e42]
+              - generic [ref=e48]: OCR + VL
+            - paragraph [ref=e49]: 多模态解析
+            - paragraph [ref=e50]: 支持 PDF、图片、表格等多种格式解析
+          - generic [ref=e51]:
+            - generic [ref=e52]:
+              - img [ref=e54]
+              - generic [ref=e57]: Docker
+            - paragraph [ref=e58]: 私有化部署
+            - paragraph [ref=e59]: 完全本地部署，数据安全可控
+    - contentinfo [ref=e60]:
+      - paragraph [ref=e62]: © 数据空间研究院 2026 v0.1.0
+  - alert [ref=e68]

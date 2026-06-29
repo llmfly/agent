@@ -1,0 +1,1 @@
+python3 -m pip list 2>&1 | head -30

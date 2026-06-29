@@ -1,0 +1,490 @@
+{
+  "info": {
+    "_postman_id": "bd1b9e52-2687-44c7-a709-59b72606b1b7",
+    "name": "Intelli Engine API v1 - Conversation Chat",
+    "description": "用 /api/v1/conversations 模拟前端创建对话并与 AI 聊天。导入同目录 environment 后按 01-06 顺序执行。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.variables.set('request_id', 'pm-' + Date.now() + '-' + Math.random().toString(16).slice(2));"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://172.16.0.160:2026"
+    },
+    {
+      "key": "app_id",
+      "value": "postman-demo-app"
+    },
+    {
+      "key": "api_key",
+      "value": "postman-demo-key"
+    },
+    {
+      "key": "user_id",
+      "value": "postman-user-001"
+    },
+    {
+      "key": "agent_id",
+      "value": "lead_agent"
+    },
+    {
+      "key": "message_content",
+      "value": "你好，请用三句话介绍一下 Hadoop 是什么。"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Health Check",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "health"
+          ]
+        },
+        "description": "确认 dev 服务可访问。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('health is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Create Conversation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-App-Id",
+            "value": "{{app_id}}"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "{{user_id}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "{{request_id}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"agent_id\": \"{{agent_id}}\",\n  \"title\": \"{{conversation_title}}\",\n  \"metadata\": {\n    \"source\": \"postman\",\n    \"scenario\": \"api-v1-create-and-chat\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/conversations",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "conversations"
+          ]
+        },
+        "description": "创建一个 v1 conversation。响应中的 conversation_id 会自动保存到环境变量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('create conversation returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('conversation_id exists', function () {",
+              "  pm.expect(body.conversation_id).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.environment.set('conversation_id', body.conversation_id);",
+              "console.log('conversation_id =', body.conversation_id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Get Conversation",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-App-Id",
+            "value": "{{app_id}}"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "{{user_id}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "{{request_id}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/conversations/{{conversation_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "conversations",
+            "{{conversation_id}}"
+          ]
+        },
+        "description": "读取刚创建的 conversation。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('get conversation returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "pm.test('conversation id matches env', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.conversation_id).to.eql(pm.environment.get('conversation_id'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Chat Stream",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "text/event-stream"
+          },
+          {
+            "key": "X-App-Id",
+            "value": "{{app_id}}"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "{{user_id}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "{{request_id}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"agent_id\": \"{{agent_id}}\",\n  \"content\": \"{{message_content}}\",\n  \"datasource_ids\": [],\n  \"options\": {\n    \"thinking_enabled\": false,\n    \"subagent_enabled\": false,\n    \"citation_required\": false,\n    \"max_context_tokens\": 8000\n  },\n  \"metadata\": {\n    \"source\": \"postman\",\n    \"mode\": \"stream\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/conversations/{{conversation_id}}/stream",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "conversations",
+            "{{conversation_id}}",
+            "stream"
+          ]
+        },
+        "description": "发送消息并接收 v1 标准化 SSE。预期事件：run.started、message.delta、run.completed。Postman 会在 Response 区域显示 event/data 文本。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('stream returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const text = pm.response.text();",
+              "pm.test('SSE has run.started', function () {",
+              "  pm.expect(text).to.include('event: run.started');",
+              "});",
+              "",
+              "const match = text.match(/event: run\\.started\\s+data: (\\{.*\\})/);",
+              "if (match) {",
+              "  try {",
+              "    const started = JSON.parse(match[1]);",
+              "    if (started.run_id) {",
+              "      pm.environment.set('run_id', started.run_id);",
+              "      console.log('run_id =', started.run_id);",
+              "    }",
+              "  } catch (e) {",
+              "    console.log('Failed to parse run.started payload', e);",
+              "  }",
+              "}",
+              "",
+              "pm.test('SSE has completion or delta', function () {",
+              "  pm.expect(text.includes('event: run.completed') || text.includes('event: message.delta')).to.eql(true);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 List Messages",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-App-Id",
+            "value": "{{app_id}}"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "{{user_id}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "{{request_id}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/conversations/{{conversation_id}}/messages?limit=50",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "conversations",
+            "{{conversation_id}}",
+            "messages"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "50"
+            }
+          ]
+        },
+        "description": "查询 conversation 下的规范化消息列表。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('list messages returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "const body = pm.response.json();",
+              "pm.test('messages response belongs to conversation', function () {",
+              "  pm.expect(body.conversation_id).to.eql(pm.environment.get('conversation_id'));",
+              "  pm.expect(body.items).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 List Runs",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-App-Id",
+            "value": "{{app_id}}"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "{{user_id}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "{{request_id}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/conversations/{{conversation_id}}/runs",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "conversations",
+            "{{conversation_id}}",
+            "runs"
+          ]
+        },
+        "description": "查询 conversation 下的 run 列表。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('list runs returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "const body = pm.response.json();",
+              "pm.test('runs response belongs to conversation', function () {",
+              "  pm.expect(body.conversation_id).to.eql(pm.environment.get('conversation_id'));",
+              "  pm.expect(body.items).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Chat Non-Streaming Optional",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-App-Id",
+            "value": "{{app_id}}"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "{{user_id}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "{{request_id}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"agent_id\": \"{{agent_id}}\",\n  \"content\": \"再用一句话总结它的主要用途。\",\n  \"datasource_ids\": [],\n  \"options\": {\n    \"thinking_enabled\": false,\n    \"subagent_enabled\": false,\n    \"citation_required\": false,\n    \"max_context_tokens\": 8000\n  },\n  \"metadata\": {\n    \"source\": \"postman\",\n    \"mode\": \"non-stream\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/conversations/{{conversation_id}}/messages",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "conversations",
+            "{{conversation_id}}",
+            "messages"
+          ]
+        },
+        "description": "非流式发送消息。这个接口会等待 run 完成后返回最终 message，耗时可能比 stream 长。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('non-stream chat returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "const body = pm.response.json();",
+              "pm.test('run_id exists', function () {",
+              "  pm.expect(body.run_id).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.environment.set('run_id', body.run_id);"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-26T21:07:51.280297Z",
+  "user": {
+    "workContext": {
+      "summary": "用户正在处理两份简历文档（崔亚飞.pdf 和 杨佳文-java后端-v8.pdf），并反复要求解析文档并生成结构化报告。这表明用户可能处于招聘、人才筛选或简历评估的工作场景中。",
+      "updatedAt": "2026-06-26T21:07:51.275825Z"
+    },
+    "personalContext": {
+      "summary": "用户主要使用中文沟通。对于技术文档处理有明确的需求，偏好结构化报告输出。",
+      "updatedAt": "2026-06-26T21:07:51.275825Z"
+    },
+    "topOfMind": {
+      "summary": "用户当前的核心关注点是解析两份PDF简历并生成详细的结构化分析报告（包含个人信息、教育背景、工作经历、技能评估、项目经验、综合评价等）。用户反复提出请求，显示对此任务的强烈需求和紧迫感。用户可能在进行招聘筛选或人才评估工作。但由于系统工具限制（generate_report 存在bug，环境无法直接提取PDF文本），用户需要提供替代方案才能完成任务。",
+      "updatedAt": "2026-06-26T21:07:51.275825Z"
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "用户当前会话中主要活动：上传了两份PDF文件（崔亚飞简历和杨佳文Java后端简历v8版本），并多次尝试要求系统解析文档生成报告。遇到了系统工具无法直接解析PDF二进制内容以及generate_report工具存在bug的技术障碍。",
+      "updatedAt": "2026-06-26T21:07:51.275825Z"
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_028145c7",
+      "content": "用户正在处理两份PDF简历：崔亚飞.pdf 和 杨佳文-java后端-v8.pdf，需要结构化分析报告。",
+      "category": "context",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T21:07:51.275825Z",
+      "source": "1ba6d4b6-ce39-42bb-a325-03ec44556164"
+    },
+    {
+      "id": "fact_c733f879",
+      "content": "用户对文档解析和报告生成有强烈且重复的需求，表现出较高的紧迫性和优先级。",
+      "category": "behavior",
+      "confidence": 0.8,
+      "createdAt": "2026-06-26T21:07:51.275825Z",
+      "source": "1ba6d4b6-ce39-42bb-a325-03ec44556164"
+    },
+    {
+      "id": "fact_f6bb9817",
+      "content": "系统 generate_report 工具存在bug（'ReportSection' object has no attribute 'citations'），无法完成PDF解析和报告生成。",
+      "category": "correction",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T21:07:51.275825Z",
+      "source": "1ba6d4b6-ce39-42bb-a325-03ec44556164"
+    },
+    {
+      "id": "fact_5536dbbf",
+      "content": "当前环境无法直接提取PDF文本内容，需要用户提供文字版或转换格式。",
+      "category": "correction",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T21:07:51.275825Z",
+      "source": "1ba6d4b6-ce39-42bb-a325-03ec44556164"
+    },
+    {
+      "id": "fact_ccc28236",
+      "content": "用户对简历报告有详细要求：包含个人信息、教育背景、工作经历、技能评估、项目经验、综合评价等结构化内容。",
+      "category": "preference",
+      "confidence": 0.8,
+      "createdAt": "2026-06-26T21:07:51.275825Z",
+      "source": "1ba6d4b6-ce39-42bb-a325-03ec44556164"
+    }
+  ]
+}

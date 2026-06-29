@@ -1,0 +1,2665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能体研究工作台 - 测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+        }
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+        .source-item {
+            transition: background-color 0.15s;
+        }
+        .source-item:hover {
+            background-color: #f3f4f6;
+        }
+        .studio-card {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .studio-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .chat-content {
+            line-height: 1.8;
+        }
+        .chat-content h1, .chat-content h2, .chat-content h3 {
+            font-weight: 600;
+            margin-top: 1.2em;
+            margin-bottom: 0.6em;
+        }
+        .chat-content ol, .chat-content ul {
+            padding-left: 1.5em;
+            margin: 0.5em 0;
+        }
+        .chat-content ol li {
+            list-style: decimal;
+            margin: 0.3em 0;
+        }
+        .chat-content ul li {
+            list-style: disc;
+            margin: 0.3em 0;
+        }
+        .source-citation {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #4f46e5;
+            padding: 0 4px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            vertical-align: super;
+            cursor: pointer;
+            margin: 0 1px;
+        }
+        .source-citation:hover {
+            background: #c7d2fe;
+        }
+        .gradient-border {
+            position: relative;
+        }
+        .gradient-border::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            padding: 1px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, #a78bfa, #f0abfc);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .chat-input-area {
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.04);
+        }
+        .note-pill {
+            transition: all 0.15s;
+        }
+        .note-pill:hover {
+            background: #f3f4f6;
+        }
+        .icon-btn {
+            transition: all 0.15s;
+        }
+        .icon-btn:hover {
+            background: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800 h-screen overflow-hidden">
+    <!-- 顶部导航栏 -->
+    <header class="h-14 border-b border-gray-200 flex items-center justify-between px-4 bg-white flex-shrink-0">
+        <div class="flex items-center gap-2">
+            <div onclick="goToHome()" class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity">
+                <i class="fas fa-book text-white text-sm"></i>
+            </div>
+            <input type="text" value="测试" class="text-base font-medium bg-transparent border-none outline-none focus:bg-gray-50 px-2 py-1 rounded w-32" />
+        </div>
+        <div class="flex items-center gap-1">
+            <button class="flex items-center gap-2 px-3 py-1.5 bg-gray-900 text-white text-sm rounded-full hover:bg-gray-800 transition-colors">
+                <i class="fas fa-plus text-xs"></i>
+                <span>创建新的空间</span>
+            </button>
+
+            <button class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
+                <i class="fas fa-user-circle text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 三栏主体 -->
+    <div class="flex h-[calc(100vh-3.5rem)]">
+        <!-- 左侧：资料来源 -->
+        <aside class="w-72 border-r border-gray-200 flex flex-col bg-white flex-shrink-0 transition-all duration-300" id="source-panel">
+            <!-- 展开状态的头部 -->
+            <div class="px-4 pt-4 pb-3 flex items-center justify-between" id="source-header-expanded">
+                <div class="flex items-center gap-2" id="source-header">
+                    <i class="fas fa-folder-open text-blue-500 text-sm"></i>
+                    <h2 class="text-sm font-semibold text-gray-700" id="source-title">资料来源</h2>
+                </div>
+                <button onclick="toggleSourcePanel()" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded icon-btn">
+                    <i class="fas fa-chevron-left text-xs" id="source-toggle-icon"></i>
+                </button>
+            </div>
+            
+            <!-- 折叠状态的图标栏 -->
+            <div class="flex flex-col items-center py-3 gap-3 hidden" id="source-header-collapsed">
+                <i class="fas fa-folder-open text-blue-500 text-sm"></i>
+                <button onclick="toggleSourcePanel()" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded icon-btn">
+                    <i class="fas fa-chevron-right text-xs"></i>
+                </button>
+            </div>
+            
+            <!-- 展开状态的内容 -->
+            <div id="source-content-expanded">
+                <div class="px-4 pb-3">
+                    <button onclick="showAddSourceModal()" class="w-full py-2.5 border border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-violet-400 hover:text-violet-600 hover:bg-violet-50/30 transition-all flex items-center justify-center gap-1.5">
+                        <i class="fas fa-plus text-xs"></i>
+                        <span>添加来源</span>
+                    </button>
+                </div>
+                <div class="px-4 pb-2 flex items-center justify-between">
+                    <button class="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-undo text-[10px]"></i>
+                    </button>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll()" class="w-3.5 h-3.5 rounded text-violet-600 focus:ring-violet-300" />
+                        <span class="text-xs text-gray-500 hover:text-gray-700">全选</span>
+                    </label>
+                </div>
+                <div class="flex-1 overflow-y-auto scrollbar-thin px-2 pb-2" id="source-list">
+                    <!-- 资料来源列表由JS动态生成 -->
+                </div>
+            </div>
+            
+            <!-- 折叠状态的内容（图标按钮） -->
+            <div class="flex flex-col items-center gap-3 px-2 pb-2 hidden" id="source-content-collapsed">
+                <button onclick="showAddSourceModal()" title="添加来源" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all">
+                    <i class="fas fa-plus text-sm"></i>
+                </button>
+                <button onclick="toggleSelectAll()" title="全部选择" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all">
+                    <i class="fas fa-check-square text-sm"></i>
+                </button>
+                <div class="flex-1 flex flex-col gap-2 overflow-y-auto scrollbar-thin py-2">
+                    <!-- 数据图标预览 -->
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-red-300" title="Auto: 2026年展望">
+                        <i class="fas fa-car text-red-500 text-xs"></i>
+                    </div>
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300" title="中国新能源汽车市场2026">
+                        <i class="fas fa-newspaper text-blue-500 text-xs"></i>
+                    </div>
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-indigo-300" title="中国汽车报网">
+                        <i class="fas fa-globe-asia text-indigo-500 text-xs"></i>
+                    </div>
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-purple-300" title="Dongchedi">
+                        <i class="fas fa-chart-line text-purple-500 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间：聊天区 -->
+        <main class="flex-1 flex flex-col bg-white min-w-0">
+            <div class="px-6 pt-4 pb-2 flex items-center justify-between flex-shrink-0">
+                <h2 class="text-base font-semibold text-gray-800">聊天</h2>
+                <div class="flex items-center gap-1">
+                    <button class="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded icon-btn" title="保存为笔记">
+                        <i class="fas fa-bookmark text-xs"></i>
+                    </button>
+                    <button onclick="showConfigModal()" class="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded icon-btn" title="空间配置">
+                        <i class="fas fa-ellipsis-vertical text-xs"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto scrollbar-thin px-8 py-4 chat-content text-sm text-gray-800" id="chat-content">
+                <!-- 聊天内容由JS动态生成 -->
+            </div>
+
+            <div class="px-8 pb-6 pt-2 chat-input-area flex-shrink-0">
+                <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3">
+                    <input type="text" placeholder="开始打字..." class="flex-1 bg-transparent outline-none text-sm" />
+                    <span class="text-xs text-gray-400 whitespace-nowrap"><span id="selected-count">0</span>个数据</span>
+                    <button class="w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-500 rounded-full hover:bg-violet-500 hover:text-white transition-colors" title="发送">
+                        <i class="fas fa-arrow-up text-xs"></i>
+                    </button>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- 右侧：工作室 -->
+        <aside class="w-80 border-l border-gray-200 flex flex-col bg-gray-50/50 flex-shrink-0 transition-all duration-300" id="studio-panel">
+            <!-- 展开状态的头部 -->
+            <div class="px-5 pt-4 pb-3 flex items-center justify-between" id="studio-header-expanded">
+                <div class="flex items-center gap-2" id="studio-header">
+                    <i class="fas fa-cubes text-indigo-500 text-sm"></i>
+                    <h2 class="text-base font-semibold text-gray-800" id="studio-title">工作室</h2>
+                </div>
+                <button onclick="toggleStudioPanel()" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded icon-btn">
+                    <i class="fas fa-chevron-right text-xs" id="studio-toggle-icon"></i>
+                </button>
+            </div>
+            
+            <!-- 折叠状态的头部 -->
+            <div class="flex flex-col items-center py-3 gap-3 hidden" id="studio-header-collapsed">
+                <i class="fas fa-cubes text-indigo-500 text-sm"></i>
+                <button onclick="toggleStudioPanel()" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded icon-btn">
+                    <i class="fas fa-chevron-left text-xs"></i>
+                </button>
+            </div>
+            
+            <!-- 展开状态的内容 -->
+            <div id="studio-content-expanded">
+                <div class="px-5 pb-4 grid grid-cols-2 gap-3">
+                    <div class="studio-card bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-file-alt text-orange-600 text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xs font-medium text-gray-800">报告</h3>
+                        </div>
+                        <button onclick="showPromptModal('report')" class="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-all">
+                            <i class="fas fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                    <div class="studio-card bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-search text-red-600 text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xs font-medium text-gray-800">搜索</h3>
+                        </div>
+                        <button onclick="showPromptModal('search')" class="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all">
+                            <i class="fas fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                    <div class="studio-card bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-comments text-purple-600 text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xs font-medium text-gray-800">问答</h3>
+                        </div>
+                        <button onclick="showPromptModal('qa')" class="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-purple-500 hover:bg-purple-50 rounded-full transition-all">
+                            <i class="fas fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                    <div class="studio-card bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-100 to-cyan-200 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-globe text-cyan-600 text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xs font-medium text-gray-800">网站</h3>
+                        </div>
+                        <button onclick="showPromptModal('website')" class="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-cyan-500 hover:bg-cyan-50 rounded-full transition-all">
+                            <i class="fas fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                    <div class="studio-card bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-plug text-indigo-600 text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xs font-medium text-gray-800">API服务</h3>
+                        </div>
+                        <button onclick="showPromptModal('api')" class="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-full transition-all">
+                            <i class="fas fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-5 pb-3 text-xs text-gray-500">
+                    <span>生成数据</span>
+                </div>
+            </div>
+            
+            <!-- 生成数据列表 -->
+            <div class="flex-1 overflow-y-auto scrollbar-thin px-5 pb-4 space-y-2">
+                <!-- 报告 -->
+                <div class="bg-white border border-gray-200 rounded-xl p-3 flex items-start gap-2.5 hover:shadow-md hover:border-orange-200 transition-all">
+                    <div onclick="showDetail('report')" class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center flex-shrink-0 cursor-pointer">
+                        <i class="fas fa-file-alt text-orange-600 text-xs"></i>
+                    </div>
+                    <div onclick="showDetail('report')" class="flex-1 min-w-0 cursor-pointer">
+                        <h4 class="text-xs font-medium text-gray-800 line-clamp-2 leading-relaxed">2026年新能源汽车市场调研报告</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">1小时前 · 12个数据来源</p>
+                    </div>
+                    <div class="relative flex-shrink-0">
+                        <button onclick="toggleMenu('menu-report', event)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded icon-btn">
+                            <i class="fas fa-ellipsis-vertical text-[10px]"></i>
+                        </button>
+                        <div id="menu-report" class="hidden absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 w-36">
+                            <button onclick="actionConvert('report'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-database text-xs"></i>
+                                <span>转为数据资料</span>
+                            </button>
+                            <button onclick="actionPublish('report'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-share-square text-xs"></i>
+                                <span>发布</span>
+                            </button>
+                            <button onclick="actionExport('report'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-download text-xs"></i>
+                                <span>导出</span>
+                            </button>
+                            <button onclick="actionDelete('report'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2">
+                                <i class="fas fa-trash text-xs"></i>
+                                <span>删除</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 问答 -->
+                <div class="bg-white border border-gray-200 rounded-xl p-3 flex items-start gap-2.5 hover:shadow-md hover:border-purple-200 transition-all">
+                    <div onclick="showDetail('qa')" class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center flex-shrink-0 cursor-pointer">
+                        <i class="fas fa-comments text-purple-600 text-xs"></i>
+                    </div>
+                    <div onclick="showDetail('qa')" class="flex-1 min-w-0 cursor-pointer">
+                        <h4 class="text-xs font-medium text-gray-800 line-clamp-2 leading-relaxed">汽车行业常见问题解答集</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">2小时前 · 6个数据来源</p>
+                    </div>
+                    <div class="relative flex-shrink-0">
+                        <button onclick="toggleMenu('menu-qa', event)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded icon-btn">
+                            <i class="fas fa-ellipsis-vertical text-[10px]"></i>
+                        </button>
+                        <div id="menu-qa" class="hidden absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 w-36">
+                            <button onclick="actionConvert('qa'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-database text-xs"></i>
+                                <span>转为数据资料</span>
+                            </button>
+                            <button onclick="actionPublish('qa'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-share-square text-xs"></i>
+                                <span>发布</span>
+                            </button>
+                            <button onclick="actionExport('qa'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-download text-xs"></i>
+                                <span>导出</span>
+                            </button>
+                            <button onclick="actionDelete('qa'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2">
+                                <i class="fas fa-trash text-xs"></i>
+                                <span>删除</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 搜索 -->
+                <div class="bg-white border border-gray-200 rounded-xl p-3 flex items-start gap-2.5 hover:shadow-md hover:border-red-200 transition-all">
+                    <div onclick="showDetail('search')" class="w-8 h-8 rounded-lg bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center flex-shrink-0 cursor-pointer">
+                        <i class="fas fa-search text-red-600 text-xs"></i>
+                    </div>
+                    <div onclick="showDetail('search')" class="flex-1 min-w-0 cursor-pointer">
+                        <h4 class="text-xs font-medium text-gray-800 line-clamp-2 leading-relaxed">汽车行业数据搜索工具</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">4小时前 · 12个数据来源</p>
+                    </div>
+                    <div class="relative flex-shrink-0">
+                        <button onclick="toggleMenu('menu-search', event)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded icon-btn">
+                            <i class="fas fa-ellipsis-vertical text-[10px]"></i>
+                        </button>
+                        <div id="menu-search" class="hidden absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 w-36">
+                            <button onclick="actionConvert('search'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-database text-xs"></i>
+                                <span>转为数据资料</span>
+                            </button>
+                            <button onclick="actionPublish('search'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-share-square text-xs"></i>
+                                <span>发布</span>
+                            </button>
+                            <button onclick="actionExport('search'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-download text-xs"></i>
+                                <span>导出</span>
+                            </button>
+                            <button onclick="actionDelete('search'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2">
+                                <i class="fas fa-trash text-xs"></i>
+                                <span>删除</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 网站 -->
+                <div class="bg-white border border-gray-200 rounded-xl p-3 flex items-start gap-2.5 hover:shadow-md hover:border-cyan-200 transition-all">
+                    <div onclick="showDetail('website')" class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-100 to-cyan-200 flex items-center justify-center flex-shrink-0 cursor-pointer">
+                        <i class="fas fa-globe text-cyan-600 text-xs"></i>
+                    </div>
+                    <div onclick="showDetail('website')" class="flex-1 min-w-0 cursor-pointer">
+                        <h4 class="text-xs font-medium text-gray-800 line-clamp-2 leading-relaxed">汽车行业门户网站</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">5小时前 · 15个数据来源</p>
+                    </div>
+                    <div class="relative flex-shrink-0">
+                        <button onclick="toggleMenu('menu-website', event)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded icon-btn">
+                            <i class="fas fa-ellipsis-vertical text-[10px]"></i>
+                        </button>
+                        <div id="menu-website" class="hidden absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 w-36">
+                            <button onclick="actionConvert('website'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-database text-xs"></i>
+                                <span>转为数据资料</span>
+                            </button>
+                            <button onclick="actionPublish('website'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-share-square text-xs"></i>
+                                <span>发布</span>
+                            </button>
+                            <button onclick="actionExport('website'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-download text-xs"></i>
+                                <span>导出</span>
+                            </button>
+                            <button onclick="actionDelete('website'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2">
+                                <i class="fas fa-trash text-xs"></i>
+                                <span>删除</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- API服务 -->
+                <div class="bg-white border border-gray-200 rounded-xl p-3 flex items-start gap-2.5 hover:shadow-md hover:border-indigo-200 transition-all">
+                    <div onclick="showDetail('api')" class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center flex-shrink-0 cursor-pointer">
+                        <i class="fas fa-plug text-indigo-600 text-xs"></i>
+                    </div>
+                    <div onclick="showDetail('api')" class="flex-1 min-w-0 cursor-pointer">
+                        <h4 class="text-xs font-medium text-gray-800 line-clamp-2 leading-relaxed">车辆数据查询API接口</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">5小时前 · 15个数据来源</p>
+                    </div>
+                    <div class="relative flex-shrink-0">
+                        <button onclick="toggleMenu('menu-api', event)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded icon-btn">
+                            <i class="fas fa-ellipsis-vertical text-[10px]"></i>
+                        </button>
+                        <div id="menu-api" class="hidden absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 w-36">
+                            <button onclick="actionConvert('api'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-database text-xs"></i>
+                                <span>转为数据资料</span>
+                            </button>
+                            <button onclick="actionPublish('api'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-share-square text-xs"></i>
+                                <span>发布</span>
+                            </button>
+                            <button onclick="actionExport('api'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <i class="fas fa-download text-xs"></i>
+                                <span>导出</span>
+                            </button>
+                            <button onclick="actionDelete('api'); hideAllMenus()" class="w-full px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2">
+                                <i class="fas fa-trash text-xs"></i>
+                                <span>删除</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 折叠状态的内容（图标按钮） -->
+            <div class="flex flex-col items-center gap-3 px-2 pb-2 hidden" id="studio-content-collapsed">
+                <!-- 能力图标 -->
+                <div class="flex flex-col gap-2">
+                    <div title="报告" class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-orange-300">
+                        <i class="fas fa-file-alt text-orange-500 text-xs"></i>
+                    </div>
+                    <div title="搜索" class="w-8 h-8 rounded-lg bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-red-300">
+                        <i class="fas fa-search text-red-500 text-xs"></i>
+                    </div>
+                    <div title="问答" class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-purple-300">
+                        <i class="fas fa-comments text-purple-500 text-xs"></i>
+                    </div>
+                    <div title="网站" class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-100 to-cyan-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-cyan-300">
+                        <i class="fas fa-globe text-cyan-500 text-xs"></i>
+                    </div>
+                    <div title="API服务" class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-indigo-300">
+                        <i class="fas fa-plug text-indigo-500 text-xs"></i>
+                    </div>
+                </div>
+                
+                <!-- 分隔线 -->
+                <div class="w-6 h-px bg-gray-200"></div>
+                
+                <!-- 生成数据图标 -->
+                <div class="flex-1 flex flex-col gap-2 overflow-y-auto scrollbar-thin py-2">
+                    <div onclick="showDetail('ppt')" title="安徽省汽车产业分析报告PPT · 8个数据来源" class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300">
+                        <i class="fas fa-file-powerpoint text-blue-500 text-xs"></i>
+                    </div>
+                    <div onclick="showDetail('mindmap')" title="汽车产业知识图谱 · 5个数据来源" class="w-8 h-8 rounded-lg bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-green-300">
+                        <i class="fas fa-sitemap text-green-500 text-xs"></i>
+                    </div>
+                    <div onclick="showDetail('report')" title="安徽省汽车底盘生产厂商分析报告 · 12个数据来源" class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-orange-300">
+                        <i class="fas fa-file-alt text-orange-500 text-xs"></i>
+                    </div>
+                    <div onclick="showDetail('qa')" title="车辆配置智能问答系统 · 6个数据来源" class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-purple-300">
+                        <i class="fas fa-comments text-purple-500 text-xs"></i>
+                    </div>
+                    <div onclick="showDetail('app')" title="车辆配置对比工具 · 9个数据来源" class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-100 to-cyan-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-cyan-300">
+                        <i class="fas fa-mobile-alt text-cyan-500 text-xs"></i>
+                    </div>
+                    <div onclick="showDetail('api')" title="车辆数据查询API接口 · 15个数据来源" class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-indigo-300">
+                        <i class="fas fa-plug text-indigo-500 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+    </div>
+
+    <!-- 详情弹窗 -->
+    <div id="detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+        <div class="bg-white rounded-2xl w-[600px] shadow-2xl overflow-hidden max-h-[80vh] flex flex-col">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800" id="detail-title">详情</h3>
+                <button onclick="hideDetailModal()" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto px-6 py-4" id="detail-content">
+                <!-- 详情内容由JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示词设计弹窗 -->
+    <div id="prompt-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+        <div class="bg-white rounded-2xl w-[560px] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800" id="prompt-title">提示词设计</h3>
+                <button onclick="hidePromptModal()" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4">
+                <!-- 模板选择 -->
+                <div class="mb-4">
+                    <h4 class="text-sm font-medium text-gray-700 mb-3">选择模板</h4>
+                    <div class="grid grid-cols-2 gap-2" id="template-list">
+                        <!-- 模板由JS动态生成 -->
+                    </div>
+                </div>
+                <!-- 自定义提示词 -->
+                <div>
+                    <h4 class="text-sm font-medium text-gray-700 mb-3">自定义提示词</h4>
+                    <textarea id="custom-prompt" rows="6" class="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" placeholder="输入您的自定义提示词..."></textarea>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+                <button onclick="hidePromptModal()" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    取消
+                </button>
+                <button id="save-template-btn" class="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-save mr-1"></i>存为模板
+                </button>
+                <button onclick="applyPrompt()" class="px-4 py-2 text-sm bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors">
+                    应用
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据来源详情弹窗 -->
+    <div id="data-sources-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+        <div class="bg-white rounded-2xl w-[500px] shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-800">数据来源详情</h3>
+                <button onclick="hideDataSourcesModal()" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-gray-600 mb-4">本次回答共使用了 <strong class="text-violet-600">12</strong> 个数据来源：</p>
+                <div class="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-file-text text-blue-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">安徽省汽车工业协会报告</p>
+                            <p class="text-xs text-gray-500">行业协会数据</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已使用</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-file-text text-green-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">中国汽车工业年鉴2024</p>
+                            <p class="text-xs text-gray-500">行业年鉴数据</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已使用</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-building text-purple-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">企业工商信息数据库</p>
+                            <p class="text-xs text-gray-500">政府公开数据</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已使用</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-file-chart-line text-orange-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">安徽省汽车产业研究报告</p>
+                            <p class="text-xs text-gray-500">第三方研究机构</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已使用</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-cyan-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-globe text-cyan-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">汽车之家企业库</p>
+                            <p class="text-xs text-gray-500">互联网数据</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已使用</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-newspaper text-red-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">安徽日报产业报道</p>
+                            <p class="text-xs text-gray-500">新闻媒体数据</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已使用</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-database text-indigo-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">国家统计局数据</p>
+                            <p class="text-xs text-gray-500">政府统计数据</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已使用</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-pink-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-industry text-pink-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">江淮汽车官方资料</p>
+                            <p class="text-xs text-gray-500">企业官方数据</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已使用</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-file-alt text-yellow-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">安徽省经信委产业报告</p>
+                            <p class="text-xs text-gray-500">政府部门数据</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已使用</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-search text-teal-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">企查查企业信息</p>
+                            <p class="text-xs text-gray-500">第三方数据平台</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已使用</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-link text-blue-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">汽车工业协会官网</p>
+                            <p class="text-xs text-gray-500">行业协会官网</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已使用</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-file-text text-gray-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-700 truncate">公开招标采购信息</p>
+                            <p class="text-xs text-gray-500">政府招标数据</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已使用</span>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <button onclick="hideDataSourcesModal()" class="w-full py-2.5 bg-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-300 transition-colors">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 存为模板弹窗 -->
+    <div id="save-template-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+        <div class="bg-white rounded-2xl w-[400px] shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">存为模板</h3>
+            </div>
+            <div class="p-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">模板名称</label>
+                    <input type="text" id="save-template-name" placeholder="请输入模板名称" class="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-300" />
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+                <button onclick="hideSaveTemplateModal()" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    取消
+                </button>
+                <button onclick="confirmSaveTemplate()" class="px-4 py-2 text-sm bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors">
+                    确定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 空间配置弹窗 -->
+    <div id="config-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+        <div class="bg-white rounded-2xl w-[520px] shadow-2xl overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">空间配置</h3>
+                <button onclick="hideConfigModal()" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <!-- 图标配置 -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-medium text-gray-700">空间图标</h4>
+                        <label class="px-3 py-1.5 text-xs bg-violet-50 text-violet-600 rounded-lg cursor-pointer hover:bg-violet-100 transition-colors">
+                            <i class="fas fa-upload mr-1"></i>上传图标
+                            <input type="file" id="upload-icon" accept="image/*" class="hidden" onchange="uploadIcon()">
+                        </label>
+                    </div>
+                    <div class="grid grid-cols-6 gap-2">
+                        <div onclick="selectIcon('fa-cubes')" class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-indigo-300 transition-all" title="立方体">
+                            <i class="fas fa-cubes text-indigo-500"></i>
+                        </div>
+                        <div onclick="selectIcon('fa-car')" class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-red-300 transition-all" title="汽车">
+                            <i class="fas fa-car text-red-500"></i>
+                        </div>
+                        <div onclick="selectIcon('fa-dna')" class="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-pink-300 transition-all" title="DNA">
+                            <i class="fas fa-dna text-pink-500"></i>
+                        </div>
+                        <div onclick="selectIcon('fa-chart-line')" class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-green-300 transition-all" title="图表">
+                            <i class="fas fa-chart-line text-green-500"></i>
+                        </div>
+                        <div onclick="selectIcon('fa-brain')" class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-purple-300 transition-all" title="大脑">
+                            <i class="fas fa-brain text-purple-500"></i>
+                        </div>
+                        <div onclick="selectIcon('fa-network-wired')" class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all" title="网络">
+                            <i class="fas fa-network-wired text-blue-500"></i>
+                        </div>
+                        <div onclick="selectIcon('fa-database')" class="w-10 h-10 rounded-lg bg-cyan-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-cyan-300 transition-all" title="数据库">
+                            <i class="fas fa-database text-cyan-500"></i>
+                        </div>
+                        <div onclick="selectIcon('fa-cloud')" class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-gray-300 transition-all" title="云">
+                            <i class="fas fa-cloud text-gray-500"></i>
+                        </div>
+                        <div onclick="selectIcon('fa-lightbulb')" class="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-yellow-300 transition-all" title="灯泡">
+                            <i class="fas fa-lightbulb text-yellow-500"></i>
+                        </div>
+                        <div onclick="selectIcon('fa-shield')" class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all" title="盾牌">
+                            <i class="fas fa-shield text-orange-500"></i>
+                        </div>
+                        <div onclick="selectIcon('fa-globe')" class="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-teal-300 transition-all" title="地球">
+                            <i class="fas fa-globe text-teal-500"></i>
+                        </div>
+                        <div onclick="selectIcon('fa-rocket')" class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-indigo-300 transition-all" title="火箭">
+                            <i class="fas fa-rocket text-indigo-500"></i>
+                        </div>
+                    </div>
+                    <!-- 自定义上传图标预览 -->
+                    <div id="custom-icon-preview" class="hidden mt-3 p-3 bg-gray-50 rounded-lg">
+                        <div class="text-xs text-gray-500 mb-2">自定义图标</div>
+                        <div class="w-10 h-10 rounded-lg bg-violet-50 flex items-center justify-center" id="custom-icon-display">
+                            <img id="custom-icon-img" src="" alt="自定义图标" class="w-6 h-6 rounded">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 背景图配置 -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-medium text-gray-700">背景图</h4>
+                        <label class="px-3 py-1.5 text-xs bg-violet-50 text-violet-600 rounded-lg cursor-pointer hover:bg-violet-100 transition-colors">
+                            <i class="fas fa-upload mr-1"></i>上传背景
+                            <input type="file" id="upload-background" accept="image/*" class="hidden" onchange="uploadBackground()">
+                        </label>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div onclick="selectBackground('gradient-1')" class="h-16 rounded-lg bg-gradient-to-br from-blue-100 to-purple-200 cursor-pointer hover:ring-2 hover:ring-violet-300 transition-all"></div>
+                        <div onclick="selectBackground('gradient-2')" class="h-16 rounded-lg bg-gradient-to-br from-green-100 to-teal-200 cursor-pointer hover:ring-2 hover:ring-violet-300 transition-all"></div>
+                        <div onclick="selectBackground('gradient-3')" class="h-16 rounded-lg bg-gradient-to-br from-orange-100 to-red-200 cursor-pointer hover:ring-2 hover:ring-violet-300 transition-all"></div>
+                        <div onclick="selectBackground('gradient-4')" class="h-16 rounded-lg bg-gradient-to-br from-purple-100 to-pink-200 cursor-pointer hover:ring-2 hover:ring-violet-300 transition-all"></div>
+                        <div onclick="selectBackground('gradient-5')" class="h-16 rounded-lg bg-gradient-to-br from-cyan-100 to-blue-200 cursor-pointer hover:ring-2 hover:ring-violet-300 transition-all"></div>
+                        <div onclick="selectBackground('gradient-6')" class="h-16 rounded-lg bg-gradient-to-br from-yellow-100 to-orange-200 cursor-pointer hover:ring-2 hover:ring-violet-300 transition-all"></div>
+                        <div onclick="selectBackground('gradient-7')" class="h-16 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 cursor-pointer hover:ring-2 hover:ring-violet-300 transition-all"></div>
+                        <div onclick="selectBackground('gradient-8')" class="h-16 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-200 cursor-pointer hover:ring-2 hover:ring-violet-300 transition-all"></div>
+                        <div onclick="selectBackground('none')" class="h-16 rounded-lg bg-white border-2 border-dashed border-gray-200 cursor-pointer hover:ring-2 hover:ring-violet-300 transition-all flex items-center justify-center">
+                            <span class="text-xs text-gray-400">无</span>
+                        </div>
+                    </div>
+                    <!-- 自定义上传背景预览 -->
+                    <div id="custom-background-preview" class="hidden mt-3 p-3 bg-gray-50 rounded-lg">
+                        <div class="text-xs text-gray-500 mb-2">自定义背景图</div>
+                        <div class="h-16 rounded-lg bg-violet-50 flex items-center justify-center overflow-hidden" id="custom-background-display">
+                            <img id="custom-background-img" src="" alt="自定义背景" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+                <button onclick="hideConfigModal()" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    取消
+                </button>
+                <button onclick="saveConfig()" class="px-4 py-2 text-sm bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors">
+                    保存
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加来源弹窗 -->
+    <div id="add-source-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+        <div class="bg-white rounded-2xl w-[520px] shadow-2xl overflow-hidden">
+            <!-- 顶部渐变背景 -->
+            <div class="bg-gradient-to-r from-blue-50 via-white to-green-50 px-6 py-4">
+                <button onclick="hideAddSourceModal()" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 float-right">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+                <div class="text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 bg-blue-100 inline-block px-8 py-2 rounded-lg">添加资料</h3>
+                </div>
+            </div>
+            
+            <!-- Tab切换按钮 -->
+            <div class="flex border-b border-gray-200">
+                <button onclick="selectAddMethod('upload')" id="btn-upload" class="flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all border-b-2 border-transparent hover:bg-gray-50">
+                    <i class="fas fa-upload text-gray-600"></i>
+                    <span>上传文件</span>
+                </button>
+                <button onclick="selectAddMethod('website')" id="btn-website" class="flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all border-b-2 border-transparent hover:bg-gray-50 text-gray-500">
+                    <i class="fas fa-link text-red-500"></i>
+                    <span>网站</span>
+                </button>
+                <button onclick="selectAddMethod('database')" id="btn-database" class="flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all border-b-2 border-transparent hover:bg-gray-50 text-gray-500">
+                    <i class="fas fa-database text-gray-600"></i>
+                    <span>数据库</span>
+                </button>
+                <button onclick="selectAddMethod('api')" id="btn-api" class="flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all border-b-2 border-transparent hover:bg-gray-50 text-gray-500">
+                    <i class="fas fa-cloud text-blue-600"></i>
+                    <span>对象存储</span>
+                </button>
+                <button onclick="selectAddMethod('dataspace')" id="btn-dataspace" class="flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all border-b-2 border-transparent hover:bg-gray-50 text-gray-500">
+                    <i class="fas fa-folder-open text-green-600"></i>
+                    <span>数据空间</span>
+                </button>
+                <button onclick="selectAddMethod('paste')" id="btn-paste" class="flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all border-b-2 border-transparent hover:bg-gray-50 text-gray-500">
+                    <i class="fas fa-paste text-purple-600"></i>
+                    <span>粘贴文本</span>
+                </button>
+            </div>
+            
+            <!-- 内容区域 -->
+            <div id="add-content-area" class="px-6 pb-6">
+                <!-- 上传文件 -->
+                <div id="content-upload" class="add-content">
+                    <div class="border border-gray-200 rounded-xl p-4">
+                        <div class="flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer" onclick="triggerFileUpload()">
+                            <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
+                            <p class="text-sm text-gray-600">点击或拖拽文件到此处上传</p>
+                            <input type="file" id="file-input" class="hidden" multiple />
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">支持 PDF、图片、文档、音频等格式</p>
+                    </div>
+                    <button onclick="submitAddSource()" class="w-full mt-4 py-2.5 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>添加资料
+                    </button>
+                </div>
+                
+                <!-- 网站 -->
+                <div id="content-website" class="add-content hidden">
+                    <!-- 网站专属搜索框 -->
+                    <div class="mb-4">
+                        <div class="relative">
+                            <input type="text" id="website-search-input" placeholder="在网上搜索新的资料来源" class="w-full px-4 py-3 text-sm bg-white border-2 border-blue-400 rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all" />
+                            <button onclick="searchWebsite()" class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors">
+                                <i class="fas fa-search text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 搜索结果展示区域 -->
+                    <div id="website-search-results" class="border border-gray-200 rounded-xl overflow-hidden mb-4">
+                        <!-- 列表表头 -->
+                        <div class="bg-gray-50 px-4 py-2 flex items-center text-xs font-medium text-gray-500 border-b border-gray-200">
+                            <div class="w-5">
+                                <input type="checkbox" id="website-select-all" class="w-3 h-3 rounded text-blue-600 focus:ring-blue-300" />
+                            </div>
+                            <div class="flex-1">网站名称</div>
+                            <div class="w-32">网站地址</div>
+                        </div>
+                        <!-- 搜索结果列表 -->
+                        <div id="website-results-list" class="max-h-48 overflow-y-auto">
+                            <!-- 示例数据 -->
+                            <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                <div class="w-5">
+                                    <input type="checkbox" class="w-3 h-3 rounded text-blue-600 focus:ring-blue-300" />
+                                </div>
+                                <div class="flex-1 text-sm text-gray-700">汽车工业协会官网</div>
+                                <div class="w-32 text-xs text-gray-500 truncate">caam.org.cn</div>
+                            </div>
+                            <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                <div class="w-5">
+                                    <input type="checkbox" class="w-3 h-3 rounded text-blue-600 focus:ring-blue-300" />
+                                </div>
+                                <div class="flex-1 text-sm text-gray-700">中国汽车技术研究中心</div>
+                                <div class="w-32 text-xs text-gray-500 truncate">catarc.ac.cn</div>
+                            </div>
+                            <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                <div class="w-5">
+                                    <input type="checkbox" class="w-3 h-3 rounded text-blue-600 focus:ring-blue-300" />
+                                </div>
+                                <div class="flex-1 text-sm text-gray-700">汽车之家</div>
+                                <div class="w-32 text-xs text-gray-500 truncate">autohome.com.cn</div>
+                            </div>
+                            <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                <div class="w-5">
+                                    <input type="checkbox" class="w-3 h-3 rounded text-blue-600 focus:ring-blue-300" />
+                                </div>
+                                <div class="flex-1 text-sm text-gray-700">懂车帝</div>
+                                <div class="w-32 text-xs text-gray-500 truncate">dongchedi.com</div>
+                            </div>
+                            <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                <div class="w-5">
+                                    <input type="checkbox" class="w-3 h-3 rounded text-blue-600 focus:ring-blue-300" />
+                                </div>
+                                <div class="flex-1 text-sm text-gray-700">太平洋汽车网</div>
+                                <div class="w-32 text-xs text-gray-500 truncate">pcauto.com.cn</div>
+                            </div>
+                            <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                <div class="w-5">
+                                    <input type="checkbox" class="w-3 h-3 rounded text-blue-600 focus:ring-blue-300" />
+                                </div>
+                                <div class="flex-1 text-sm text-gray-700">新浪汽车</div>
+                                <div class="w-32 text-xs text-gray-500 truncate">auto.sina.com.cn</div>
+                            </div>
+                            <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                <div class="w-5">
+                                    <input type="checkbox" class="w-3 h-3 rounded text-blue-600 focus:ring-blue-300" />
+                                </div>
+                                <div class="flex-1 text-sm text-gray-700">搜狐汽车</div>
+                                <div class="w-32 text-xs text-gray-500 truncate">auto.sohu.com</div>
+                            </div>
+                            <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors">
+                                <div class="w-5">
+                                    <input type="checkbox" class="w-3 h-3 rounded text-blue-600 focus:ring-blue-300" />
+                                </div>
+                                <div class="flex-1 text-sm text-gray-700">网易汽车</div>
+                                <div class="w-32 text-xs text-gray-500 truncate">auto.163.com</div>
+                            </div>
+                        </div>
+                        <!-- 结果数量提示 -->
+                        <div class="bg-gray-50 px-4 py-2 text-xs text-gray-500 border-t border-gray-200">
+                            共找到 8 条相关结果（显示前20条）
+                        </div>
+                    </div>
+                    
+                    <!-- 手动输入链接 -->
+                    <div class="border border-gray-200 rounded-xl p-4">
+                        <label class="block text-xs text-gray-600 mb-2">或手动输入网站链接</label>
+                        <input type="text" placeholder="请输入网站URL" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none" />
+                        <p class="text-xs text-gray-500 mt-2">支持 HTTP/HTTPS 链接</p>
+                    </div>
+                    <button onclick="submitAddSource()" class="w-full mt-4 py-2.5 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>添加资料
+                    </button>
+                </div>
+                
+                <!-- 数据库 -->
+                <div id="content-database" class="add-content hidden">
+                            <div class="border border-gray-200 rounded-xl p-4 space-y-3">
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">数据库类型</label>
+                                    <select class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none">
+                                        <option>MySQL</option>
+                                        <option>PostgreSQL</option>
+                                        <option>SQL Server</option>
+                                        <option>Oracle</option>
+                                        <option>SQLite</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">主机地址</label>
+                                    <input type="text" placeholder="localhost" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none" />
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1">端口</label>
+                                        <input type="text" placeholder="3306" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1">数据库名</label>
+                                        <input type="text" placeholder="database" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none" />
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1">用户名</label>
+                                        <input type="text" placeholder="username" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1">密码</label>
+                                        <input type="password" placeholder="password" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none" />
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 数据表选择区域 -->
+                            <div id="table-selector" class="hidden mt-4 border border-gray-200 rounded-xl p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="block text-xs text-gray-600">选择数据表</label>
+                                    <button onclick="selectAllTables()" class="text-xs text-blue-600 hover:text-blue-700">全选</button>
+                                </div>
+                                <div id="table-list" class="max-h-40 overflow-y-auto space-y-2">
+                                    <!-- 数据表列表由JS动态生成 -->
+                                </div>
+                            </div>
+                            <button onclick="submitAddSource()" class="w-full mt-4 py-2.5 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>添加资料
+                            </button>
+                        </div>
+                        
+                        <!-- 对象存储 -->
+                        <div id="content-api" class="add-content hidden">
+                            <div class="border border-gray-200 rounded-xl p-4 space-y-3">
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">存储服务商</label>
+                                    <select class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none">
+                                        <option>阿里云 OSS</option>
+                                        <option>腾讯云 COS</option>
+                                        <option>AWS S3</option>
+                                        <option>华为云 OBS</option>
+                                        <option>MinIO</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">Access Key ID</label>
+                                    <input type="text" placeholder="AKIAIOSFODNN7EXAMPLE" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">Access Key Secret</label>
+                                    <input type="password" placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">存储桶名称 (Bucket)</label>
+                                    <input type="text" placeholder="my-bucket" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">区域 (Region)</label>
+                                    <input type="text" placeholder="oss-cn-hangzhou" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">路径前缀（可选）</label>
+                                    <input type="text" placeholder="data/" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none" />
+                                </div>
+                            </div>
+                            <button onclick="submitAddSource()" class="w-full mt-4 py-2.5 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>添加资料
+                            </button>
+                        </div>
+                        
+                        <!-- 数据空间 -->
+                        <div id="content-dataspace" class="add-content hidden">
+                            <div class="border border-gray-200 rounded-xl overflow-hidden">
+                                <!-- 列表表头 -->
+                                <div class="bg-gray-50 px-4 py-2 flex items-center text-xs font-medium text-gray-500 border-b border-gray-200">
+                                    <div class="w-5">
+                                        <input type="checkbox" class="w-3 h-3 rounded text-green-600 focus:ring-green-300" />
+                                    </div>
+                                    <div class="flex-1">数据产品名称</div>
+                                    <div class="w-24">数据产品类型</div>
+                                    <div class="w-28">数据产品标识</div>
+                                </div>
+                                <!-- 列表内容 -->
+                                <div class="max-h-56 overflow-y-auto">
+                                    <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                        <div class="w-5">
+                                            <input type="checkbox" class="w-3 h-3 rounded text-green-600 focus:ring-green-300" />
+                                        </div>
+                                        <div class="flex-1 text-sm text-gray-700">企业销售数据</div>
+                                        <div class="w-24 text-xs text-gray-500">业务数据</div>
+                                        <div class="w-28 text-xs text-gray-500">DATA-SALES-001</div>
+                                    </div>
+                                    <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                        <div class="w-5">
+                                            <input type="checkbox" class="w-3 h-3 rounded text-green-600 focus:ring-green-300" />
+                                        </div>
+                                        <div class="flex-1 text-sm text-gray-700">用户行为日志</div>
+                                        <div class="w-24 text-xs text-gray-500">日志数据</div>
+                                        <div class="w-28 text-xs text-gray-500">DATA-LOG-002</div>
+                                    </div>
+                                    <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                        <div class="w-5">
+                                            <input type="checkbox" class="w-3 h-3 rounded text-green-600 focus:ring-green-300" />
+                                        </div>
+                                        <div class="flex-1 text-sm text-gray-700">客户信息数据</div>
+                                        <div class="w-24 text-xs text-gray-500">主数据</div>
+                                        <div class="w-28 text-xs text-gray-500">DATA-CUST-003</div>
+                                    </div>
+                                    <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                        <div class="w-5">
+                                            <input type="checkbox" class="w-3 h-3 rounded text-green-600 focus:ring-green-300" />
+                                        </div>
+                                        <div class="flex-1 text-sm text-gray-700">产品目录数据</div>
+                                        <div class="w-24 text-xs text-gray-500">产品数据</div>
+                                        <div class="w-28 text-xs text-gray-500">DATA-PROD-004</div>
+                                    </div>
+                                    <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                        <div class="w-5">
+                                            <input type="checkbox" class="w-3 h-3 rounded text-green-600 focus:ring-green-300" />
+                                        </div>
+                                        <div class="flex-1 text-sm text-gray-700">财务报表数据</div>
+                                        <div class="w-24 text-xs text-gray-500">财务数据</div>
+                                        <div class="w-28 text-xs text-gray-500">DATA-FIN-005</div>
+                                    </div>
+                                    <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors">
+                                        <div class="w-5">
+                                            <input type="checkbox" class="w-3 h-3 rounded text-green-600 focus:ring-green-300" />
+                                        </div>
+                                        <div class="flex-1 text-sm text-gray-700">供应链数据</div>
+                                        <div class="w-24 text-xs text-gray-500">业务数据</div>
+                                        <div class="w-28 text-xs text-gray-500">DATA-SUP-006</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="submitAddSource()" class="w-full mt-4 py-2.5 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>添加资料
+                            </button>
+                        </div>
+                        
+                        <!-- 粘贴文本 -->
+                        <div id="content-paste" class="add-content hidden">
+                            <div class="border border-gray-200 rounded-xl p-4">
+                                <label class="block text-xs text-gray-600 mb-2">粘贴文本内容</label>
+                                <textarea rows="6" placeholder="在此粘贴文本内容..." class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none resize-none"></textarea>
+                                <p class="text-xs text-gray-500 mt-2">支持纯文本、JSON、XML 等格式</p>
+                            </div>
+                            <button onclick="submitAddSource()" class="w-full mt-4 py-2.5 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>添加资料
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 底部提交按钮 -->
+            <div class="px-6 pb-6">
+                <button onclick="submitAddSource()" class="w-full py-3 bg-gray-900 text-white text-base font-medium rounded-xl hover:bg-gray-800 transition-colors">
+                    提交
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 资料来源数据
+        const sources = [
+            { id: 1, name: 'Auto: 2026年展望：NEV行业下半年', icon: 'fa-car', color: 'red', checked: true },
+            { id: 2, name: '中国新能源汽车市场2026：销售预测与趋...', icon: 'fa-newspaper', color: 'blue', checked: true },
+            { id: 3, name: '中国汽车报网 - 全球中国汽车评测与数...', icon: 'fa-globe-asia', color: 'blue', checked: true },
+            { id: 4, name: 'Dongchedi: 数据洞察网站 - ScrapeStorm', icon: 'fa-chart-line', color: 'indigo', checked: true },
+            { id: 5, name: '外国汽车制造如何中国工厂改造为出口工...', icon: 'fa-industry', color: 'blue', checked: true },
+            { id: 6, name: 'Guazi: 中国二手车出口与拍卖 | 二手车', icon: 'fa-recycle', color: 'green', checked: true },
+            { id: 7, name: '中国访问量最高的汽车网站 2026年4月...', icon: 'fa-trophy', color: 'blue', checked: true },
+            { id: 8, name: '「汽车报价大全」汽车标志图片大全_汽...', icon: 'fa-tag', color: 'blue', checked: true },
+            { id: 9, name: '太平洋汽车_精准报价_企业评测_汽车世...', icon: 'fa-water', color: 'orange', checked: true },
+            { id: 10, name: '数据介绍.txt', icon: 'fa-file-alt', color: 'blue', checked: true },
+            { id: 11, name: '新进行', icon: 'fa-file', color: 'yellow', checked: true }
+        ];
+
+        // 颜色映射
+        const colorMap = {
+            red: 'bg-red-100 text-red-600',
+            blue: 'bg-blue-100 text-blue-600',
+            green: 'bg-green-100 text-green-600',
+            indigo: 'bg-indigo-100 text-indigo-600',
+            yellow: 'bg-yellow-100 text-yellow-600',
+            orange: 'bg-orange-100 text-orange-600'
+        };
+
+        // 渲染资料来源列表
+        function renderSources() {
+            const list = document.getElementById('source-list');
+            list.innerHTML = sources.map(s => `
+                <div class="source-item flex items-center gap-2 px-2 py-2 rounded-lg cursor-pointer relative group" data-id="${s.id}">
+                    <div class="w-7 h-7 rounded-lg ${colorMap[s.color]} flex items-center justify-center flex-shrink-0" onclick="toggleSource(${s.id})">
+                        <i class="fas ${s.icon} text-xs"></i>
+                    </div>
+                    <span class="text-xs text-gray-700 truncate flex-1" onclick="toggleSource(${s.id})">${s.name}</span>
+                    <!-- 悬浮显示的三个小点 -->
+                    <button onclick="toggleSourceMenu(${s.id}, event)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded opacity-0 group-hover:opacity-100 transition-opacity icon-btn" title="更多操作">
+                        <i class="fas fa-ellipsis-vertical text-[10px]"></i>
+                    </button>
+                    <div class="w-5 h-5 rounded border-2 ${s.checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300'} flex items-center justify-center flex-shrink-0 check-box" onclick="toggleSource(${s.id})">
+                        <i class="fas fa-check text-white text-[10px] ${s.checked ? '' : 'hidden'}"></i>
+                    </div>
+                    <!-- 操作菜单 -->
+                    <div id="source-menu-${s.id}" class="hidden absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 w-32">
+                        <button onclick="renameSource(${s.id}); hideAllSourceMenus()" class="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                            <i class="fas fa-edit text-xs"></i>
+                            <span>重命名</span>
+                        </button>
+                        <button onclick="deleteSource(${s.id}); hideAllSourceMenus()" class="w-full px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2">
+                            <i class="fas fa-trash text-xs"></i>
+                            <span>删除</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // 更新已选择数据数量
+            updateSelectedCount();
+        }
+
+        // 切换选中
+        function toggleSource(id) {
+            const source = sources.find(s => s.id === id);
+            if (source) source.checked = !source.checked;
+            renderSources();
+        }
+
+        // 更新已选择数据数量显示
+        function updateSelectedCount() {
+            const count = sources.filter(s => s.checked).length;
+            const countElement = document.getElementById('selected-count');
+            if (countElement) {
+                countElement.textContent = count;
+            }
+        }
+
+        // 切换资料来源操作菜单
+        function toggleSourceMenu(id, event) {
+            event.stopPropagation();
+            hideAllSourceMenus();
+            const menu = document.getElementById(`source-menu-${id}`);
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        // 隐藏所有资料来源菜单
+        function hideAllSourceMenus() {
+            sources.forEach(s => {
+                const menu = document.getElementById(`source-menu-${s.id}`);
+                if (menu) menu.classList.add('hidden');
+            });
+        }
+
+        // 重命名资料来源
+        function renameSource(id) {
+            const source = sources.find(s => s.id === id);
+            if (source) {
+                const newName = prompt('请输入新名称:', source.name);
+                if (newName && newName.trim()) {
+                    source.name = newName.trim();
+                    renderSources();
+                }
+            }
+        }
+
+        // 删除资料来源
+        function deleteSource(id) {
+            if (confirm('确定要删除这个资料来源吗？')) {
+                sources = sources.filter(s => s.id !== id);
+                renderSources();
+            }
+        }
+
+        // 全部选择
+        function toggleSelectAll() {
+            const checkbox = document.getElementById('select-all-checkbox');
+            const allChecked = checkbox ? checkbox.checked : sources.every(s => s.checked);
+            sources.forEach(s => s.checked = allChecked);
+            renderSources();
+            updateSelectedCount();
+        }
+
+        // 更新全选复选框状态
+        function updateSelectAllCheckbox() {
+            const checkbox = document.getElementById('select-all-checkbox');
+            if (checkbox) {
+                checkbox.checked = sources.every(s => s.checked);
+            }
+        }
+
+        // 渲染聊天内容
+        function renderChatContent() {
+            const content = document.getElementById('chat-content');
+            content.innerHTML = `
+                <!-- 用户提问 -->
+                <div class="mb-6">
+                    <div class="flex items-start gap-3 justify-end">
+                        <div class="flex-1 text-right">
+                            <div class="bg-violet-600 rounded-2xl rounded-tr-md px-4 py-3 inline-block">
+                                <p class="text-sm text-white">帮我生成安徽省汽车底盘生产厂商有哪些，并帮我生成报告。</p>
+                            </div>
+                            <div class="flex items-center justify-end gap-3 mt-1">
+                                <p class="text-xs text-gray-400">今天 下午1:40</p>
+                                <div class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 rounded-full cursor-pointer hover:bg-gray-200 transition-colors" onclick="showDataSourcesModal()">
+                                    <i class="fas fa-database text-xs text-blue-600"></i>
+                                    <span class="text-xs text-gray-600">使用了 12 个数据来源</span>
+                                    <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-user text-white text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 需求理解阶段 -->
+                <div class="mb-6">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-brain text-white text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="bg-white border border-gray-100 rounded-2xl rounded-tl-md px-4 py-3">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">需求理解</span>
+                                </div>
+                                <p class="text-sm text-gray-700">我已理解您的需求，您希望了解安徽省内的汽车底盘生产厂商信息，并生成一份详细报告。我将进行以下步骤：</p>
+                                <ul class="text-sm text-gray-700 mt-2 space-y-1">
+                                    <li>• 检索安徽省汽车零部件行业相关数据</li>
+                                    <li>• 识别主要的底盘生产企业</li>
+                                    <li>• 整理企业基本信息和产品特点</li>
+                                    <li>• 生成结构化报告</li>
+                                </ul>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">今天 下午1:41</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 数据检索阶段 -->
+                <div class="mb-6">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-search text-white text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="bg-white border border-gray-100 rounded-2xl rounded-tl-md px-4 py-3">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">数据检索</span>
+                                </div>
+                                <p class="text-sm text-gray-700">正在检索数据来源...</p>
+                                <div class="flex flex-wrap gap-1.5 mt-2">
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">安徽省汽车工业协会</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">中国汽车工业年鉴</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">企业工商信息</span>
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">行业研究报告</span>
+                                </div>
+                                <p class="text-sm text-gray-700 mt-3">已找到 <strong>12家</strong> 主要汽车底盘生产厂商信息，正在整理分析中...</p>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">今天 下午1:42</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 答案生成阶段 -->
+                <div class="mb-6">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-file-alt text-white text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="bg-white border border-gray-100 rounded-2xl rounded-tl-md px-4 py-3">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">答案生成</span>
+                                </div>
+                                <p class="text-sm text-gray-700">数据整理完成，正在生成报告...</p>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">今天 下午1:43</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 最终报告 -->
+                <div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-file-text text-white text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="bg-white border border-gray-100 rounded-2xl rounded-tr-md px-4 py-4">
+                                <h3 class="text-base font-semibold text-gray-800 mb-3">安徽省汽车底盘生产厂商调查报告</h3>
+                                
+                                <h4 class="text-sm font-medium text-gray-700 mt-4 mb-2">一、概述</h4>
+                                <p class="text-sm text-gray-600">安徽省作为中国重要的汽车产业基地之一，拥有多家规模较大的汽车底盘生产企业，涵盖乘用车、商用车等多个领域。</p>
+                                
+                                <h4 class="text-sm font-medium text-gray-700 mt-4 mb-2">二、主要生产厂商列表</h4>
+                                <div class="space-y-3 mt-2">
+                                    <div class="p-3 bg-gray-50 rounded-xl">
+                                        <div class="font-medium text-gray-800">1. 江淮汽车集团股份有限公司</div>
+                                        <div class="text-xs text-gray-500 mt-1">• 总部：合肥市 • 产品：乘用车底盘、商用车底盘</div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-xl">
+                                        <div class="font-medium text-gray-800">2. 安徽安凯汽车股份有限公司</div>
+                                        <div class="text-xs text-gray-500 mt-1">• 总部：合肥市 • 产品：客车底盘、新能源底盘</div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-xl">
+                                        <div class="font-medium text-gray-800">3. 芜湖伯特利汽车安全系统股份有限公司</div>
+                                        <div class="text-xs text-gray-500 mt-1">• 总部：芜湖市 • 产品：制动系统、底盘模块</div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-xl">
+                                        <div class="font-medium text-gray-800">4. 安徽中鼎密封件股份有限公司</div>
+                                        <div class="text-xs text-gray-500 mt-1">• 总部：宣城市 • 产品：底盘密封系统、橡胶部件</div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-xl">
+                                        <div class="font-medium text-gray-800">5. 合肥美桥汽车传动及底盘系统有限公司</div>
+                                        <div class="text-xs text-gray-500 mt-1">• 总部：合肥市 • 产品：车桥、悬挂系统</div>
+                                    </div>
+                                </div>
+                                
+                                <h4 class="text-sm font-medium text-gray-700 mt-4 mb-2">三、产业特点</h4>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>• 产业集群化：主要集中在合肥、芜湖、宣城等地</li>
+                                    <li>• 技术水平较高：部分企业具备自主研发能力</li>
+                                    <li>• 配套能力强：为多家整车厂提供配套服务</li>
+                                </ul>
+                                
+                                <h4 class="text-sm font-medium text-gray-700 mt-4 mb-2">四、总结</h4>
+                                <p class="text-sm text-gray-600">安徽省汽车底盘产业基础雄厚，企业数量较多，产品覆盖范围广，是中国汽车零部件产业的重要组成部分。</p>
+                                
+                                <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                                    <span class="text-xs text-gray-400">数据来源：4个资料来源</span>
+                                    <button class="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                                        <i class="fas fa-download text-xs"></i>
+                                        <span>下载报告</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">今天 下午1:44</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 详情弹窗控制
+        function showDetail(type) {
+            const modal = document.getElementById('detail-modal');
+            const title = document.getElementById('detail-title');
+            const content = document.getElementById('detail-content');
+            
+            // 根据类型设置标题和内容
+            const detailData = {
+                ppt: {
+                    title: '安徽省汽车产业分析报告PPT',
+                    content: `
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                                    <i class="fas fa-file-powerpoint text-blue-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">PPT文档</h4>
+                                    <p class="text-xs text-gray-500">共25页 | 2026年6月生成</p>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-xl">
+                                <h5 class="text-sm font-medium text-gray-700 mb-3">使用的数据来源（共8个）</h5>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-blue-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">Auto 2026年展望</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-blue-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">中国新能源汽车市场2026</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-blue-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">中国汽车指南</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-blue-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">汽车报价大全</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-blue-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">太平洋汽车网</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-blue-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">数说汽车.txt</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-blue-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">新出行</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-blue-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">汽车数据平台</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-xl">
+                                <h5 class="text-sm font-medium text-gray-700 mb-2">内容概览</h5>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>• 封面页：报告标题与日期</li>
+                                    <li>• 目录：6大章节导航</li>
+                                    <li>• 产业概况：安徽省汽车产业现状</li>
+                                    <li>• 主要企业：江淮、奇瑞等龙头企业</li>
+                                    <li>• 发展趋势：新能源与智能网联</li>
+                                    <li>• 总结建议：未来发展方向</li>
+                                </ul>
+                            </div>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="text-center p-3 bg-blue-50 rounded-lg">
+                                    <div class="text-lg font-semibold text-blue-600">25</div>
+                                    <div class="text-xs text-gray-500">页数</div>
+                                </div>
+                                <div class="text-center p-3 bg-green-50 rounded-lg">
+                                    <div class="text-lg font-semibold text-green-600">12</div>
+                                    <div class="text-xs text-gray-500">图表</div>
+                                </div>
+                                <div class="text-center p-3 bg-orange-50 rounded-lg">
+                                    <div class="text-lg font-semibold text-orange-600">8</div>
+                                    <div class="text-xs text-gray-500">表格</div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                mindmap: {
+                    title: '汽车底盘技术架构思维导图',
+                    content: `
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
+                                    <i class="fas fa-sitemap text-green-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">思维导图</h4>
+                                    <p class="text-xs text-gray-500">共5级节点 | 120+条目</p>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-xl">
+                                <h5 class="text-sm font-medium text-gray-700 mb-3">使用的数据来源（共5个）</h5>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-green-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">Dongchedi-数据抓取</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-green-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">国外汽车制造商数据</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-green-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">汽车技术白皮书</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-green-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">零部件供应商数据</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-green-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">行业标准文档</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-xl">
+                                <h5 class="text-sm font-medium text-gray-700 mb-2">架构层级</h5>
+                                <div class="space-y-2">
+                                    <div class="flex items-start gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-green-500 text-white text-xs flex items-center justify-center flex-shrink-0">1</span>
+                                        <span class="text-sm text-gray-600">底盘系统（根节点）</span>
+                                    </div>
+                                    <div class="flex items-start gap-2 pl-6">
+                                        <span class="w-5 h-5 rounded-full bg-green-400 text-white text-xs flex items-center justify-center flex-shrink-0">2</span>
+                                        <span class="text-sm text-gray-600">悬挂系统、制动系统、转向系统、传动系统</span>
+                                    </div>
+                                    <div class="flex items-start gap-2 pl-10">
+                                        <span class="w-4 h-4 rounded-full bg-green-300 text-white text-xs flex items-center justify-center flex-shrink-0">3</span>
+                                        <span class="text-sm text-gray-600">各子系统详细技术分支</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-green-50 rounded-lg">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-download text-green-600"></i>
+                                    <span class="text-sm text-green-700">支持导出为PNG、SVG、PDF格式</span>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                report: {
+                    title: '2026年新能源汽车市场调研报告',
+                    content: `
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                                    <i class="fas fa-file-alt text-orange-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">调研报告</h4>
+                                    <p class="text-xs text-gray-500">156页 | 2026年度报告</p>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-xl">
+                                <h5 class="text-sm font-medium text-gray-700 mb-3">使用的数据来源（共12个）</h5>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-orange-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">Auto 2026年展望</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-orange-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">中国新能源汽车市场2026</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-orange-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">中国汽车指南</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-orange-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">Dongchedi-数据抓取</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-orange-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">国外汽车制造商数据</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-orange-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">Guazi-二手车数据</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-orange-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">中国访问量最高的汽车网站</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-orange-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">汽车报价大全</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-orange-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">太平洋汽车网</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-orange-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">数说汽车.txt</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-orange-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">新出行</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-orange-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">行业研究报告</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-xl">
+                                <h5 class="text-sm font-medium text-gray-700 mb-2">报告目录</h5>
+                                <div class="space-y-1">
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-600">一、市场概述</span>
+                                        <span class="text-xs text-gray-400">P1-P15</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-600">二、竞争格局分析</span>
+                                        <span class="text-xs text-gray-400">P16-P45</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-600">三、技术发展趋势</span>
+                                        <span class="text-xs text-gray-400">P46-P78</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-600">四、消费者洞察</span>
+                                        <span class="text-xs text-gray-400">P79-P110</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-600">五、投资建议</span>
+                                        <span class="text-xs text-gray-400">P111-P156</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 p-3 bg-orange-50 rounded-lg">
+                                <div>
+                                    <div class="text-xs text-gray-500">数据来源</div>
+                                    <div class="text-sm font-medium text-orange-700">28个权威数据源</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500">调研样本</div>
+                                    <div class="text-sm font-medium text-orange-700">5,000+消费者</div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                qa: {
+                    title: '汽车行业常见问题解答集',
+                    content: `
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
+                                    <i class="fas fa-comments text-purple-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">问答集</h4>
+                                    <p class="text-xs text-gray-500">共86个问题 | 分类整理</p>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-xl">
+                                <h5 class="text-sm font-medium text-gray-700 mb-3">使用的数据来源（共6个）</h5>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-purple-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">Auto 2026年展望</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-purple-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">中国新能源汽车市场2026</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-purple-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">汽车报价大全</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-purple-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">太平洋汽车网</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-purple-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">新出行</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-purple-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">用户常见问题汇总</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="p-3 bg-gray-50 rounded-xl">
+                                    <div class="text-sm font-medium text-gray-800 mb-1">Q1：新能源汽车续航里程怎么选？</div>
+                                    <div class="text-sm text-gray-600">根据日常通勤距离、充电条件选择。城市通勤推荐400-600km，长途需求建议600km以上。</div>
+                                </div>
+                                <div class="p-3 bg-gray-50 rounded-xl">
+                                    <div class="text-sm font-medium text-gray-800 mb-1">Q2：纯电和混动哪个更适合我？</div>
+                                    <div class="text-sm text-gray-600">有固定充电条件、以城市出行为主选纯电；经常跑长途、充电不便选混动。</div>
+                                </div>
+                                <div class="p-3 bg-gray-50 rounded-xl">
+                                    <div class="text-sm font-medium text-gray-800 mb-1">Q3：电池寿命一般是多久？</div>
+                                    <div class="text-sm text-gray-600">主流车型电池质保8年/15万公里，实际使用寿命通常在10年以上。</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 p-3 bg-purple-50 rounded-lg">
+                                <i class="fas fa-tag text-purple-600"></i>
+                                <span class="text-sm text-purple-700">标签分类：购车指南、技术科普、使用维护、政策解读</span>
+                            </div>
+                        </div>
+                    `
+                },
+                app: {
+                    title: '车辆配置对比工具',
+                    content: `
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-100 to-cyan-200 flex items-center justify-center">
+                                    <i class="fas fa-mobile-alt text-cyan-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">微应用</h4>
+                                    <p class="text-xs text-gray-500">Web端应用 | 无需安装</p>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-xl">
+                                <h5 class="text-sm font-medium text-gray-700 mb-3">使用的数据来源（共9个）</h5>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-cyan-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">Auto 2026年展望</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-cyan-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">中国新能源汽车市场2026</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-cyan-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">中国汽车指南</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-cyan-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">Dongchedi-数据抓取</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-cyan-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">汽车报价大全</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-cyan-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">太平洋汽车网</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-cyan-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">数说汽车.txt</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-cyan-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">新出行</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-cyan-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">车型数据库</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-xl">
+                                <h5 class="text-sm font-medium text-gray-700 mb-3">功能特性</h5>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-check-circle text-cyan-500 flex-shrink-0 mt-0.5"></i>
+                                        <span class="text-sm text-gray-600">多车型同时对比</span>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-check-circle text-cyan-500 flex-shrink-0 mt-0.5"></i>
+                                        <span class="text-sm text-gray-600">参数可视化对比</span>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-check-circle text-cyan-500 flex-shrink-0 mt-0.5"></i>
+                                        <span class="text-sm text-gray-600">配置差异高亮</span>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-check-circle text-cyan-500 flex-shrink-0 mt-0.5"></i>
+                                        <span class="text-sm text-gray-600">导出对比报告</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-cyan-50 rounded-lg">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-globe text-cyan-600"></i>
+                                    <span class="text-sm text-cyan-700">访问地址：app.example.com/car-compare</span>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                api: {
+                    title: '车辆数据查询API接口',
+                    content: `
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center">
+                                    <i class="fas fa-plug text-indigo-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">API服务</h4>
+                                    <p class="text-xs text-gray-500">RESTful接口 | JSON格式</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 p-3 bg-indigo-50 rounded-lg">
+                                <i class="fas fa-server text-indigo-600"></i>
+                                <div>
+                                    <div class="text-xs text-gray-500">基础URL</div>
+                                    <div class="text-sm font-medium text-indigo-700">api.example.com/v1</div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-xl">
+                                <h5 class="text-sm font-medium text-gray-700 mb-3">使用的数据来源（共15个）</h5>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">Auto 2026年展望</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">中国新能源汽车市场2026</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">中国汽车指南</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">Dongchedi-数据抓取</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">国外汽车制造商数据</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">Guazi-二手车数据</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">中国访问量最高的汽车网站</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">汽车报价大全</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">太平洋汽车网</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">数说汽车.txt</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">新出行</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">车型数据库</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">品牌信息库</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">价格行情数据</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg">
+                                        <i class="fas fa-check-circle text-indigo-500 text-xs"></i>
+                                        <span class="text-xs text-gray-700">行业统计数据</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- API详情 -->
+                            <div class="p-4 bg-gray-50 rounded-xl">
+                                <h5 class="text-sm font-medium text-gray-700 mb-3">接口详情</h5>
+                                
+                                <!-- 请求信息 -->
+                                <div class="mb-4">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded">GET</span>
+                                        <span class="text-sm text-gray-700 font-medium">/api/cars</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500">查询车辆列表接口，支持分页、筛选和排序</p>
+                                </div>
+                                
+                                <!-- 请求参数 -->
+                                <div class="mb-4">
+                                    <h6 class="text-xs font-medium text-gray-600 mb-2">请求参数</h6>
+                                    <div class="space-y-1">
+                                        <div class="flex items-center justify-between p-2 bg-white rounded-lg text-xs">
+                                            <span class="text-gray-700">page</span>
+                                            <span class="text-gray-500">int (可选) - 页码，默认1</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-2 bg-white rounded-lg text-xs">
+                                            <span class="text-gray-700">size</span>
+                                            <span class="text-gray-500">int (可选) - 每页数量，默认20，最大100</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-2 bg-white rounded-lg text-xs">
+                                            <span class="text-gray-700">brand</span>
+                                            <span class="text-gray-500">string (可选) - 品牌名称筛选</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-2 bg-white rounded-lg text-xs">
+                                            <span class="text-gray-700">type</span>
+                                            <span class="text-gray-500">string (可选) - 车辆类型：sedan/suv/electric</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 响应示例 -->
+                                <div>
+                                    <h6 class="text-xs font-medium text-gray-600 mb-2">响应示例</h6>
+                                    <div class="p-3 bg-gray-900 rounded-lg text-xs text-gray-300 font-mono overflow-x-auto">
+                                        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 1256,
+    "page": 1,
+    "size": 20,
+    "list": [
+      {
+        "id": "c001",
+        "name": "江淮iEVS4",
+        "brand": "江淮",
+        "type": "electric",
+        "price": "12.98万",
+        "range": 400
+      }
+    ]
+  }
+}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                }
+            };
+            
+            const data = detailData[type] || detailData.ppt;
+            title.textContent = data.title;
+            content.innerHTML = data.content;
+            modal.classList.remove('hidden');
+        }
+        
+        function hideDetailModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+        }
+
+        // 弹窗控制
+        function showAddSourceModal() {
+            document.getElementById('add-source-modal').classList.remove('hidden');
+            selectAddMethod('upload'); // 默认选中上传文件
+        }
+        function hideAddSourceModal() {
+            document.getElementById('add-source-modal').classList.add('hidden');
+        }
+        function showAddNoteModal() {
+            alert('打开补充注释功能');
+        }
+        
+        // 选择添加方式
+        function selectAddMethod(method) {
+            // 重置所有按钮样式
+            const buttons = document.querySelectorAll('[id^="btn-"]');
+            buttons.forEach(btn => {
+                btn.classList.remove('text-gray-700', 'border-blue-500');
+                btn.classList.add('text-gray-500', 'border-transparent');
+            });
+            
+            // 激活当前按钮
+            const activeBtn = document.getElementById(`btn-${method}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-gray-500', 'border-transparent');
+                activeBtn.classList.add('text-gray-700', 'border-blue-500');
+            }
+            
+            // 隐藏所有内容区域
+            const contentAreas = document.querySelectorAll('.add-content');
+            contentAreas.forEach(area => {
+                area.classList.add('hidden');
+            });
+            
+            // 显示当前内容区域
+            const activeContent = document.getElementById(`content-${method}`);
+            if (activeContent) {
+                activeContent.classList.remove('hidden');
+            }
+        }
+        
+        // 触发文件上传
+        function triggerFileUpload() {
+            document.getElementById('file-input').click();
+        }
+        
+        // 搜索网站
+        function searchWebsite() {
+            const keyword = document.getElementById('website-search-input').value.trim();
+            if (!keyword) {
+                alert('请输入搜索关键词');
+                return;
+            }
+            // 模拟搜索结果（实际应用中这里会调用后端API）
+            const mockResults = [
+                { name: '汽车工业协会官网', url: 'caam.org.cn' },
+                { name: '中国汽车技术研究中心', url: 'catarc.ac.cn' },
+                { name: '汽车之家', url: 'autohome.com.cn' },
+                { name: '懂车帝', url: 'dongchedi.com' },
+                { name: '太平洋汽车网', url: 'pcauto.com.cn' },
+                { name: '新浪汽车', url: 'auto.sina.com.cn' },
+                { name: '搜狐汽车', url: 'auto.sohu.com' },
+                { name: '网易汽车', url: 'auto.163.com' },
+                { name: '腾讯汽车', url: 'auto.qq.com' },
+                { name: '凤凰汽车', url: 'auto.ifeng.com' },
+                { name: '汽车与驾驶维修', url: 'qcwxjs.com' },
+                { name: '中国汽车报', url: 'chinaautonews.com' },
+                { name: '汽车导报', url: 'autoreport.cn' },
+                { name: '汽车族', url: 'autofan.com.cn' },
+                { name: '汽车博览', url: 'automobilsport.com.cn' },
+                { name: '汽车工程', url: 'autoeng.cn' },
+                { name: '汽车技术', url: 'autotech.cn' },
+                { name: '汽车配件网', url: 'qipei.com' },
+                { name: '汽车人才网', url: 'qcrencai.com' },
+                { name: '汽车租赁网', url: 'qichezu.com' }
+            ];
+            // 过滤结果（模拟搜索匹配）
+            const filteredResults = mockResults.filter(item => 
+                item.name.includes(keyword) || item.url.includes(keyword)
+            ).slice(0, 20);
+            
+            const resultsList = document.getElementById('website-results-list');
+            resultsList.innerHTML = '';
+            
+            filteredResults.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100';
+                row.innerHTML = `
+                    <div class="w-5">
+                        <input type="checkbox" class="w-3 h-3 rounded text-blue-600 focus:ring-blue-300" />
+                    </div>
+                    <div class="flex-1 text-sm text-gray-700">${item.name}</div>
+                    <div class="w-32 text-xs text-gray-500 truncate">${item.url}</div>
+                `;
+                resultsList.appendChild(row);
+            });
+            
+            const countInfo = document.querySelector('#website-search-results .border-t');
+            countInfo.textContent = `共找到 ${filteredResults.length} 条相关结果（显示前20条）`;
+        }
+
+        // 显示数据来源详情弹窗
+        function showDataSourcesModal() {
+            document.getElementById('data-sources-modal').classList.remove('hidden');
+        }
+
+        // 隐藏数据来源详情弹窗
+        function hideDataSourcesModal() {
+            document.getElementById('data-sources-modal').classList.add('hidden');
+        }
+
+        // 提交添加资料
+        function submitAddSource() {
+            alert('资料添加成功！');
+            hideAddSourceModal();
+        }
+
+        // 模拟获取数据表（实际应用中这里会调用后端API）
+        function fetchTables() {
+            const tableSelector = document.getElementById('table-selector');
+            const tableList = document.getElementById('table-list');
+            
+            // 模拟数据表列表
+            const mockTables = [
+                { name: 'users', rows: 1256 },
+                { name: 'products', rows: 892 },
+                { name: 'orders', rows: 3421 },
+                { name: 'customers', rows: 567 },
+                { name: 'categories', rows: 24 },
+                { name: 'transactions', rows: 8934 },
+                { name: 'logs', rows: 15678 },
+                { name: 'config', rows: 12 }
+            ];
+            
+            // 清空列表
+            tableList.innerHTML = '';
+            
+            // 生成数据表列表
+            mockTables.forEach(table => {
+                const tableItem = document.createElement('div');
+                tableItem.className = 'flex items-center gap-3 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors';
+                tableItem.innerHTML = `
+                    <input type="checkbox" class="table-checkbox w-4 h-4 text-blue-500 rounded" />
+                    <div class="flex-1">
+                        <div class="text-xs font-medium text-gray-700">${table.name}</div>
+                        <div class="text-xs text-gray-400">${table.rows} 行数据</div>
+                    </div>
+                `;
+                tableList.appendChild(tableItem);
+            });
+            
+            // 显示数据表选择区域
+            tableSelector.classList.remove('hidden');
+        }
+
+        // 全选数据表
+        function selectAllTables() {
+            const checkboxes = document.querySelectorAll('.table-checkbox');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+        }
+
+        // 切换菜单显示/隐藏
+        function toggleMenu(menuId, event) {
+            event.stopPropagation();
+            hideAllMenus();
+            const menu = document.getElementById(menuId);
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+
+        // 隐藏所有菜单
+        function hideAllMenus() {
+            const menus = document.querySelectorAll('[id^="menu-"]');
+            menus.forEach(menu => menu.classList.add('hidden'));
+        }
+
+        // 转为数据资料
+        function actionConvert(type) {
+            alert(`已将"${getTitle(type)}"转为数据资料`);
+        }
+
+        // 发布
+        function actionPublish(type) {
+            alert(`已发布"${getTitle(type)}"`);
+        }
+
+        // 导出
+        function actionExport(type) {
+            alert(`正在导出"${getTitle(type)}"...`);
+        }
+
+        // 删除
+        function actionDelete(type) {
+            if (confirm(`确定要删除"${getTitle(type)}"吗？`)) {
+                alert(`已删除"${getTitle(type)}"`);
+            }
+        }
+
+        // 获取标题
+        function getTitle(type) {
+            const titles = {
+                'ppt': '安徽省汽车产业分析报告PPT',
+                'search': '汽车行业数据搜索工具',
+                'website': '汽车行业门户网站',
+                'report': '2026年新能源汽车市场调研报告',
+                'qa': '汽车行业常见问题解答集',
+                'app': '车辆配置对比工具',
+                'api': '车辆数据查询API接口'
+            };
+            return titles[type] || type;
+        }
+
+        // 点击页面其他地方关闭菜单
+        document.addEventListener('click', function() {
+            hideAllMenus();
+        });
+
+        // 跳转到首页
+        function goToHome() {
+            window.location.href = 'home.html';
+        }
+
+        // 折叠/展开资料来源面板
+        function toggleSourcePanel() {
+            const panel = document.getElementById('source-panel');
+            const headerExpanded = document.getElementById('source-header-expanded');
+            const headerCollapsed = document.getElementById('source-header-collapsed');
+            const contentExpanded = document.getElementById('source-content-expanded');
+            const contentCollapsed = document.getElementById('source-content-collapsed');
+            
+            if (panel.classList.contains('collapsed')) {
+                // 展开
+                panel.classList.remove('collapsed');
+                panel.style.width = '288px';
+                headerExpanded.classList.remove('hidden');
+                headerCollapsed.classList.add('hidden');
+                contentExpanded.classList.remove('hidden');
+                contentCollapsed.classList.add('hidden');
+            } else {
+                // 折叠（显示图标按钮）
+                panel.classList.add('collapsed');
+                panel.style.width = '48px';
+                headerExpanded.classList.add('hidden');
+                headerCollapsed.classList.remove('hidden');
+                contentExpanded.classList.add('hidden');
+                contentCollapsed.classList.remove('hidden');
+            }
+        }
+
+        // 折叠/展开工作室面板
+        function toggleStudioPanel() {
+            const panel = document.getElementById('studio-panel');
+            const headerExpanded = document.getElementById('studio-header-expanded');
+            const headerCollapsed = document.getElementById('studio-header-collapsed');
+            const contentExpanded = document.getElementById('studio-content-expanded');
+            const dataList = document.querySelector('#studio-panel .flex-1.overflow-y-auto');
+            const contentCollapsed = document.getElementById('studio-content-collapsed');
+            
+            if (panel.classList.contains('collapsed')) {
+                // 展开
+                panel.classList.remove('collapsed');
+                panel.style.width = '320px';
+                headerExpanded.classList.remove('hidden');
+                headerCollapsed.classList.add('hidden');
+                contentExpanded.classList.remove('hidden');
+                dataList.classList.remove('hidden');
+                contentCollapsed.classList.add('hidden');
+            } else {
+                // 折叠（显示图标按钮）
+                panel.classList.add('collapsed');
+                panel.style.width = '48px';
+                headerExpanded.classList.add('hidden');
+                headerCollapsed.classList.remove('hidden');
+                contentExpanded.classList.add('hidden');
+                dataList.classList.add('hidden');
+                contentCollapsed.classList.remove('hidden');
+            }
+        }
+
+        // 点击弹窗外部关闭
+        document.getElementById('add-source-modal').addEventListener('click', function(e) {
+            if (e.target === this) hideAddSourceModal();
+        });
+
+        // 提示词模板数据（包含默认模板和自定义模板）
+        let promptTemplates = {
+            report: [
+                { name: '市场调研报告', prompt: '请根据市场数据，生成一份详细的市场调研报告，包含市场规模、竞争格局、消费者分析、趋势预测、战略建议等内容。', isCustom: false },
+                { name: '行业分析报告', prompt: '请根据行业数据，制作一份行业分析报告，包含行业现状、发展趋势、技术创新、政策影响、投资建议等内容。', isCustom: false },
+                { name: '可行性研究报告', prompt: '请根据项目数据，生成一份可行性研究报告，包含市场分析、技术方案、财务评估、风险分析、结论建议等内容。', isCustom: false },
+                { name: '数据分析报告', prompt: '请根据业务数据，制作一份数据分析报告，包含数据概述、关键发现、问题诊断、优化建议、实施路径等内容。', isCustom: false }
+            ],
+            search: [
+                { name: '关键词搜索', prompt: '请根据用户提供的关键词，在数据库中进行全文检索，返回相关的数据记录和摘要信息。', isCustom: false },
+                { name: '高级搜索', prompt: '请根据用户提供的多个搜索条件，进行组合查询，支持模糊匹配、范围查询、精确匹配等多种搜索方式。', isCustom: false },
+                { name: '语义搜索', prompt: '请根据用户的自然语言查询，进行语义理解和智能搜索，返回最相关的数据结果。', isCustom: false },
+                { name: '搜索结果优化', prompt: '请对搜索结果进行排序和筛选，根据相关性、时间、热度等维度进行优化展示。', isCustom: false }
+            ],
+            qa: [
+                { name: '常见问题解答', prompt: '请根据知识库，生成一份常见问题解答文档，包含问题分类、详细解答、示例说明、相关链接等内容。', isCustom: false },
+                { name: '产品使用指南', prompt: '请根据产品功能，制作一份产品使用指南，包含功能介绍、操作步骤、常见问题、注意事项等内容。', isCustom: false },
+                { name: '技术白皮书', prompt: '请根据技术文档，生成一份技术白皮书，包含技术原理、架构设计、性能指标、应用案例等内容。', isCustom: false },
+                { name: 'FAQ自动生成', prompt: '请根据对话记录，制作一份FAQ文档，自动提取常见问题，生成结构化的问答内容。', isCustom: false }
+            ],
+            website: [
+                { name: '企业官网', prompt: '请根据企业信息，生成一个企业官网，包含首页、关于我们、产品服务、新闻动态、联系我们等页面。', isCustom: false },
+                { name: '产品展示网站', prompt: '请根据产品数据，制作一个产品展示网站，包含产品列表、产品详情、在线咨询、购买链接等功能。', isCustom: false },
+                { name: '博客网站', prompt: '请根据内容需求，生成一个博客网站，包含文章列表、文章详情、评论功能、分类标签等。', isCustom: false },
+                { name: '门户网站', prompt: '请根据业务需求，制作一个门户网站，包含新闻资讯、专题报道、用户互动、数据查询等功能。', isCustom: false }
+            ],
+            api: [
+                { name: 'RESTful API', prompt: '请根据数据模型，设计一个RESTful API接口文档，包含接口列表、请求参数、响应格式、错误处理、示例代码等内容。', isCustom: false },
+                { name: '数据查询API', prompt: '请根据数据库结构，设计一个数据查询API，包含查询条件、分页参数、排序规则、返回字段等配置。', isCustom: false },
+                { name: '数据导入API', prompt: '请根据数据格式，设计一个数据导入API，包含文件上传、数据解析、格式校验、批量导入等功能。', isCustom: false },
+                { name: '实时推送API', prompt: '请根据业务需求，设计一个实时推送API，包含订阅机制、消息格式、推送策略、状态管理等内容。', isCustom: false }
+            ]
+        };
+
+        let currentPromptType = '';
+
+        // 显示提示词设计弹窗
+        function showPromptModal(type) {
+            currentPromptType = type;
+            const modal = document.getElementById('prompt-modal');
+            const title = document.getElementById('prompt-title');
+            const customPrompt = document.getElementById('custom-prompt');
+            
+            // 设置标题
+            const typeNames = {
+                'report': '报告',
+                'search': '搜索',
+                'qa': '问答',
+                'website': '网站',
+                'api': 'API服务'
+            };
+            title.textContent = typeNames[type] + ' - 提示词设计';
+            
+            // 渲染模板列表（包含自定义模板）
+            renderTemplates(type);
+            
+            // 清空输入框
+            customPrompt.value = '';
+            
+            // 绑定存为模板按钮事件
+            const saveTemplateBtn = document.getElementById('save-template-btn');
+            if (saveTemplateBtn) {
+                saveTemplateBtn.onclick = function() {
+                    const saveModal = document.getElementById('save-template-modal');
+                    const templateNameInput = document.getElementById('save-template-name');
+                    if (saveModal && templateNameInput) {
+                        templateNameInput.value = '';
+                        saveModal.classList.remove('hidden');
+                    }
+                };
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        // 隐藏提示词设计弹窗
+        function hidePromptModal() {
+            document.getElementById('prompt-modal').classList.add('hidden');
+        }
+
+        // 应用提示词
+        function applyPrompt() {
+            const prompt = document.getElementById('custom-prompt').value;
+            if (prompt.trim()) {
+                // 将提示词发送到聊天窗口
+                sendMessage(prompt);
+            }
+            hidePromptModal();
+        }
+
+        // 显示存为模板弹窗
+        function showSaveTemplateModal() {
+            alert('存为模板按钮已点击');
+            const modal = document.getElementById('save-template-modal');
+            const templateNameInput = document.getElementById('save-template-name');
+            if (modal && templateNameInput) {
+                templateNameInput.value = '';
+                modal.classList.remove('hidden');
+            } else {
+                alert('元素未找到！');
+            }
+        }
+
+        // 隐藏存为模板弹窗
+        function hideSaveTemplateModal() {
+            document.getElementById('save-template-modal').classList.add('hidden');
+        }
+
+        // 确认保存模板
+        function confirmSaveTemplate() {
+            const templateName = document.getElementById('save-template-name').value;
+            const prompt = document.getElementById('custom-prompt').value;
+            
+            if (!templateName.trim()) {
+                alert('请输入模板名称');
+                return;
+            }
+            if (!prompt.trim()) {
+                alert('请先输入提示词内容');
+                return;
+            }
+            
+            // 添加到模板列表
+            promptTemplates[currentPromptType].push({
+                name: templateName,
+                prompt: prompt,
+                isCustom: true
+            });
+            
+            // 隐藏弹窗
+            hideSaveTemplateModal();
+            
+            // 重新渲染模板列表
+            renderTemplates(currentPromptType);
+            
+            alert('模板保存成功！');
+        }
+
+        // 渲染模板列表
+        function renderTemplates(type) {
+            const templateList = document.getElementById('template-list');
+            templateList.innerHTML = '';
+            
+            promptTemplates[type].forEach((template, index) => {
+                const templateItem = document.createElement('div');
+                templateItem.className = `w-full p-3 rounded-xl border transition-all hover:border-violet-300 hover:bg-violet-50 ${template.isCustom ? 'border-violet-200 bg-violet-50' : 'border-gray-100 bg-gray-50'}`;
+                templateItem.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <button class="flex-1 text-left" onclick="selectTemplate('${type}', ${index})">
+                            <span class="text-sm font-medium ${template.isCustom ? 'text-violet-700' : 'text-gray-700'}">${template.name}</span>
+                            ${template.isCustom ? '<span class="text-xs text-violet-500 ml-2">自定义</span>' : ''}
+                        </button>
+                        ${template.isCustom ? `
+                        <button onclick="deleteTemplate('${type}', ${index})" class="ml-2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors" title="删除模板">
+                            <i class="fas fa-trash text-xs"></i>
+                        </button>
+                        ` : ''}
+                    </div>
+                `;
+                templateList.appendChild(templateItem);
+            });
+        }
+
+        // 选择模板
+        function selectTemplate(type, index) {
+            document.getElementById('custom-prompt').value = promptTemplates[type][index].prompt;
+        }
+
+        // 删除自定义模板
+        function deleteTemplate(type, index) {
+            if (confirm('确定要删除这个自定义模板吗？')) {
+                promptTemplates[type].splice(index, 1);
+                renderTemplates(type);
+            }
+        }
+
+        // 发送消息到聊天窗口
+        function sendMessage(content) {
+            const chatInput = document.getElementById('chat-input');
+            chatInput.value = content;
+            // 模拟发送
+            chatInput.dispatchEvent(new Event('input'));
+        }
+
+        // 空间配置相关
+        let selectedIcon = 'fa-cubes';
+        let selectedBackground = 'gradient-1';
+        let customIconUrl = '';
+        let customBackgroundUrl = '';
+        
+        // 初始化聊天窗口背景为炫酷渐变
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.classList.add('bg-gradient-to-br', 'from-violet-50', 'via-purple-50', 'to-blue-50');
+        });
+
+        // 显示空间配置弹窗
+        function showConfigModal() {
+            document.getElementById('config-modal').classList.remove('hidden');
+        }
+
+        // 隐藏空间配置弹窗
+        function hideConfigModal() {
+            document.getElementById('config-modal').classList.add('hidden');
+        }
+
+        // 选择图标
+        function selectIcon(icon) {
+            selectedIcon = icon;
+            customIconUrl = '';
+            // 隐藏自定义图标预览
+            document.getElementById('custom-icon-preview').classList.add('hidden');
+            // 更新选中状态
+            const icons = document.querySelectorAll('#config-modal .grid-cols-6 > div');
+            icons.forEach(el => el.classList.remove('ring-2', 'ring-violet-400'));
+            event.target.classList.add('ring-2', 'ring-violet-400');
+        }
+
+        // 选择背景
+        function selectBackground(background) {
+            selectedBackground = background;
+            customBackgroundUrl = '';
+            // 隐藏自定义背景预览
+            document.getElementById('custom-background-preview').classList.add('hidden');
+            // 更新选中状态
+            const backgrounds = document.querySelectorAll('#config-modal .grid-cols-3 > div');
+            backgrounds.forEach(el => el.classList.remove('ring-2', 'ring-violet-400'));
+            event.target.classList.add('ring-2', 'ring-violet-400');
+        }
+
+        // 上传图标
+        function uploadIcon() {
+            const fileInput = document.getElementById('upload-icon');
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    customIconUrl = e.target.result;
+                    selectedIcon = 'custom';
+                    document.getElementById('custom-icon-img').src = customIconUrl;
+                    document.getElementById('custom-icon-preview').classList.remove('hidden');
+                    // 清除其他图标的选中状态
+                    const icons = document.querySelectorAll('#config-modal .grid-cols-6 > div');
+                    icons.forEach(el => el.classList.remove('ring-2', 'ring-violet-400'));
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 上传背景图
+        function uploadBackground() {
+            const fileInput = document.getElementById('upload-background');
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    customBackgroundUrl = e.target.result;
+                    selectedBackground = 'custom';
+                    document.getElementById('custom-background-img').src = customBackgroundUrl;
+                    document.getElementById('custom-background-preview').classList.remove('hidden');
+                    // 清除其他背景的选中状态
+                    const backgrounds = document.querySelectorAll('#config-modal .grid-cols-3 > div');
+                    backgrounds.forEach(el => el.classList.remove('ring-2', 'ring-violet-400'));
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 保存配置
+        function saveConfig() {
+            const chatContainer = document.getElementById('chat-container');
+            
+            // 应用背景
+            const backgroundStyles = {
+                'gradient-1': 'bg-gradient-to-br from-blue-100/30 to-purple-200/30',
+                'gradient-2': 'bg-gradient-to-br from-green-100/30 to-teal-200/30',
+                'gradient-3': 'bg-gradient-to-br from-orange-100/30 to-red-200/30',
+                'gradient-4': 'bg-gradient-to-br from-purple-100/30 to-pink-200/30',
+                'gradient-5': 'bg-gradient-to-br from-cyan-100/30 to-blue-200/30',
+                'gradient-6': 'bg-gradient-to-br from-yellow-100/30 to-orange-200/30',
+                'gradient-7': 'bg-gradient-to-br from-gray-50/30 to-gray-100/30',
+                'gradient-8': 'bg-gradient-to-br from-indigo-100/30 to-purple-200/30',
+                'none': 'bg-white',
+                'custom': ''
+            };
+            
+            // 移除所有背景样式
+            chatContainer.classList.remove(...Object.values(backgroundStyles).filter(s => s !== ''));
+            
+            // 添加选中的背景样式
+            if (selectedBackground === 'custom' && customBackgroundUrl) {
+                chatContainer.style.backgroundImage = `url(${customBackgroundUrl})`;
+                chatContainer.style.backgroundSize = 'cover';
+                chatContainer.style.backgroundPosition = 'center';
+            } else {
+                chatContainer.style.backgroundImage = '';
+                chatContainer.style.backgroundSize = '';
+                chatContainer.style.backgroundPosition = '';
+                chatContainer.classList.add(backgroundStyles[selectedBackground]);
+            }
+            
+            hideConfigModal();
+        }
+
+        // 初始化
+        renderSources();
+        renderChatContent();
+        
+        // 添加存为模板按钮点击事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const saveTemplateBtn = document.getElementById('save-template-btn');
+            if (saveTemplateBtn) {
+                saveTemplateBtn.addEventListener('click', function() {
+                    alert('存为模板按钮已点击');
+                    const modal = document.getElementById('save-template-modal');
+                    const templateNameInput = document.getElementById('save-template-name');
+                    if (modal && templateNameInput) {
+                        templateNameInput.value = '';
+                        modal.classList.remove('hidden');
+                    } else {
+                        alert('元素未找到！');
+                    }
+                });
+            } else {
+                console.error('save-template-btn not found');
+            }
+        });
+    </script>
+</body>
+</html>

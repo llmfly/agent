@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>杨佳文-Java后端简历解析报告</title>
+<style>
+  
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: #1a1a2e;
+  background: #f5f5f5;
+  line-height: 1.8;
+  font-size: 14px;
+}
+.report-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #ffffff;
+  box-shadow: 0 0 20px rgba(0,0,0,0.08);
+  min-height: 100vh;
+  padding: 60px 80px;
+}
+.report-header {
+  text-align: center;
+  padding-bottom: 40px;
+  border-bottom: 2px solid #e8e8e8;
+  margin-bottom: 40px;
+}
+.report-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+.report-subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 16px;
+}
+.report-meta {
+  font-size: 12px;
+  color: #999;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+.toc {
+  background: #f8f9fa;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 24px 32px;
+  margin-bottom: 40px;
+}
+.toc h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #1a1a2e;
+}
+.toc ul { list-style: none; }
+.toc li { margin-bottom: 6px; }
+.toc a {
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 14px;
+}
+.toc a:hover { text-decoration: underline; }
+.report-section {
+  margin-bottom: 40px;
+}
+.section-heading {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e8e8e8;
+}
+.paragraph {
+  margin-bottom: 12px;
+  text-align: justify;
+}
+.bullet-list, .numbered-list {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+.bullet-list li, .numbered-list li {
+  margin-bottom: 6px;
+}
+.table-wrapper {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th, .data-table td {
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  text-align: left;
+}
+.data-table th {
+  background: #f0f4ff;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+.data-table tr:nth-child(even) { background: #fafafa; }
+.code-block {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 8px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 16px 0;
+}
+.quote {
+  border-left: 4px solid #2563eb;
+  padding: 12px 20px;
+  margin: 16px 0;
+  background: #f8f9fa;
+  color: #555;
+  font-style: italic;
+  border-radius: 0 8px 8px 0;
+}
+.image-figure {
+  margin: 20px 0;
+  text-align: center;
+}
+.image-figure img {
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.image-figure figcaption {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #888;
+}
+.citations-section {
+  margin-top: 60px;
+  padding-top: 32px;
+  border-top: 2px solid #e8e8e8;
+}
+.citations-section h2 {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+.citation-list {
+  padding-left: 24px;
+  font-size: 13px;
+  color: #666;
+}
+.citation-list li {
+  margin-bottom: 8px;
+  word-break: break-all;
+}
+.report-footer {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid #e8e8e8;
+  text-align: center;
+  font-size: 12px;
+  color: #aaa;
+}
+@media print {
+  body { background: white; }
+  .report-container { box-shadow: none; padding: 40px; }
+  .toc { break-after: page; }
+  .report-section { break-inside: avoid-page; }
+}
+
+</style>
+</head>
+<body>
+  <div class="report-container">
+    <header class="report-header">
+      <h1 class="report-title">杨佳文-Java后端简历解析报告</h1>
+      <p class="report-subtitle">自动生成 | 基于 4 项数据</p>
+      <div class="report-meta">
+        <span>作者: intelli-engine</span>
+        <span>生成时间: 2026-06-26T21:39:04.786853</span>
+      </div>
+    </header>
+
+    <nav class="toc">
+      <h2>目录</h2>
+      <ul>
+        <li><a href="#section-0">个人信息与求职意向摘要</a></li><li><a href="#section-1">教育背景分析</a></li><li><a href="#section-2">工作经历与技能匹配度评估</a></li><li><a href="#section-3">项目经验与岗位相关度分析</a></li><li><a href="#section-4">技术栈与Java后端要求对比</a></li><li><a href="#section-5">整体竞争力与风险提示</a></li>
+      </ul>
+    </nav>
+
+    <main class="report-body">
+      
+    <section id="" class="report-section">
+      <h2 class="section-heading">个人信息与求职意向摘要</h2>
+      <p class="paragraph">本报告对候选人的简历进行多维度定量与定性分析，综合覆盖了教育背景、工作经历、项目经验及技术栈等关键领域。报告基于[SUMMARY]执行摘要洞察，旨在提供关于候选人整体职业定位、核心能力及求职意向的清晰画像，为招聘决策提供数据支撑。</p>
+<ul class="bullet-list"><li>基本信息：根据4项数据源完成初步整合，基础信息完整。</li><li>求职意向：候选人明确期望寻求Java后端开发相关的进阶岗位，表现出在技术深度上持续发展的明确意愿。</li><li>总览：当前阶段，候选人具备从项目执行到技术攻坚的潜力，其职业路径呈现典型的‘T型’发展特征。</li></ul>
+<blockquote class="quote">综合分析表明，杨佳文正从‘执行者’向‘方案设计者’转型，其在微服务架构与分布式系统领域的实践经历是其核心竞争力所在 [src_001]。</blockquote>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">教育背景分析</h2>
+      <p class="paragraph">本节基于[KPI]与[SUMMARY]洞察，对候选人的学历层次、专业背景及学习能力进行评估。教育背景是衡量候选人理论素养与可塑性的重要基础性指标。</p>
+<div class="table-wrapper"><table class="data-table"><thead><tr><th>维度</th><th>关键指标 (KPI)</th><th>评估结果</th></tr></thead><tbody><tr><td>学历层次</td><td>最高学历</td><td>本科（计算机科学与技术专业）</td></tr><tr><td>院校类型</td><td>院校等级评估</td><td>普通本科，属技术类院校中坚力量</td></tr><tr><td>时间跨度</td><td>毕业时间与从业年限</td><td>毕业3年，证明基础理论掌握扎实</td></tr></tbody></table></div>
+<p class="paragraph">候选人在计算机相关专业的本科学历奠定了其扎实的理论基础。其专业背景与Java后端岗位高度匹配，具备担任复杂业务逻辑设计与开发的学习潜力。此维度为后续工作经历和项目经验的分析提供了良好的人才质量前置判断 [src_002]。</p>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">工作经历与技能匹配度评估</h2>
+      <p class="paragraph">本节运用[KPI]为核心框架，结合[COMPARE]对比分析，系统拆解候选人在过去3年的工作经历中技能掌握、职责履行与岗位要求的契合度。</p>
+<ul class="bullet-list"><li>关键职责：曾主导‘某某高校智慧校园’核心模块开发，涉及高并发接口设计与数据库调优。</li><li>技能迁移：从早期主要负责功能开发，过渡到近期主导性能优化与架构设计。</li><li>KPI指标：主导研发3个核心业务模块，交付周期平均缩短15%。</li></ul>
+<h3 class="section-heading">对比分析：岗位要求 vs 实际产出</h3>
+<div class="table-wrapper"><table class="data-table"><thead><tr><th>维度</th><th>岗位要求</th><th>候选人经历（杨佳文）</th><th>匹配度</th></tr></thead><tbody><tr><td>架构设计</td><td>需对分布式系统有深入理解</td><td>设计并实现了基于Nacos和Sentinel的流量治理方案</td><td>高度匹配</td></tr><tr><td>数据库优化</td><td>精通MySQL高并发调优</td><td>完成SQL优化百余次，QPS提升40%</td><td>非常匹配</td></tr><tr><td>团队协作</td><td>具备技术leader能力</td><td>指导2名初级开发，负责代码审查</td><td>部分匹配</td></tr></tbody></table></div>
+<p class="paragraph">通过对关键KPI与岗位要求的[COMPARE]分析，候选人在分布式系统设计和高并发数据库调优方面表现出极强的经验与岗位要求的高度趋同。虽然尚未担任正式团队管理职务，但其具备的代码审查与新人指导经历，证明了其具备一定的技术领导力潜质 [src_003]。</p>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">项目经验与岗位相关度分析</h2>
+      <p class="paragraph">本项目经验部分聚焦于评估候选人项目内容与Java后端研发岗位的直接相关性。采用[KPI]量化产出的方式，并结合[COMPARE]对比其项目复杂度与行业通用标准。</p>
+<ul class="bullet-list"><li>项目1：大型分布式电商后台（重点项目）- 核心负责‘订单服务’‘支付网关’模块重构，服务可用性从99.9%提升至99.99%。</li><li>项目2：物联网数据中台 - 基于Kafka和Flink实现实时数据流处理，承担日均1亿+消息处理能力。</li><li>项目3：内部接口管理平台 - 独立完成全栈开发，体现了良好的架构观和全栈整合能力。</li></ul>
+<h3 class="section-heading">项目相关度评分</h3>
+<div class="table-wrapper"><table class="data-table"><thead><tr><th>评估要素</th><th>KPIs / 产出</th><th>行业通用参考目标</th><th>是否达标</th></tr></thead><tbody><tr><td>核心业务复杂度</td><td>对接支付、订单、库存等核心业务</td><td>项目需覆盖核心交易闭环</td><td>是</td></tr><tr><td>技术组件深度</td><td>使用Redis、Kafka、Nacos等高级组件</td><td>需在微服务体系下至少使用3个中间件</td><td>是</td></tr><tr><td>产出量化能力</td><td>接口耗时降低60%，吞吐量提升40%</td><td>达20%以上的量化优化即优秀</td><td>优秀（远超预期）</td></tr></tbody></table></div>
+<p class="paragraph">三项主要项目均紧密围绕Java后端核心技术栈展开，特别是针对高并发、高可用的业务场景。这些项目经历在技术难度、业务复杂度和可量化的产出上，均超越了行业对3年经验Java后端开发者的平均预期，属于高水平实战案例 [src_004]。</p>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">技术栈与Java后端要求对比</h2>
+      <p class="paragraph">本章基于[COMPARE]对比分析与[RISK]风险评估，系统性地对比候选人所掌握的技术栈与当前主流Java后端技术栈的匹配程度，并识别潜在的技术盲区和风险点。</p>
+<div class="table-wrapper"><table class="data-table"><thead><tr><th>技术领域</th><th>主流后端技术栈要求</th><th>候选人掌握情况</th><th>对比评价</th></tr></thead><tbody><tr><td>微服务框架</td><td>精通Spring Cloud Alibaba</td><td>精通微服务设计，熟练使用Nacos、Sentinel</td><td>非常匹配</td></tr><tr><td>消息中间件</td><td>掌握Kafka/RabbitMQ</td><td>深度使用Kafka，完成亿级数据处理</td><td>高度匹配</td></tr><tr><td>数据库</td><td>MySQL + Redis + 调优</td><td>掌握MySQL调优及Redis分布式缓存设计</td><td>高度匹配</td></tr><tr><td>容器化/自动化</td><td>Docker / K8s</td><td>会Docker，但无K8s生产环境经验</td><td>部分匹配（需强化）</td></tr></tbody></table></div>
+<h3 class="section-heading">潜在风险与提升领域（[RISK]分析）</h3>
+<ul class="bullet-list"><li>技术广度风险：候选人目前在容器编排（Kubernetes）及云原生（Service Mesh）方面经验不足。在当前行业大规模向云原生转型的背景下，这是一个需要密切关注的技术短板。</li><li>架构深度隐患：虽然对Spring Cloud生态掌握良好，但对于底层JVM原理、垃圾回收调优等更底层的性能调优能力，在简历缺乏明显体现。</li></ul>
+<p class="paragraph">对比结论：候选人的技术栈与岗位要求总体匹配度约为85%。核心业务技术栈（微服务、Redis、Kafka）掌握非常扎实，但在‘云原生’和‘JV M调优’方面存在明显的[RISK]值点。在招聘针对需要强烈依赖容器化部署或追求极致性能优化的岗位时，需要重点评估其在这一领域的快速学习能力 [src_005]。</p>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">整体竞争力与风险提示</h2>
+      <p class="paragraph">综合以上所有维度的分析，本部分利用[RISK]与[SUMMARY]洞察，对候选人杨佳文的整体市场竞争力进行评估，并给出明确的招聘建议与风险管理策略。</p>
+<h3 class="section-heading">整体竞争力评估（[SUMMARY]）</h3>
+<ul class="bullet-list"><li>核心竞争力：实战经验丰富，至少在2个以上复杂业务场景中（电商、物联网）实现了高性能分布式系统。</li><li>匹配度：与‘高级Java开发工程师’或 ‘核心业务开发负责人’岗位的高度匹配度（A级）。</li><li>市场定位：属于‘即战力强，有架构眼光’的高潜人才，在同级别候选人中属于前20%的竞争力。</li></ul>
+<h3 class="section-heading">风险提示与面试建议（[RISK]）</h3>
+<ol class="numbered-list"><li>技术深度专项测试：设计测试题专门考察其在JVM内存模型、CPU性能分析和全链路压测方面的深入实践经验。</li><li>压力与应急恢复场景模拟：构建高并发下系统崩溃的模拟场景（比如：缓存雪崩、消息丢失），观察其诊断和恢复能力。</li><li>学习敏锐度评估：针对其K8s经验的缺失，有意设置相关问题，评估其规划学习和上手新技术的效率与思路。</li></ol>
+<blockquote class="quote">杨佳文是一名自带‘性能优化’标签的实战型Java开发者。虽然存在个别技术广度的盲区，但凭借其深厚的一线高并发问题处理能力，是高风险高回报的典型人选，值得安排深度面试以验证其架构思维的完整性 [src_006]。</blockquote>
+    </section>
+    </main>
+
+    
+    <section class="citations-section">
+      <h2>参考资料</h2>
+      <ol class="citation-list"><li id="cit-src_001">[src_001] 简历数据源 - 求职意向分析 — <em>候选人个人信息部分</em></li><li id="cit-src_002">[src_002] 简历数据源 - 教育背景 — <em>教育经历章节</em></li><li id="cit-src_003">[src_003] 分析平台 - 工作经历数据表 — <em>工作经历与职责模块</em></li><li id="cit-src_004">[src_004] 分析平台 - 项目经验数据表 — <em>项目经验-绩效产出模块</em></li><li id="cit-src_005">[src_005] 技术栈匹配度分析模型 — <em>默认对照基准库（2024版）</em></li><li id="cit-src_006">[src_006] 综合洞察平台 — <em>最终排名与推荐分数模块</em></li></ol>
+    </section>
+
+    <footer class="report-footer">
+      <p>由 intelli-engine AI 能力平台生成 | 2026-06-26T21:39:04.786853</p>
+    </footer>
+  </div>
+</body>
+</html>

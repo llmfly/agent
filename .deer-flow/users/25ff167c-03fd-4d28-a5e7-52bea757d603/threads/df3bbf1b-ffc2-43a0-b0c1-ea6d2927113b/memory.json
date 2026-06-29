@@ -1,0 +1,82 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-26T20:00:38.130626Z",
+  "user": {
+    "workContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "personalContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "topOfMind": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_8637f2de",
+      "content": "User's name is 杨佳文 (Yang Jiawen), student ID 120106022627",
+      "category": "context",
+      "confidence": 1.0,
+      "createdAt": "2026-06-26T20:00:38.126582Z",
+      "source": "df3bbf1b-ffc2-43a0-b0c1-ea6d2927113b"
+    },
+    {
+      "id": "fact_abba5d01",
+      "content": "User is a master's student at 南京理工大学 (Nanjing University of Science and Technology) in the 电子信息 (Electronic Information) program",
+      "category": "context",
+      "confidence": 1.0,
+      "createdAt": "2026-06-26T20:00:38.126582Z",
+      "source": "df3bbf1b-ffc2-43a0-b0c1-ea6d2927113b"
+    },
+    {
+      "id": "fact_6ddc3b27",
+      "content": "User has completed 44 total credits (16 graded courses + 2 non-grade assessments)",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T20:00:38.126582Z",
+      "source": "df3bbf1b-ffc2-43a0-b0c1-ea6d2927113b"
+    },
+    {
+      "id": "fact_58cc07e9",
+      "content": "User's highest course grade is 96 (实验室安全准入教育), lowest is 68 (工程伦理, 计算机图形/图像技术实践)",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T20:00:38.126582Z",
+      "source": "df3bbf1b-ffc2-43a0-b0c1-ea6d2927113b"
+    },
+    {
+      "id": "fact_5108d9cf",
+      "content": "User's relevant coursework includes: 机器学习(I), 媒体计算技术, 图像特征计算与表示, 图像分析基础, 网络工程, 信息安全技术, Distributed System and Parallel Computing, 高等工程数学I",
+      "category": "knowledge",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T20:00:38.126582Z",
+      "source": "df3bbf1b-ffc2-43a0-b0c1-ea6d2927113b"
+    },
+    {
+      "id": "fact_fd939a83",
+      "content": "User completed 开题报告 with grade 优- and 专业实践 with status 通过",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T20:00:38.126582Z",
+      "source": "df3bbf1b-ffc2-43a0-b0c1-ea6d2927113b"
+    }
+  ]
+}

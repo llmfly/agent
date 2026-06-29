@@ -1,0 +1,297 @@
+{
+  "company": "奇瑞汽车股份有限公司",
+  "report_title": "企业出海贸易分析报告",
+  "author": "数据空间研究院",
+  "overall_stats": {
+    "years": "2024-2025",
+    "total_amount": "11.4万元",
+    "total_txn": 333,
+    "hs_count": 125,
+    "country_count": 5,
+    "active_months": 34,
+    "latest_year_yoy": "18.6%"
+  },
+  "product_table": [
+    {
+      "hs": "870380",
+      "desc": "新能源乘用车及整车相关商品",
+      "amount": "4.1万元",
+      "share": "36.0%",
+      "txn_count": 42
+    },
+    {
+      "hs": "870899",
+      "desc": "机动车零部件",
+      "amount": "2.8万元",
+      "share": "24.6%",
+      "txn_count": 68
+    },
+    {
+      "hs": "850760",
+      "desc": "锂离子蓄电池",
+      "amount": "1.6万元",
+      "share": "14.0%",
+      "txn_count": 31
+    }
+  ],
+  "product_concentration": {
+    "top1": "36.0%",
+    "top3": "74.6%",
+    "top5": "83.2%"
+  },
+  "product_concentration_type": "主辅结合型",
+  "product_trend": [
+    {
+      "hs": "870380",
+      "desc": "新能源乘用车及整车相关商品",
+      "year": 2024,
+      "amount": "1.7万元"
+    },
+    {
+      "hs": "870380",
+      "desc": "新能源乘用车及整车相关商品",
+      "year": 2025,
+      "amount": "2.4万元"
+    },
+    {
+      "hs": "870899",
+      "desc": "机动车零部件",
+      "year": 2024,
+      "amount": "1.5万元"
+    },
+    {
+      "hs": "870899",
+      "desc": "机动车零部件",
+      "year": 2025,
+      "amount": "1.3万元"
+    }
+  ],
+  "country_table": [
+    {
+      "country": "越南",
+      "amount": "3.9万元",
+      "share": "34.2%",
+      "customer_count": 4
+    },
+    {
+      "country": "墨西哥",
+      "amount": "2.7万元",
+      "share": "23.7%",
+      "customer_count": 2
+    },
+    {
+      "country": "巴西",
+      "amount": "1.9万元",
+      "share": "16.7%",
+      "customer_count": 2
+    },
+    {
+      "country": "阿联酋",
+      "amount": "1.6万元",
+      "share": "14.0%",
+      "customer_count": 1
+    },
+    {
+      "country": "泰国",
+      "amount": "1.3万元",
+      "share": "11.4%",
+      "customer_count": 1
+    }
+  ],
+  "country_coverage_type": "核心市场突出型",
+  "annual_summary": {
+    "2024": {
+      "amount": "5.2万元",
+      "txn_count": 151,
+      "yoy": "0.0%"
+    },
+    "2025": {
+      "amount": "6.2万元",
+      "txn_count": 182,
+      "yoy": "18.6%"
+    }
+  },
+  "monthly_trend": [
+    {
+      "month": "2024-01",
+      "amount": "0.2万元"
+    },
+    {
+      "month": "2024-12",
+      "amount": "0.6万元"
+    },
+    {
+      "month": "2025-12",
+      "amount": "0.7万元"
+    }
+  ],
+  "market_performance": [
+    {
+      "country": "越南",
+      "amount": "3.9万元",
+      "share": "34.2%",
+      "avg_price": 1240,
+      "customer_count": 4,
+      "growth": "26.4%"
+    },
+    {
+      "country": "墨西哥",
+      "amount": "2.7万元",
+      "share": "23.7%",
+      "avg_price": 1380,
+      "customer_count": 2,
+      "growth": "12.1%"
+    },
+    {
+      "country": "巴西",
+      "amount": "1.9万元",
+      "share": "16.7%",
+      "avg_price": 1170,
+      "customer_count": 2,
+      "growth": "-8.5%"
+    }
+  ],
+  "market_growth_classification": {
+    "越南": "增长市场",
+    "墨西哥": "稳定市场",
+    "巴西": "下滑市场"
+  },
+  "market_health": [
+    {
+      "country": "越南",
+      "top1_customer_share": "41.5%",
+      "avg_monthly_txn": 3.2,
+      "price_std": 116.4,
+      "reorder_rate": "50.0%"
+    },
+    {
+      "country": "墨西哥",
+      "top1_customer_share": "67.0%",
+      "avg_monthly_txn": 1.8,
+      "price_std": 98.2,
+      "reorder_rate": "50.0%"
+    },
+    {
+      "country": "巴西",
+      "top1_customer_share": "72.4%",
+      "avg_monthly_txn": 1.5,
+      "price_std": 131.7,
+      "reorder_rate": "0.0%"
+    }
+  ],
+  "competition_market": "越南",
+  "competition_hs": "870380",
+  "market_supplier_count": 18,
+  "cr5": "46.0%",
+  "cr10": "68.0%",
+  "market_type": "中度集中型",
+  "target_rank": 4,
+  "target_share": "8.7%",
+  "target_avg_price": 1240,
+  "price_position": "中价位",
+  "rival_table": [
+    {
+      "supplier": "竞品供应商A",
+      "supplier_country": "中国",
+      "amount": "9.8万元",
+      "share": "16.4%",
+      "avg_price": 1180,
+      "customer_count": 7
+    },
+    {
+      "supplier": "竞品供应商B",
+      "supplier_country": "韩国",
+      "amount": "7.2万元",
+      "share": "12.0%",
+      "avg_price": 1320,
+      "customer_count": 5
+    },
+    {
+      "supplier": "竞品供应商C",
+      "supplier_country": "中国",
+      "amount": "6.5万元",
+      "share": "10.9%",
+      "avg_price": 1090,
+      "customer_count": 6
+    },
+    {
+      "supplier": "奇瑞汽车股份有限公司",
+      "supplier_country": "中国",
+      "amount": "5.2万元",
+      "share": "8.7%",
+      "avg_price": 1240,
+      "customer_count": 4
+    }
+  ],
+  "price_quartiles": {
+    "p25": 1080,
+    "p50": 1220,
+    "p75": 1390,
+    "market_avg": 1265
+  },
+  "ranked_opportunities": [
+    {
+      "country": "印度尼西亚",
+      "total_amount": "18.6万元",
+      "supplier_count": 21,
+      "opportunity_score": 178.4,
+      "priority": "B"
+    },
+    {
+      "country": "马来西亚",
+      "total_amount": "13.2万元",
+      "supplier_count": 15,
+      "opportunity_score": 142.0,
+      "priority": "B"
+    },
+    {
+      "country": "菲律宾",
+      "total_amount": "9.5万元",
+      "supplier_count": 11,
+      "opportunity_score": 108.6,
+      "priority": "B"
+    }
+  ],
+  "top_buyers": [
+    {
+      "buyer": "INDONESIA BUYER A",
+      "amount": "3.8万元",
+      "avg_price": 1210,
+      "supplier_count": 5,
+      "price_gap_vs_target": "-2.4%"
+    },
+    {
+      "buyer": "INDONESIA BUYER B",
+      "amount": "2.9万元",
+      "avg_price": 1360,
+      "supplier_count": 3,
+      "price_gap_vs_target": "9.7%"
+    }
+  ],
+  "entry_assessment": [
+    {
+      "buyer": "INDONESIA BUYER A",
+      "price_gap": "-2.4%",
+      "feasibility": "价格接近，适合以小批量试单验证"
+    }
+  ],
+  "core_findings": [
+    "样例企业覆盖5个目的国，样本期出口金额11.4万元，交易333笔。",
+    "Top3产品合计占比74.6%，产品结构呈主辅结合型。"
+  ],
+  "risks": [
+    {
+      "type": "客户集中风险",
+      "detail": "巴西市场Top1客户占比72.4%，且复购率为0.0%。"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "高",
+      "action": "优先维护越南核心客户，并以印度尼西亚作为下一轮试单市场。"
+    }
+  ],
+  "chart_monthly_trend": "charts/monthly_trend.png",
+  "chart_country_amount": "charts/country_amount.png",
+  "chart_product_amount": "charts/product_amount.png"
+}

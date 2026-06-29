@@ -1,0 +1,4 @@
+interface:
+  display_name: "公司洞察报告"
+  short_description: "生成企业贸易洞察研报与Word文档"
+  default_prompt: "Use $company-insight-report to generate a company trade insight Word report from structured customs metrics."

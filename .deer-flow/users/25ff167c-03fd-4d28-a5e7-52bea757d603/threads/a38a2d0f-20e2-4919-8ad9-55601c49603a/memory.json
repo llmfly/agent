@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-27T11:52:14.246521Z",
+  "user": {
+    "workContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "personalContext": {
+      "summary": "用户使用中文进行交流，具备中文沟通能力。当前对话中用户询问了数据资产关联情况，表明其可能正在探索或使用数据源连接功能。",
+      "updatedAt": "2026-06-27T11:52:14.245305Z"
+    },
+    "topOfMind": {
+      "summary": "用户主动询问对话当前关联了哪些数据资产，显示其关注数据源的配置与接入状态。这可能暗示用户正在准备利用数据源进行查询、分析或构建工作流程，但目前尚未配置任何连接。",
+      "updatedAt": "2026-06-27T11:52:14.245305Z"
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_4bcd0637",
+      "content": "用户使用中文与系统交流",
+      "category": "context",
+      "confidence": 1.0,
+      "createdAt": "2026-06-27T11:51:26.942249Z",
+      "source": "a38a2d0f-20e2-4919-8ad9-55601c49603a"
+    },
+    {
+      "id": "fact_da7acf32",
+      "content": "用户询问当前对话关联了哪些数据资产，表明对数据源连接和配置有明确兴趣",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-27T11:52:14.245305Z",
+      "source": "a38a2d0f-20e2-4919-8ad9-55601c49603a"
+    }
+  ]
+}

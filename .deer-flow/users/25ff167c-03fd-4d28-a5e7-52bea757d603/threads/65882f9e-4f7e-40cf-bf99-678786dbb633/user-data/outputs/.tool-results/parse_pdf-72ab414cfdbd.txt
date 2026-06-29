@@ -1,0 +1,1230 @@
+📄 文档信息: 共 12 页
+文件: Expansion-Squeeze-Excitation_Fusion_Network_for_Elderly_Activity_Recognition.pdf
+
+--- 第 1 页 ---
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 32, NO. 8, AUGUST 2022
+5281
+Expansion-Squeeze-Excitation Fusion Network for
+Elderly Activity Recognition
+Xiangbo Shu
+, Jiawen Yang, Rui Yan
+, and Yan Song
+Abstract—This work focuses on the task of elderly activity
+recognition, which is a challenging task due to the existence
+of individual actions and human-object interactions in elderly
+activities. Thus, we attempt to effectively aggregate the dis-
+criminative information of actions and interactions from both
+RGB videos and skeleton sequences by attentively fusing multi-
+modal features. Recently, some nonlinear multi-modal fusion
+approaches are proposed by utilizing nonlinear attention mech-
+anism that is extended from Squeeze-and-Excitation Networks
+(SENet). Inspired by this, we propose a novel Expansion-Squeeze-
+Excitation Fusion Network (ESE-FN) to effectively address the
+problem of elderly activity recognition, which learns modal and
+channel-wise Expansion-Squeeze-Excitation (ESE) attentions for
+attentively fusing the multi-modal features in the modal and
+channel-wise ways. Speciﬁcally, ESE-FN ﬁrstly implements the
+modal-wise fusion with the Modal-wise ESE Attention (M-ESEA)
+to aggregate discriminative information in modal-wise way, and
+then implements the channel-wise fusion with the Channel-
+wise ESE Attention (C-ESEA) to aggregate the multi-channel
+discriminative information in channel-wise way (referring to
+Figure 1). Furthermore, we design a new Multi-modal Loss (ML)
+to keep the consistency between the single-modal features and the
+fused multi-modal features by adding the penalty of difference
+between the minimum prediction losses on single modalities and
+the prediction loss on the fused modality. Finally, we conduct
+experiments on a largest-scale elderly activity dataset, i.e., ETRI-
+Activity3D (including 110,000+ videos, and 50+ categories),
+to demonstrate that the proposed ESE-FN achieves the best
+accuracy compared with the state-of-the-art methods. In addition,
+more extensive experimental results show that the proposed ESE-
+FN is also comparable to the other methods in terms of normal
+action recognition task.
+Index Terms—Elderly activity recognition, activity recognition,
+fusion network, multi-modal fusion.
+I. INTRODUCTION
+W
+ITH the increasing population of the society, the aging
+of the population is becoming more and more serious.
+Manuscript received 16 November 2021; revised 30 December 2021;
+accepted 9 January 2022. Date of publication 13 January 2022; date of current
+version 4 August 2022. This work was supported in part by the National Key
+Research and Development Program of China under Grant 2018AAA0102001,
+in part by the Natural Science Foundation of Jiangsu Province under Grant
+BK20211520, and in part by the National Natural Science Foundation of China
+under Grant 62072245 and Grant 61932020. This article was recommended
+by Associate Editor C. Gan. (Corresponding author: Yan Song.)
+The authors are with the School of Computer Science and Engineering,
+Nanjing University of Science and Technology, Nanjing 210094, China
+(e-mail:
+shuxb@njust.edu.cn;
+owen@njust.edu.cn;
+ruiyan@njust.edu.cn;
+songyan@njust.edu.cn).
+Color versions of one or more ﬁgures in this article are available at
+https://doi.org/10.1109/TCSVT.2022.3142771.
+Digital Object Identiﬁer 10.1109/TCSVT.2022.3142771
+Coupled with the absence of young people from home all
+year round, the proportion of empty-nesters in many countries
+is increasing sharply. Since the physical quality and move-
+ment ability of the elderly begin to decline, some kinds of
+dangers are inclined to occur in life. In such circumstances,
+some institutions are trying to provide intelligent monitoring
+for the daily activities of the elderly by employing some
+advanced technologies in the ﬁelds of artiﬁcial intelligence
+and computer vision in recent years. As the key to intelligent
+monitoring, elderly activity recognition is attracting increased
+attentions.
+By reviewing the normal action recognition methods,
+we can divide these methods into two categories based on
+the types of input data, i.e., RGB-based action recogni-
+tion approach [1]–[8], and skeleton-based action recognition
+approach [10]–[14]. For these two types of action recogni-
+tion methods, various deep neural networks, as the currently
+main models, have shown remarkable ability to model human
+actions, such as Convolution Neural Network (CNN) [15],
+Recurrent Neural Network (RNN) [16], Convolutional 3D
+(C3D) [17], Long short-term memory (LSTM) [18], Graph
+Convolutional Networks (GCN) [19], and so on. Gener-
+ally, the RGB-based action recognition approach mainly gets
+motion information of actions from RGB videos, which is
+disturbed by the background information to some extent.
+The skeleton-based action recognition approach faces a chal-
+lenge for recognizing the actions with similar postures.
+Thus, a natural way is to jointly model motion informa-
+tion from both RGB videos and skeleton sequences [20],
+[21]. One impressive solution of these methods is to build
+two-branch deep neural networks, that ﬁrstly learn multi-
+modal features from RGB and skeleton modalities, and then
+fuse them.
+Compared with normal action recognition, elderly activity
+recognition is a more challenging task due to the existence
+of individual actions and human-object interactions in elderly
+activities, where many human-object interactions are local; the
+amplitudes of many elderly activities are unapparent; and the
+movements of some elderly activities are particularly similar.
+For example, Figure 2 shows two groups of the typical elderly
+activities, i.e., “Blowing hair” vs “Combing hair,” and “Mak-
+ing call” vs “playing mobile.” For the comparison between
+“Blowing hair” and “Combing hair,” the motion trajectory and
+amplitude are very similar in spatiotemporal space, except
+for the subtle clues of different objects in hand, i.e., comb
+and blower. For the comparison between “Making call” and
+“Playing mobile,” most motions and the interacting object
+1051-8215 © 2022 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+See https://www.ieee.org/publications/rights/index.html for more information.
+Authorized licensed use limited to: NANJING UNIVERSITY OF SCIENCE AND TECHNOLOGY. Downloaded on January 31,2023 at 14:11:17 UTC from IEEE Xplore.  Restrictions apply.
+
+--- 第 2 页 ---
+5282
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 32, NO. 8, AUGUST 2022
+Fig. 1.
+Idea of our method for fusing multi-modal features in this work.
+Our method fuses multi-modal features with the modal and channel-wise
+Expansion-Squeeze-Excitation (ESE) attentions in the modal and channel-
+wise ways.
+(e.g., mobile) are the same as each other, except for local
+hand movement in some frames. Therefore, how to capture
+and fuse the discriminative information in RGB and skeleton
+modalities is crucial for modeling elderly activities.
+Multi-modal data or features fusion across different modal-
+ities has always been a hot topic for years [22]–[31]. Since
+multi-modal features often contain irrelevant (modal-speciﬁc)
+information, the straightforward feature-level or score-level
+fusion will degrade the discriminative ability of the fused
+features. The key to successful fusion is how to reinforce
+the discriminative information while suppressing the irrelevant
+information among multi-modal features. To this end, some
+works [32]–[34] propose to utilize the linear attention to
+selectively fuse multi-modal features. Witnessing the impres-
+sive classiﬁcation performance of Squeeze-and-Excitation Net-
+works (SENet) [35] on ImageNet, some researchers [36]–[39]
+extend linear fusion to the nonlinear fusion via Squeeze-and-
+Excitation (SE).
+In this work, we consider designing a couple of Squeeze-
+and-Excitation based networks as nonlinear attention mecha-
+nisms for effectively aggregating the motion information in
+video and skeleton modalities by additionally bringing in
+expansion, called Expansion-Squeeze-Excitation (ESE). Based
+on this, we propose a novel Expansion-Squeeze-Excitation
+Fusion Network (ESE-FN) to fuse multi-modal features with
+modal and channel-wise ESE attentions. The overview frame-
+work of ESE-FN is shown in Figure 3, which mainly con-
+sists of four parts, i.e., feature extractor module, modal-
+fusion module, channel-fusion module, and multi-modal loss.
+First, ESE-FN randomly samples RGB frames in different
+video clips, which are fed into the backbone to extract the
+RGB features. Likewise, the skeleton features can be also
+extracted from sampled skeleton sequences. Second, the con-
+catenated RGB and skeleton features are fed into the modal-
+fusion module for attentively fusing features in modal-wise
+way, where M-Net aims to learn the Modal-wise Expansion-
+Squeeze-Excitation Attention (M-ESEA) via modal-wise ESE,
+as shown in Figure 1. Third, the output from the modal-
+fusion module is further fed into the channel-fusion module for
+attentively fusing features in channel-wise way, where C-Net
+aims to learn the Channel-wise Expansion-Squeeze-Excitation
+Attention (C-ESEA) via channel-wise ESE. Finally, we utilize
+three types of features, i.e., RGB features, skeleton features,
+fused multi-modal features, to construct three sub-losses,
+which are integrated into a new Multi-modal Loss (ML). Here,
+ML additionally brings in the penalty of difference between
+the minimum prediction losses on single modalities and the
+prediction loss on the fused modality, which can keep the
+consistency between the single-modal features and the fused
+multi-modal features.
+Overall, the main contributions of this work can be summa-
+rized as follows.
+• We deeply explore the characteristics of elderly activi-
+ties, and propose a novel Expansion-Squeeze-Excitation
+Fusion Network (ESE-FN) to attentively fuse multi-
+modal features in the modal and channel-wise ways for
+effectively addressing the problem of elderly activity
+recognition.
+• To well capture the discriminative information of multi-
+modal features, we design a ﬂexible Modal-fusion Net
+(M-Net) and Channel-fusion Net (C-Net) to learn Modal-
+wise Expansion-Squeeze-Excitation Attention (M-ESEA)
+and Channel-wise Expansion-Squeeze-Excitation Atten-
+tion (C-ESEA) for capturing the modal and channel-wise
+dependencies among features, respectively.
+• To keep the consistency between the single-modal fea-
+tures and the fused multi-modal features, we design
+a new Multi-modal Loss ML) to additionally measure
+the difference between the minimum prediction loss on
+single modalities and the prediction loss on the fused
+modality.
+• By conducting extensive experiments on both elderly
+activity recognition and normal action recognition tasks,
+we illustrate that the proposed ESE-FN method achieves
+the SOTA performance compared with the other compet-
+itive methods.
+The rest of this paper is organized in the following.
+Section II surveys some works related to RGB-based action
+recognition, skeleton-based action recognition, and multi-
+modal fusion. Section III introduces the proposed method
+for elderly activity recognition in details. Section IV presents
+results and analysis of experiments, followed by the conclu-
+sions in Section V.
+II. RELATED WORK
+We survey some works related to RGB-based action recog-
+nition, skeleton-based action recognition, and multi-modal
+fusion.
+A. RGB-Based Action Recognition
+Most existing RGB-based Action Recognition methods can
+be categorized into two classes. The ﬁrst class is based on
+a two-stream network that usually uses RGB and optical
+ﬂow to model spatial and temporal information, respectively.
+Simonyan and Zisserman [40] proposed a two-stream network
+to model spatial and temporal information in RGB and optical
+ﬂow frames for the ﬁrst time. Subsequently, Wang et al. [41]
+proposed a Temporal Segment Network (TSN) to model long-
+range temporal action. Crasto et al. [43] proposed a distil-
+lation network that uses optical ﬂow to distill RGB data,
+which can make the RGB-based model learn the temporal
+information. It is well known that optical ﬂow is computed by
+Authorized licensed use limited to: NANJING UNIVERSITY OF SCIENCE AND TECHNOLOGY. Downloaded on January 31,2023 at 14:11:17 UTC from IEEE Xplore.  Restrictions apply.
+
+--- 第 3 页 ---
+SHU et al.: EXPANSION-SQUEEZE-EXCITATION FUSION NETWORK FOR ELDERLY ACTIVITY RECOGNITION
+5283
+Fig. 2.
+Examples of elderly activities. The elderly activities, “Blowing hair” vs “Combing hair,” as well as “Making call” vs “Playing mobile” shows most
+of similar motions in spatiotemporal space, where only the interacting objects (e.g., comb and blower are marked by yellow circle) are different or only few
+local movements (right-hand movements are marked by red circle) are distinguishable.
+using the RGB frames, which is time-consuming and would
+bring in a bottleneck. The second class is based on a series
+of 3D convolutional networks, such as, I3D [7], C3D [17],
+T3D [44], Res3D [45], and so on, which are extended from
+2D networks in spatiotemporal dimension. Due to the com-
+putation consumption of general 3D convolutional networks,
+Qiu et al. [46] proposed a Pseudo-3D residual network (P3D)
+that decomposes the convolutions into separate 2D spatial
+and 1D temporal ﬁlters. Moreover, Feichtenhofer et al. [3]
+proposed to use two different frame rates to accelerate train
+3D networks.
+The above-mentioned methods are proposed to address the
+problem of normal action recognition. Compared with the
+normal action recognition task, the elderly activity recognition
+task requires more discriminative information to identify some
+subtle individual actions and human-object interactions in
+elderly activities. Due to the lack of temporal information on
+RGB data, the network implementing on RGB data cannot
+accurately describe the actions with obvious temporal infor-
+mation. Although some temporal information can be captured
+from optical ﬂow data, the calculation of optical ﬂow is too
+time-consuming.
+B. Skeleton-Based Action Recognition
+So far, there are many action recognition works based on
+skeleton [10], [11], [11], [12], [14], [47], called skeleton-based
+action recognition methods. The main target of skeleton-based
+action recognition is to learn temporal and spatial information
+from skeleton sequences. In the early stages, researchers
+utilized various deep neural networks. e.g., Recurrent Neural
+Network (RNN), Convolution Neural Network (CNN), and
+Long Short-Term Memory (LSTM), to model skeleton motions
+for capturing temporal and spatial information. For exam-
+ple, Zhang et al. [10] proposed an adaptive model designed
+by CNN and RNN to solve the problem of view differ-
+ence during the skeleton data collection and action shooting.
+Authorized licensed use limited to: NANJING UNIVERSITY OF SCIENCE AND TECHNOLOGY. Downloaded on January 31,2023 at 14:11:17 UTC from IEEE Xplore.  Restrictions apply.
+
+--- 第 4 页 ---
+5284
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 32, NO. 8, AUGUST 2022
+Fig. 3.
+The framework of the proposed ESE-FN method mainly consists of feature extractor module, modal-fusion module, channel-fusion module, and
+multi-modal loss. It ﬁrstly employs the backbone to extract the RGB and skeleton features, respectively. And then, the concatenated RGB and skeleton
+features are fed into the modal-fusion module and channel-fusion module for the modal and channel-wise fusions in turn. Speciﬁcally, M-Net and C-Net aim
+to fuse features with the modal and channel-wise expansion-squeeze-excitation attentions for capturing modal and channel-wise dependencies among features,
+respectively. Finally, a new multi-modal loss containing three sub-losses is designed to optimize the whole network by measuring the consistency between
+the prediction loss on fused modalities and the prediction loss on single modalities.
+Banerjee et al. [11] used CNN to extract different comple-
+mentary motion information from skeleton sequences, e.g.,
+distance and angle between joint points, to better model the
+temporal information of skeleton data. Recently, researchers
+used Graph Convolution Network (GCN) to model temporal
+and spatial information from skeleton sequences by treating
+skeletons, joints, and bonds as graphs, nodes, and edges,
+respectively [12], [13], [48]. For example, Yan et al. [12]
+proposed a Spatial-Temporal Graph Convolutional Network
+(ST-GAN) that employs graph convolution to aggregate the
+joint features in the spatial dimension. Liu et al. [48] pro-
+posed a multi-stream graph convolutional network to avoid
+the missing of structural information in the training phase.
+Cheng et al. [13] proposed a Shift Graph Convolutional Net-
+work (Shift-GCN) for solving the problem of inﬂexible accep-
+tance domain of graph convolution network on both spatial and
+temporal dimensions.
+It can be found that skeleton-based action recognition meth-
+ods mainly design an effective model to capture temporal and
+spatial information from skeleton sequences, which is difﬁcult
+to recognize human-object actions, e.g., blowing hair, combing
+hair, etc.
+C. Multi-Modal Fusion
+Many works [20], [21], [24], [25], [27], [30], [31], [50]–[52]
+consider aggregating information from multi-modal data for
+various image and video content analysis tasks, such as video
+action recognition, video anomaly detection and localization,
+and so on. For example, Wang et al. [24] and Tang et al. [25]
+proposed the score-level and feature-level multi-modal fusions,
+respectively. Those straightforward fusion methods did not
+consider the interaction among different multi-modal infor-
+mation. Zhang et al. [31] proposed to employ several con-
+volutions to fuse the RGB and depth features, which only
+considered the interaction among multi-modal information
+from the local view. Zhou et al. [30] proposed to fuse the
+RGB and thermal image features by channel and spatial-wise
+attentions, respectively. Overall, on the one hand, different
+modality data have different distributions. On the other hand,
+multi-modal data often contain irrelevant (modal-speciﬁc)
+information. Thus, how to aggregate information from multi-
+modal features is the main problem. Multi-modal data or
+features fusion across different modalities is always a hot
+topic, some classical methods [32]–[34] were proposed to
+utilize the linear embedding or attention mechanism to fuse
+multi-modal features. For example, Hori et al. [33] propose a
+multi-modal attention model that selectively fuses multi-modal
+features based on learned attention. With the advancement
+of Convolutional Neural Networks (CNN), some nonlinear
+fusion approaches of multi-modal features are proposed by
+designing various convolutional networks as the attention
+mechanism [36]–[39], [53]. For example, Kuang et al. [37]
+proposed a multi-modal fusion network based on CNN for
+face anti-spooﬁng detection. Fooladgar and Kasaei [38] used
+an efﬁcient attention method based on CNN architecture
+to fuse RGB data and depth maps in channel-wise way.
+Su et al. [54] used the soft attention method to interact multi-
+modal data in channel-wise way. To fully fuse the multi-modal
+features, we consider interacting information of multi-modal
+features not only in channel-wise way but also in modal-
+wise way. In this work, we design a ﬂexible Expansion-
+Squeeze-Excitation (ESE) in Modal-fusion Net (M-Net) and
+Channel-fusion Net (C-Net) to learn modal and channel-wise
+nonlinear attention for capturing the modal and channel-wise
+dependencies among features, respectively.
+III. METHODOLOGY
+In this section, we mainly introduce Expansion-Squeeze-
+Excitation Fusion Network (ESE-FN). Speciﬁcally, we ﬁrst
+revisit the SENet as a warm-up, and then introduce the
+framework of ESE-FN in details, including Modal-fusion
+Net (M-Net), Channel-fusion Net (C-Net), and Multi-modal
+Loss (ML).
+Authorized licensed use limited to: NANJING UNIVERSITY OF SCIENCE AND TECHNOLOGY. Downloaded on January 31,2023 at 14:11:17 UTC from IEEE Xplore.  Restrictions apply.
+
+--- 第 5 页 ---
+SHU et al.: EXPANSION-SQUEEZE-EXCITATION FUSION NETWORK FOR ELDERLY ACTIVITY RECOGNITION
+5285
+A. Revisiting SENet
+Squeeze-and-Excitation Networks (SENet) [35] has shown
+remarkable performance in the ImageNet database by explic-
+itly capturing the channel-wise dependencies between feature
+maps. Here, the channel-wise dependencies are quantiﬁed
+via the nonlinear attention corresponding to each channel.
+The nonlinear attention is obtained by Squeeze-and-Excitation
+(SE). SENet has been proven that learning channel-wise
+nonlinear attention can improve the discriminative ability of
+features.
+In SENet, Squeeze-and-Excitation (SE) can be divided into
+two steps: squeeze and excitation in turn, which are used
+for obtaining channel-wise representation and channel-wise
+nonlinear attention. Speciﬁcally, assuming C feature maps,
+denoted by X = {Xc}C
+c=1, for one feature map Xc in the c-th
+channel, the squeeze operation is performed as follows,
+Yc =
+1
+H × W
+H
+
+i=1
+W
+
+j=1
+Xc(i, j),
+(1)
+where H and W denote the height and width of the feature
+map, respectively, Yc is the result of global average pool-
+ing for the c-th channel. In the squeeze step, all feature
+maps are transformed to a channel-wise representation Y =
+[Y1, Y2, · · · , Yc, · · · , YC]T , which is a one-dimensional vector.
+In the excitation step, the channel-wise representation Y is fed
+into multi fully-connected layers to obtain the channel-wise
+attention W, as follows,
+W = σ(F1(Relu(F2(Y)))),
+(2)
+where F∗denotes a Fully Connected (FC) layer in this work,
+and σ is a sigmoid function. Finally, the original feature maps
+X can be updated to ˆX by the following equation
+ˆX = X ⊗W,
+(3)
+where
+⊗
+denotes
+channel-wise
+multiplication
+between
+X and W. Compared with the original feature maps X,
+the updated feature map ˆX has enhanced the discriminative
+information, while suppressing the useless or irrelevant modal-
+speciﬁc information to some extent.
+Through the above analysis, we can ﬁnd that SENet uses the
+global average pooling to interact spatial information. Since
+the global average pooling is implemented from the global
+view, the learned nonlinear attention is signiﬁcantly affected by
+noise (e.g., a large area of background). In this work, to well
+capture the local and global spatial information of features,
+we consider interacting spatial information from the local and
+global views.
+B. Overview of ESE-FN
+For the task of elderly activity recognition, we attempt
+to aggregate the discriminative information from both RGB
+videos and skeleton sequences by attentively fusing multi-
+modal features. Thus, multi-modal features fusion across
+multiple modalities is key to modeling the motion among
+RGB videos and skeleton sequences. Based on Squeeze-
+and-Excitation in SENet, we design a new Modal-fusion
+Net (M-Net) and a new Channel-fusion Net (C-Net) to
+learn the Modal-wise Expansion-Squeeze-Excitation Attention
+(M-ESEA) and Channel-wise Expansion-Squeeze-Excitation
+Attention (C-ESEA) for capturing the modal and channel-wise
+dependencies among features, respectively. By integrating M-
+Net and C-Net as the main components, a novel Expansion-
+Squeeze-Excitation Fusion Network (ESE-FN) is proposed to
+attentively fuse the multi-modal features with M-ESEA and
+C-ESEA. The framework of ESE-FN is shown in Figure 3,
+which mainly consists of four parts, i.e., feature extractor
+module, modal-fusion module, channel-fusion module, and
+multi-modal loss.
+Denoted {vi|i = 1, 2, 3, . . . N} as an video set with size
+N, we ﬁrst split each video into T clips and random sam-
+ple a frame from each clip. Then, we get the frame set
+{ri|i = 1, 2, 3, . . . T } as one input video r, which are fed into
+the RGB backbone (e.g., ResNeXt101 [55]) to extract the RGB
+feature fr ∈Rd1×1 ( d∗denotes the feature dimension in this
+paper), as follows,
+fr = FRGB(r).
+(4)
+Likewise, for video r, the corresponding skeleton sequence
+s is obtained and fed into the skeleton backbone (e.g., Shif-
+GCN [13]) to extract the skeleton feature fs ∈Rd2×1,
+fs = FSkeleton(s).
+(5)
+Generally, the multi-modal features, i.e., fr and fs, have
+different sizes and cannot be directly concatenated. Thus,
+we use two MLPS to unify the size of fr and fs, and then
+concatenate them, as follows,
+f = FConcat(Hr( fr), Hs( fs)),
+(6)
+where f ∈Rd×n, n is the number of modality, Hr and Hs are
+MLP, and Concat(·) is a modal-wise concatenation operator.
+Subsequently, we transpose the feature f and feed it into
+M-Net for modal-wise fusion, as follows,
+hm = FM-Net(FTrans( f )),
+(7)
+where FTrans(·) is a transpose operator. Likewise, hm is trans-
+posed and fed into C-Net for channel-wise fusion, as follows,
+hmc = FC-Net(FTrans(hm)),
+(8)
+We sum up feature hmc in modal-wise way and get the fused
+multi-modal feature frs.
+Finally, RGB feature fr, skeleton feature fs and fused multi-
+modal feature frs are fed into a new Multi-modal Loss (ML)
+for optimizing all parameters of ESE-FN, as follows,
+ = argmin(L(Fr( fr), Frs( frs), Fs( fs))),
+(9)
+where  denotes the parameter set of the proposed ESE-FN.
+The following sections introduce M-Net, C-Net, Multi-modal
+Loss in details.
+C. Modal-Fusion Net (M-Net)
+The detailed conﬁguration of Modal-fusion Net (M-Net)
+is shown in Figure 4. M-Net can attentively aggregate the
+local and global spatial discriminative information of multi-
+modal features via M-ESEA in modal-wise way. Speciﬁ-
+cally, we ﬁrstly extend the transposed feature f ∈Rn×d to
+Authorized licensed use limited to: NANJING UNIVERSITY OF SCIENCE AND TECHNOLOGY. Downloaded on January 31,2023 at 14:11:17 UTC from IEEE Xplore.  Restrictions apply.
+
+--- 第 6 页 ---
+5286
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 32, NO. 8, AUGUST 2022
+Fig. 4.
+Conﬁguration of Modal-fusion Net (M-Net) in details. The multi-modal features are fused with Modal-wise Expansion-Squeeze-Excitation Attention
+(M-ESEA) in modal-wise way. M-ESEA is obtained by the modal-wise nonlinear attention mechanism mainly composed of the convolutional layers, average
+pooling layer, and FC layer.
+f ∈Rn×d×1 as the input of M-Net. Similar to Squeeze-
+and-Excitation in SENet, we divide the implementation of
+M-Net into three steps, i.e., modal-wise expansion, modal-
+wise squeeze, and modal-wise excitation in turn, which are
+detailed in the following.
+1) Modal-Wise Expansion Step: It uses several stacked
+convolutional layers with different kernels to interact modal-
+wise information by expanding the modal information from the
+local view. Then the expanded feature fml can be described
+as follows,
+fml = Conv1(Conv2(Conv3( f ))),
+(10)
+where
+fml ∈Rm×dm×1, dm is the spatial dimension after
+convolution transformation (m × dm > n × d).
+Here,
+fml
+can
+be
+also
+regarded
+as
+the
+single-modal feature
+set
+{ f i
+ml ∈R(m/n)×dm}n
+i=1.
+2) Modal-Wise Squeeze Step: It utilizes fml to calculate
+the modal-wise representation fmlg ∈Rm×1 (m < n × d) from
+global view via the average pooling, as follows,
+fmlg =
+1
+dm × 1
+dm
+
+i=1
+1
+
+j=1
+fml(i, j).
+(11)
+3) Modal-Wise Excitation Step:
+It utilizes the modal-
+wise representation fmlg to learn the Modal-wise Expansion-
+Squeeze-Excitation Attention (M-ESEA) Wm for capturing the
+modal-wise dependence of features. Finally, the original input
+feature f can be updated to the modal-wise fused feature
+hm ∈Rn×d×1 based on the following equations,
+Wm = σ(F3(Relu(F4( fmlg))));
+(12)
+hm = f ⊗Wm.
+(13)
+Compared with SENet, it is noted that we additionally bring
+in the expanding of features as the partner of the squeezing.
+Expanding and squeezing provide the interactions of features
+in up-size and down-size ways, which can capture both of local
+and global dependencies of features. Different from SENet
+dealing with the single-modal feature map, we deal with the
+multi-modal features which can been seen as a feature map
+by concatenating two modal feature vectors. In the modal-
+wise expansion step, the convolutions with different kernels
+can be used to capture the local spatial correlation of multi-
+modal features in different regions, which can capture the
+local dependencies of features. In the modal-wise squeeze step,
+the global average pooling can be used to capture the global
+spatial correlation of multi-modal features, which can capture
+the global dependencies of features.
+Fig. 5.
+Conﬁguration of Channel-fusion Net (C-Net) in details. The multi-
+modal features are fused with Channel-wise Expansion-Squeeze-Excitation
+Attention (C-ESEA) in channel-wise way. C-ESEA is obtained by the channel-
+wise nonlinear attention mechanism mainly composed of the convolutional
+layer, average pooling layer, and FC layer.
+D. Channel-Fusion Net (C-Net)
+In this section, we focus on our Channel-fusion Net (C-Net),
+as shown in ﬁgure 5. C-Net aims to learn C-ESEA for fusing
+multi-modal features in channel-wise way. Similar to M-Net,
+the implementation of C-Net can be also divided into the
+channel-wise expansion, channel-wise squeeze, and channel-
+wise excitation in turn, described in the following.
+1) Channel-Wise Expansion Step: It uses the convolutional
+layer to interact channel-wise information by expanding the
+channel information from the local view. Then the expanded
+features hcg can be calculated as follows,
+hcg = Conv4(hm),
+(14)
+where hcg ∈Rd×n1×1, n1 > n. It is noted that the multi-
+modal features are processed by M-Net and C-Net in turn.
+First, in M-Net, the difference of cross-modal features is
+relatively large, thus the expansion is large by setting multi-
+layers. Subsequently, in C-Net (after processed by M-Net), the
+difference of cross-modal features is relatively small, which
+only requires a relatively smaller expansion. Thus we set only
+one convolution layer in C-Net for lightweight designing.
+2) Channel-Wise Squeeze Step: It utilizes hcg to calculate
+the channel-wise representation fcg from the global view via
+the average pooling, as follows,
+fcg =
+1
+n1 × 1
+n1
+
+i=1
+1
+
+j=1
+hcg(i, j),
+(15)
+where, fcg ∈Rd×1 can be also regarded as the single-channel
+feature set { f i
+cg ∈R1×1}d
+i=1.
+3) Channel-Wise Excitation Step: It utilizes the channel-
+wise representation fcg to learn the Channel-wise Expansion-
+Squeeze-Excitation Attention (C-ESEA) Wc for capturing the
+Authorized licensed use limited to: NANJING UNIVERSITY OF SCIENCE AND TECHNOLOGY. Downloaded on January 31,2023 at 14:11:17 UTC from IEEE Xplore.  Restrictions apply.
+
+--- 第 7 页 ---
+SHU et al.: EXPANSION-SQUEEZE-EXCITATION FUSION NETWORK FOR ELDERLY ACTIVITY RECOGNITION
+5287
+channel-wise dependence of features, as follows,
+Wc = σ(F5(Relu(F6( fcg)))).
+(16)
+Finally, we get the feature updated in channel-wise way,
+described as follows,
+hmc = hm ⊗Wc.
+(17)
+By comparing with the formulations of M-Net and C-Net,
+modal-wise fusion can be seen as a rough fusion of multi-
+modal features in modal-wise way, while channel-wise fusion
+can be seen as a ﬁne-grained fusion of multi-modal features
+in channel-wise way. Both of them attentively aggregate the
+discriminative information of multi-modal features based on
+modal and channel-wise dependencies of features.
+E. Multi-Modal Loss (ML)
+To keep the consistency between the single-modal features
+and the fused multi-modal features, we design a new Multi-
+modal Loss (ML) to additionally measure the difference
+between the prediction loss on single modalities and the
+prediction loss on the fused modality. The key idea of multi-
+modal loss is that we take the minimum prediction loss on
+single modalities to be consistent with the prediction loss
+on the fused modality. Formally, we deﬁne three types of
+recognition losses Lr, Ls, and Lrs corresponding to the RGB
+modality, skeleton modality, and fused modality, respectively.
+Then the multi-modal loss can be described as follows,
+L = α × Lrs + β × (min(Lr, Ls) −Lrs),
+(18)
+where α and β are hyper-parameters (will be discussed in
+Section IV-C). In this work, the forms of Lr, Ls, and Lrs are
+cross entropy loss.
+IV. EXPERIMENTS
+In this section, we conduct experiments to evaluate the
+performance of the proposed ESE-FN in terms of the elderly
+activity recognition task. Besides, we further conduct compar-
+ative experiments between the proposed ESE-FN and the other
+advanced methods in terms of the normal action recognition
+task.
+A. Datasets
+We evaluate the performance of ESE-FN in terms of
+the elderly activity recognition task on the ETRI-Activity3D
+dataset [56]. It is the currently largest elderly activity recogni-
+tion dataset collected in real-world surveillance environments,
+which contains 112,620 samples performed by 100 persons
+including RGB videos, depth maps, and skeleton sequences.
+All videos are grouped into 55 classes of actions, including
+individual activities, human-object interactions, and multiper-
+son interactions. The splitting of training and testing sets
+is based on person ID, namely the samples with person
+ID {3, 6, 9, , · · · , 99} for testing, and the samples with person
+ID {1, 2, 4, 5, · · · , 100} for training.
+TABLE I
+TEST ON THE REPRESENTATION POWER FOR DIFFERENT
+BACKBONES ON THE ETRI-ACTIVITY3D DATASET
+Fig. 6.
+The training loss and accuracy of ESE-FN on the ETRI-Activity3D
+dataset.
+B. Implementation Details
+In the data pre-processing phase, we split each video into
+T
+= 64 clips, and randomly select one frame for each
+clip. Finally, we obtain a new video set, wherein each video
+contains 64 frames. Likewise, we also obtain a new skeleton
+set, wherein each skeleton sequence contains 64 frames.
+In the feature extraction phase, we use ResNeXt18 or
+ResNeXt101 [55] as the RGB backbone, and Shift-GCN [13]
+as the skeleton backbone. For the pre-trained ResNeXt18 and
+ResNeXt101, we ﬁne tune them with the standard SGD opti-
+mizer by setting the momentum, initial learning rate, weight
+decay, and total epochs as 0.9, 0.1, 10−3, and 120, respectively.
+Especially, the batch size is set to 128 and 32 for ResNeXt18
+and ResNeXt101, respectively. For the pre-trained Shift-GCN,
+we ﬁne tune it with the standard SGD optimizer by setting the
+momentum, initial learning rate, batch size, and total epochs
+as 0.9, 0.1, 10−4, 32, and 140, respectively. Subsequently,
+we use the ﬁne-tuned RGB and skeleton backbone to extract
+RGB and skeleton features, respectively. Here, to test the
+representation performance of ResNeXt18, ResNeXt101, and
+Shift-GCN, we use these three models to extract single-modal
+features for training a softmax independently. For example,
+we use ResNeXt18 to extract RGB features and feed them
+into the softmax. The obtained performance for three models
+is listed in Table I. We can see that ResNeXt101 performs
+better than ResNeXt18. In this paper, we choose ResNeXt101
+as the RGB backbone in default.
+In the training phase of ESE-FN, we use the standard SGD
+optimizer to train it by setting the momentum, basic learning
+rate, weight decay, batch size, and total epochs as 0.9, 0.1,
+10−4, 32 and 30, respectively. All above experiments are
+performed via the PyTorch deep learning framework on the
+Linux server equipped with Titan RTX GPU. The training loss
+and accuracy of ESE-FN as the number of epochs are shown
+in Figure 6. We can see that the training loss and accuracy of
+ESE-FN reach a steady state after about 30 epochs. And then,
+Authorized licensed use limited to: NANJING UNIVERSITY OF SCIENCE AND TECHNOLOGY. Downloaded on January 31,2023 at 14:11:17 UTC from IEEE Xplore.  Restrictions apply.
+
+--- 第 8 页 ---
+5288
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 32, NO. 8, AUGUST 2022
+Fig. 7.
+The curves of performance are obtained by varying one hyper-
+parameter with the other parameter ﬁxed to be the default value. The best
+performance is achieved when α = 0.7, and β = 0.3.
+the overall loss is consistent with the other sub-losses (i.e.,
+RGB modality, skeleton modality, and fused modality losses)
+in terms of convergence.
+C. Diagnostic Study
+We conduct the diagnostic study to discuss the sensitiveness
+of the hyper-parameters α and β in Eq. (18). Here, to enhance
+the efﬁciency of the diagnostic study, we use ResNeXt18
+instead of ResNeXt101 as the RGB backbone and set T = 16
+without loss of generality. Speciﬁcally, we empirically tune
+them by α ∈{0.3, 0.5, 0.7, 0.9} and β ∈{0, 0.3, 0.6, 0.9},
+respectively. The corresponding results are shown in Figure 7.
+It can be found that the best performance of ESE-FN is
+achieved when α = 0.7, and β = 0.3. Thus, we set α = 0.7,
+and β = 0.3 in experiments. Moreover, when β = 0, the
+multi-modal loss L is degraded to a basic action recognition
+loss Lrs, where the performance is degraded signiﬁcantly. This
+illustrates that the designed Multi-modal Loss is more effective
+than the basic loss.
+D. Ablation Study
+As mentioned before, Modal-fusion Net (M-Net), Channel-
+fusion Net (C-Net), and Multi-modal Loss (ML) are new
+components in the framework of the proposed ESE-FN. Thus
+we conduct ablation study to evaluate the superiority of M-Net,
+C-Net, and ML. We ﬁrstly set seven baselines, as follows,
+• B1: Single modal for RGB employs RGB backbone
+to extract the RGB features, which are directly used
+to train the softmax classiﬁer. This aims to test the
+basic recognition performance by using the single-modal
+features in RGB videos.
+• B2: Single modal for skeleton employs skeleton back-
+bone to extract the skeleton features, which are directly
+used to train the softmax classiﬁer. This aims to test the
+basic recognition performance by using the single-modal
+features in skeleton sequences.
+• B3: Multi modal for RGB and skeleton employs RGB
+backbone and skeleton backbone to extract the RGB
+features and skeleton features, which are concatenated
+and fed into the softmax classiﬁer. This aims to test
+the basic recognition performance by simply combining
+multi-modal features.
+TABLE II
+ABLATION STUDY FOR ESE-FN WITH DIFFERENT COMPONENTS
+TABLE III
+ABLATION STUDY FOR COMPARING THE PERFORMANCE
+OF SENET (WITHOUT EXPANSION) AND ESE-FN
+• B4: ESE-FN w/o C-Net is a degraded version of ESE-FN
+by dropping out the channel-fusion module. This aims to
+show the superiority of M-Net.
+• B5: ESE-FN w/o M-Net is a degraded version of
+ESE-FN by dropping out the modal-fusion module. This
+aims to show the superiority of C-Net.
+• B6: ESE-FN w/o ML is a degraded version of ESE-FN
+by using the basic loss Lrs instead of ML L, namely
+setting α = 1, and β = 0. This aims to show the
+superiority of ML.
+• B7: the proposed ESE-FN.
+The comparison results among all baselines are shown in
+Table II. Compared with single-modal and multi-modal base-
+lines, B3-B7 (using multi-modal features) outperform B1-B2
+(using single-modal features), which validates that the multi-
+modal features contain more complementary information than
+the single-modal features. In particular, B4-B7 are equipped
+with the newly designed components, and perform better than
+B3 (simply combining multi-modal features). This validates
+that each component, i.e., M-Net, C-Net, or ML, is supe-
+rior to help improving the representation ability of multi-
+modal feature fusion. Here, B6 integrated with M-Net and
+C-Net further improves by 0.4%(1.2%) over B4(B5) only with
+M-Net(C-Net). Obviously, ESE-FN (i.e., B7) integrated with
+all new components achieves the best performance. It is further
+validated that M-Net, C-Net, and ML can jointly improve the
+representation ability of multi-modal feature fusion.
+SENet is the most related work, where we have added
+the Expansion step based on SENet and pushed it into the
+multi-modal fusion task. Thus, we also conduct the ablation
+experiment to compare with the proposed ESE-FN and SENet
+by setting six baselines, as follows:
+• A1: SENet only for channel-wise fusion uses SENet
+instead of C-Net for multi-modal feature fusion only in
+the channel-wise way. This can be seen as simply using
+Squeeze-Excitation for channel-wise fusion.
+• A2: SENet only for modal-wise fusion uses SENet
+instead of M-Net for multi-modal feature fusion only in
+Authorized licensed use limited to: NANJING UNIVERSITY OF SCIENCE AND TECHNOLOGY. Downloaded on January 31,2023 at 14:11:17 UTC from IEEE Xplore.  Restrictions apply.
+
+--- 第 9 页 ---
+SHU et al.: EXPANSION-SQUEEZE-EXCITATION FUSION NETWORK FOR ELDERLY ACTIVITY RECOGNITION
+5289
+TABLE IV
+COMPARISON WITH CURRENT METHODS ON ETRI-ACTIVITY3D DATASET. EVOLUTION POSE MAP [57]
+AND FSA-CNN [56] DO NOT ADOPT THE BACKBONE MODULE
+the modal-wise way. This can be seen as simply using
+Squeeze-Excitation for modal-wise fusion.
+• A3: SENet for modal and channel-wise fusion uses
+SENet instead of M-Net and C-Net for multi-modal
+feature fusion in both the modal-wise and channel-
+wise ways. This can be seen as simply using Squeeze-
+Excitation for both modal-wise and channel-wise fusions.
+• A4: ESE-FN only for channel-wise fusion only uses
+C-Net for multi-modal feature fusion in channel-wise
+way.
+• A5: ESE-FN only for modal-wise fusion only uses
+M-Net for multi-modal feature fusion in modal-wise way.
+• A6: ESE-FN (Ours) uses M-Net and C-Net for multi-
+modal feature fusion in both the modal-wise and channel-
+wise ways.
+The comparison result of the ablation study is listed in
+Table III. We can ﬁnd that 1) ESE-FN improves by 0.6%
+over A3 (SENet for modal and channel-wise fusion), which
+illustrate that the Expansion step is effective; and 2) A3
+outperforms both A1 and A2, as well as A6 outperforms both
+A4 and A5, which illustrate that our modal and channel-wise
+fusion strategy is effective and ﬂexible for the SENet family.
+E. Results and Analysis
+We evaluate the performance of the proposed ESE-FN on
+the elderly activity recognition task by comparing it with
+the currently representative multi-modal methods, including
+Deep Bilinear Learning [58], Evolution Pose Map [57],
+c-ConvNet [59], and FSA-CNN [56]. Speciﬁcally, Deep Bilin-
+ear Learning uses RGB frames, depth maps, and skeleton
+sequences; Evolution Pose Map uses 3D and 2D poses
+extracted from RGB frames and HeatMaps, respectively;
+c-ConvNet uses RGB frames and depth maps; FSA-CNN uses
+2D and 3D skeletons extracted from RGB frames and depth
+maps. The comparison results of all methods are shown in
+Table IV, where some results have been reported in [56].
+The proposed ESE-FN with the accuracy of 95.9% achieves
+the state-of-the-art performance, which improves by 2.2% (a
+relative 2.3% improvement) over the previous SOTA method,
+namely FSA-CNN with the accuracy of 93.7%. For a fair
+comparison, ESE-FN adopts the same backbone as the RGB
+feature extractor, and also performs better than the Deep Bilin-
+ear Learning method and c-ConvNet method, which illustrates
+the robustness of ESE-FN.
+In addition, the confusion matrices obtained by ESE-FN,
+Shift-GCN and ResNeXt101 are shown in Figure 8. First,
+the confusion matrix of ESE-FN shows that the color of the
+main diagonal is lighter than other spaces, which illustrates
+TABLE V
+COMPARISON WITH CURRENT METHODS ON THE NUT RGB+D DATASET
+all classes of elderly activities can be well recognized by
+ESE-FN. Second, compared with the confusion matrices of
+ESE-FN, Shift-GCN, and ResNeXt101, we can ﬁnd that the
+color of the main diagonal in Figure 8(c) is lighter than
+the color of the main diagonal in Figure 8(a) and (b). This
+shows that ESE-FN is more effective for recognizing the
+confusing elderly activities by capturing more discriminative
+multi-modal information.
+F. Extended Experiment on Normal Action Recognition
+To test the generalization of the proposed ESE-FN, we also
+conduct comparative experiments between the proposed ESE-
+FN and the other advanced methods in terms of the normal
+action recognition task. We use the NTU RGB+D dataset [71]
+as the benchmark. The NTU RGB+D dataset is a large-
+scale dataset collected by three Kinect cameras from different
+views concurrently, and has been widely used for evaluating
+RGB-based or skeleton-based action recognition methods.
+It includes 56,880 skeleton sequences and 60 different classes
+from 40 distinct subjects. NTU RGB+D dataset provides two
+standard evaluation protocols, i.e., Cross-Subject (CS) setting,
+and Cross-View (CV) setting. In the CS setting, the training
+set includes 40,320 samples performed by 20 subjects, and
+the testing set includes 16,560 samples performed by the other
+20 subjects. In the CV setting, the training set includes 37,920
+samples obtained from camera views 2 and 3, and the testing
+set includes 18,960 samples obtained from camera view 1.
+Table V shows the recognition accuracies obtained by dif-
+ferent methods on the NTU RGB+D dataset, where the perfor-
+mance of the other methods have been reported in [56]. We can
+Authorized licensed use limited to: NANJING UNIVERSITY OF SCIENCE AND TECHNOLOGY. Downloaded on January 31,2023 at 14:11:17 UTC from IEEE Xplore.  Restrictions apply.
+
+--- 第 10 页 ---
+5290
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 32, NO. 8, AUGUST 2022
+Fig. 8.
+The confusion matrices obtained by Shift-GCN, ResNeXt101, and ESE-FN on the ETRI-Activity3D dataset. It should be noted that ETRI-Activity3D
+dataset does not provides the names of all class.
+Fig. 9.
+The confusion matrices obtained by ESE-FN on the NTU RGB+D dataset.
+see that ESE-FN is comparable to the alternatives, including
+RNN-based methods (e.g., IndRNN [60], Beyond Joint [61]),
+CNN-based methods (e.g., SK-CNN [62], MANs [65], Deep
+Bilinear Learning [58]), and GCN-based methods (e.g., ST-
+GCN [12], Shift-GCN [13]). Speciﬁcally, ESE-FN improves
+by 0.7% and 0.2% over the SOTA methods, namely Evolution
+Pose Map with the accuracy of 91.7% and Shift-GCN with
+the accuracy of 96.5% on CS and CV settings, respectively.
+In addition, we also show the confusion matrices obtained by
+ESE-FN on NTU RGB+D (CS and CV) in Figure 9(a) and (b).
+These confusion matrices show that the color of the main
+diagonal is lighter than other spaces, which illustrates all
+classes of normal actions can be well recognized by ESE-FN.
+It can be concluded that the proposed ESE-FN is generalized
+to recognize normal actions.
+V. CONCLUSION
+In this work, we propose a novel Expansion-Squeeze-
+Excitation Fusion Network (ESE-FN) to well address the
+problem of elderly activity recognition by learning modal and
+channel-wise Expansion-Squeeze-Excitation (ESE) attentions
+for attentively fusing the multi-modal features in the modal
+and channel-wise ways, respectively. Overall, the framework
+of ESE-FN consisting of the feature extractor module, modal-
+fusion module, channel-wise module, and multi-modal loss
+can be summarised as two main insights. First, Modal-fusion
+Net (M-Net) and Channel-fusion Net (C-Net) can capture
+the modal and channel-wise dependencies among features for
+enhancing the discriminative ability of features via Modal
+and channel-wise ESEs. Second, Multi-modal Loss (ML) can
+enforce the consistency between the single-modal features and
+the fused multi-modal features by additionally bringing in
+the penalty of difference between the minimum prediction
+losses on the single modalities and the prediction loss on the
+fused modality. Experimental results on both elderly activity
+recognition and normal action recognition tasks demonstrate
+that the proposed ESE-FN achieves the SOTA performance
+compared with the other competitive methods. To the best
+of our knowledge, ESE-FN is the ﬁrst work that adopts the
+combination of expanding and squeezing to fully interacting
+features from the local and global views for learning nonlinear
+attention.
+Discussions: We refer to SENet’s idea that enhances the
+feature quality of different channels via nonlinear attention.
+SENet only uses a single global pooling operation to get a
+representation of channel information, which can be seen as a
+down-sampling interaction of features. In this work, we con-
+sider both the up-sampling and down-sampling interaction of
+features and present a new Expansion step, which can be
+further used to expand the modal information and channel
+information. The idea of up-sampling and down-sampling via
+Expansion and Squeeze is the ﬁrst attempt in the SENet family,
+which will be insightful for the other researchers. Moreover,
+as one member of the SENet family, ESE-FN is not limited
+Authorized licensed use limited to: NANJING UNIVERSITY OF SCIENCE AND TECHNOLOGY. Downloaded on January 31,2023 at 14:11:17 UTC from IEEE Xplore.  Restrictions apply.
+
+--- 第 11 页 ---
+SHU et al.: EXPANSION-SQUEEZE-EXCITATION FUSION NETWORK FOR ELDERLY ACTIVITY RECOGNITION
+5291
+only to the task of conventional feature learning and has been
+successfully extended for multi-modal feature fusion learning.
+This can be seen as an exemplary case that shows SENet for
+multi-modal feature fusion learning.
+REFERENCES
+[1] X. Shu, L. Zhang, Y. Sun, and J. Tang, “Host–parasite: Graph LSTM-in-
+LSTM for group activity recognition,” IEEE Trans. Neural Netw. Learn.
+Syst., vol. 32, no. 2, pp. 663–674, Feb. 2021.
+[2] C. Li, Q. Zhong, D. Xie, and S. Pu, “Collaborative spatiotemporal
+feature learning for video action recognition,” in Proc. IEEE/CVF Conf.
+Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019, pp. 7872–7881.
+[3] C. Feichtenhofer, H. Fan, J. Malik, and K. He, “SlowFast networks for
+video recognition,” in Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV),
+Oct. 2019, pp. 6202–6211.
+[4] X. Wang and A. Gupta, “Videos as space-time region graphs,” in Proc.
+Eur. Conf. Comput. Vis. (ECCV), Sep. 2018, pp. 399–417.
+[5] J. Tang, X. Shu, R. Yan, and L. Zhang, “Coherence constrained graph
+LSTM for group activity recognition,” IEEE Trans. Pattern Anal. Mach.
+Intell., vol. 44, no. 2, pp. 636–647, Feb. 2022.
+[6] J. Lin, C. Gan, and S. Han, “TSM: Temporal shift module for efﬁcient
+video understanding,” in Proc. IEEE/CVF Int. Conf. Comput. Vis.
+(ICCV), Oct. 2019, pp. 7082–7092.
+[7] J. Carreira and A. Zisserman, “Quo vadis, action recognition? A new
+model and the kinetics dataset,” in Proc. IEEE Conf. Comput. Vis.
+Pattern Recognit. (CVPR), Jul. 2017, pp. 6299–6308.
+[8] X. Shu, J. Tang, G.-J. Qi, W. Liu, and J. Yang, “Hierarchical long
+short-term concurrent memory for human interaction recognition,” IEEE
+Trans. Pattern Anal. Mach. Intell., vol. 43, no. 3, pp. 1110–1118,
+Mar. 2021.
+[9] X. Shu, J. Tang, G.-J. Qi, Y. Song, Z. Li, and L. Zhang, “Concurrence-
+aware long short-term sub-memories for person-person action recogni-
+tion,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. Workshops
+(CVPRW), Jul. 2017, pp. 1–8.
+[10] P. Zhang, C. Lan, J. Xing, W. Zeng, J. Xue, and N. Zheng, “View
+adaptive neural networks for high performance skeleton-based human
+action recognition,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 41,
+no. 8, pp. 1963–1978, Aug. 2019.
+[11] A. Banerjee, P. K. Singh, and R. Sarkar, “Fuzzy integral-based CNN
+classiﬁer fusion for 3D skeleton action recognition,” IEEE Trans. Cir-
+cuits Syst. Video Technol., vol. 31, no. 6, pp. 2206–2216, Jun. 2021.
+[12] S. Yan, Y. Xiong, and D. Lin, “Spatial temporal graph convolutional
+networks for skeleton-based action recognition,” in Proc. AAAI Conf.
+Artif. Intell. (AAAI), 2018, pp. 7444–7452.
+[13] K. Cheng, Y. Zhang, X. He, W. Chen, J. Cheng, and H. Lu, “Skeleton-
+based action recognition with shift graph convolutional network,”
+in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR),
+Jun. 2020, pp. 183–192.
+[14] X. Shu, L. Zhang, G.-J. Qi, W. Liu, and J. Tang, “Spatiotempo-
+ral co-attention recurrent neural networks for human-skeleton motion
+prediction,” IEEE Trans. Pattern Anal. Mach. Intell., early access,
+Jan. 12, 2021, doi: 10.1109/TPAMI.2021.3050918.
+[15] S. Albawi, T. A. Mohammed, and S. Al-Zawi, “Understanding of a
+convolutional neural network,” in Proc. Int. Conf. Eng. Technol. (ICET),
+Aug. 2017, pp. 1–6.
+[16] W. Zaremba, I. Sutskever, and O. Vinyals, “Recurrent neural network
+regularization,” 2014, arXiv:1409.2329.
+[17] D. Tran, L. Bourdev, R. Fergus, L. Torresani, and M. Paluri, “Learning
+spatiotemporal features with 3D convolutional networks,” in Proc. IEEE
+Int. Conf. Comput. Vis. (ICCV), Dec. 2015, pp. 4489–4497.
+[18] S. Hochreiter and J. Schmidhuber, “Long short-term memory,” Neural
+Comput., vol. 9, no. 8, pp. 1735–1780, 1997.
+[19] T. N. Kipf and M. Welling, “Semi-supervised classiﬁcation with graph
+convolutional networks,” 2016, arXiv:1609.02907.
+[20] G. Liu, J. Qian, F. Wen, X. Zhu, R. Ying, and P. Liu, “Action recognition
+based on 3D skeleton and RGB frame fusion,” in Proc. IEEE/RSJ Int.
+Conf. Intell. Robots Syst. (IROS), Nov. 2019, pp. 258–264.
+[21] S. Das, M. Koperski, F. Bremond, and G. Francesca, “Action recognition
+based on a mixture of RGB and depth based skeleton,” in Proc. 14th
+IEEE Int. Conf. Adv. Video Signal Based Surveill. (AVSS), Aug. 2017,
+pp. 1–6.
+[22] B. Nojavanasghari, D. Gopinath, J. Koushik, T. Baltrušaitis, and
+L.-P. Morency, “Deep multimodal fusion for persuasiveness predic-
+tion,” in Proc. 18th ACM Int. Conf. Multimodal Interact., Oct. 2016,
+pp. 284–288.
+[23] Y. Wang, W. Huang, F. Sun, T. Xu, Y. Rong, and J. Huang, “Deep
+multimodal fusion by channel exchanging,” in Proc. Adv. Neural Inf.
+Process. Syst. (NeurIPS), vol. 33, 2020, pp. 1–11.
+[24] H. Wang, B. Yu, J. Li, L. Zhang, and D. Chen, “Multi-stream
+interaction networks for human action recognition,” IEEE Trans.
+Circuits
+Syst.
+Video Technol.,
+early
+access,
+Jul. 21, 2021,
+doi:
+10.1109/TCSVT.2021.3098839.
+[25] Y. Tang, Z. Wang, J. Lu, J. Feng, and J. Zhou, “Multi-stream deep
+neural networks for RGB-D egocentric action recognition,” IEEE Trans.
+Circuits Syst. Video Technol., vol. 29, no. 10, pp. 3001–3015, Oct. 2019.
+[26] H. R. Vaezi Joze, A. Shaban, M. L. Iuzzolino, and K. Koishida,
+“MMTM: Multimodal transfer module for CNN fusion,” in Proc.
+IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020,
+pp. 13289–13299.
+[27] W. Zhu, X. Wang, and H. Li, “Multi-modal deep analysis for mul-
+timedia,” IEEE Trans. Circuits Syst. Video Technol., vol. 30, no. 10,
+pp. 3740–3764, Oct. 2020.
+[28] W. Gao, G. Liao, S. Ma, G. Li, Y. Liang, and W. Lin, “Uniﬁed
+information fusion network for multi-modal RGB-D and RGB-T salient
+object detection,” IEEE Trans. Circuits Syst. Video Technol., early access,
+May 25, 2021, doi: 10.1109/TCSVT.2021.3082939.
+[29] X. Zhang, T. Wang, W. Luo, and P. Huang, “Multi-level fusion
+and attention-guided CNN for image dehazing,” IEEE Trans. Circuits
+Syst. Video Technol., vol. 31, no. 11, pp. 4162–4173, Nov. 2021, doi:
+10.1109/TCSVT.2020.3046625.
+[30] W. Zhou, Q. Guo, J. Lei, L. Yu, and J.-N. Hwang, “ECFFNet: Effec-
+tive and consistent feature fusion network for RGB-T salient object
+detection,” IEEE Trans. Circuits Syst. Video Technol., early access,
+May 3, 2021, doi: 10.1109/TCSVT.2021.3077058.
+[31] Q. Zhang, T. Xiao, N. Huang, D. Zhang, and J. Han, “Revisiting feature
+fusion for RGB-T salient object detection,” IEEE Trans. Circuits Syst.
+Video Technol., vol. 31, no. 5, pp. 1804–1818, May 2021.
+[32] D. Francis, P. A. Nguyen, B. Huet, and C.-W. Ngo, “Fusion of mul-
+timodal embeddings for ad-hoc video search,” in Proc. IEEE/CVF Int.
+Conf. Comput. Vis. Workshop (ICCVW), Oct. 2019, pp. 1868–1872.
+[33] C. Hori et al., “Attention-based multimodal fusion for video descrip-
+tion,” in Proc. IEEE Int. Conf. Comput. Vis. (ICCV), Oct. 2017,
+pp. 4193–4202.
+[34] Z. Liu, Y. Shen, V. B. Lakshminarasimhan, P. P. Liang, A. Zadeh, and
+L.-P. Morency, “Efﬁcient low-rank multimodal fusion with modality-
+speciﬁc factors,” 2018, arXiv:1806.00064.
+[35] J. Hu, L. Shen, and G. Sun, “Squeeze-and-excitation networks,” in
+Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit., Jun. 2018,
+pp. 7132–7141.
+[36] D. He, F. Li, Q. Zhao, X. Long, Y. Fu, and S. Wen, “Exploiting
+spatial-temporal modelling and multi-modal fusion for human action
+recognition,” 2018, arXiv:1806.10319.
+[37] H. Kuang et al., “Multi-modal multi-layer fusion network with average
+binary center loss for face anti-spooﬁng,” in Proc. 27th ACM Int. Conf.
+Multimedia, Oct. 2019, pp. 48–56.
+[38] F. Fooladgar and S. Kasaei, “Multi-modal attention-based fusion
+model for semantic
+segmentation
+of RGB-depth
+images,” 2019,
+arXiv:1912.11691.
+[39] D. Liu, K. Zhang, and Z. Chen, “Attentive cross-modal fusion network
+for RGB-D saliency detection,” IEEE Trans. Multimedia, vol. 23,
+pp. 967–981, 2021.
+[40] K. Simonyan and A. Zisserman, “Two-stream convolutional networks
+for action recognition in videos,” 2014, arXiv:1406.2199.
+[41] L. Wang et al., “Temporal segment networks: Towards good pr
+... (已截断, 原长度 9129 字符)
+
+--- 第 12 页 ---
+5292
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS FOR VIDEO TECHNOLOGY, VOL. 32, NO. 8, AUGUST 2022
+[47] Z. Shao, Y. Li, and H. Zhang, “Learning representations from skeletal
+self-similarities for cross-view action recognition,” IEEE Trans. Circuits
+Syst. Video Technol., vol. 31, no. 1, pp. 160–174, Jan. 2021.
+[48] K. Liu, L. Gao, N. M. Khan, L. Qi, and L. Guan, “A multi-stream
+graph convolutional networks-hidden conditional random ﬁeld model
+for skeleton-based action recognition,” IEEE Trans. Multimedia, vol. 23,
+pp. 64–76, 2021.
+[49] M. Zhang, X. Liu, W. Liu, A. Zhou, H. Ma, and T. Mei, “Multi-
+granularity reasoning for social relation recognition from images,”
+in Proc. IEEE Int. Conf. Multimedia Expo. (ICME), Jul. 2019,
+pp. 1618–1623.
+[50] J. Liu, X. Fan, J. Jiang, R. Liu, and Z. Luo, “Learning a deep multi-
+scale feature ensemble and an edge-attention guidance for image fusion,”
+IEEE Trans. Circuits Syst. Video Technol., vol. 32, no. 1, pp. 105–119,
+Jan. 2022, doi: 10.1109/TCSVT.2021.3056725.
+[51] J. Chen, L. Yang, Y. Xu, J. Huo, Y. Shi, and Y. Gao, “A novel deep
+multi-modal feature fusion method for celebrity video identiﬁcation,” in
+Proc. 27th ACM Int. Conf. Multimedia, Oct. 2019, pp. 2535–2538.
+[52] C. Chen, R. Jafari, and N. Kehtarnavaz, “Fusion of depth, skeleton, and
+inertial data for human action recognition,” in Proc. IEEE Int. Conf.
+Acoust., Speech Signal Process. (ICASSP), Mar. 2016, pp. 2712–2716.
+[53] A. Raza, H. Huo, and T. Fang, “PFAF-Net: Pyramid feature network
+for multimodal fusion,” IEEE Sensors Lett., vol. 4, no. 12, pp. 1–4,
+Dec. 2020.
+[54] L. Su, C. Hu, G. Li, and D. Cao, “MSAF: Multimodal split attention
+fusion,” 2020, arXiv:2012.07175.
+[55] S. Xie, R. Girshick, P. Dollar, Z. Tu, and K. He, “Aggregated residual
+transformations for deep neural networks,” in Proc. IEEE Conf. Comput.
+Vis. Pattern Recognit. (CVPR), Jul. 2017, pp. 1492–1500.
+[56] J. Jang, D. Kim, C. Park, M. Jang, J. Lee, and J. Kim, “ETRI-Activity3D:
+A large-scale RGB-D dataset for robots to recognize daily activities of
+the elderly,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. (IROS),
+Oct. 2020, pp. 10990–10997.
+[57] M. Liu and J. Yuan, “Recognizing human actions as the evolution of
+pose estimation maps,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern
+Recognit., Jun. 2018, pp. 1159–1168.
+[58] J.-F. Hu, W.-S. Zheng, J. Pan, J. Lai, and J. Zhang, “Deep bilinear
+learning for RGB-D action recognition,” in Proc. Eur. Conf. Comput.
+Vis. (ECCV), Sep. 2018, pp. 335–351.
+[59] P. Wang, W. Li, J. Wan, P. Ogunbona, and X. Liu, “Cooperative training
+of deep aggregation networks for RGB-D action recognition,” in Proc.
+AAAI Conf. Artif. Intell. (AAAI), 2018, pp. 1–8.
+[60] S. Li, W. Li, C. Cook, C. Zhu, and Y. Gao, “Independently recurrent
+neural network (IndRNN): Building a longer and deeper RNN,” in
+Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit., Jun. 2018,
+pp. 5457–5466.
+[61] H. Wang and L. Wang, “Beyond joints: Learning representations from
+primitive geometries for skeleton-based action recognition and detec-
+tion,” IEEE Trans. Image Process., vol. 27, no. 9, pp. 4382–4394,
+Sep. 2018.
+[62] C. Li, Q. Zhong, D. Xie, and S. Pu, “Skeleton-based action recognition
+with convolutional neural networks,” in Proc. IEEE Int. Conf. Multime-
+dia Expo. Workshops (ICMEW), Jul. 2017, pp. 597–600.
+[63] Y.-H. Wen, L. Gao, H. Fu, F.-L. Zhang, and S. Xia, “Graph cnns with
+motif and variable temporal block for skeleton-based action recognition,”
+in Proc. AAAI Conf. Artif. Intell. (AAAI), 2019, pp. 8989–8996.
+[64] Y. Xu, J. Cheng, L. Wang, H. Xia, F. Liu, and D. Tao, “Ensemble
+one-dimensional convolution neural networks for skeleton-based action
+recognition,” IEEE Signal Process. Lett., vol. 25, no. 7, pp. 1044–1048,
+Jul. 2018.
+[65] C. Li, C. Xie, B. Zhang, J. Han, X. Zhen, and J. Chen, “Mem-
+ory attention networks for skeleton-based action recognition,” IEEE
+Trans. Neural Netw. Learn. Syst., early access, Mar. 15, 2021, doi:
+10.1109/TNNLS.2021.3061115.
+[66] C. Li, Q. Zhong, D. Xie, and S. Pu, “Co-occurrence feature learning
+from skeleton data for action recognition and detection with hierarchical
+aggregation,” 2018, arXiv:1804.06055.
+[67] B. Li, X. Li, Z. Zhang, and F. Wu, “Spatio-temporal graph routing for
+skeleton-based action recognition,” in Proc. AAAI Conf. Artif. Intell.
+(AAAI), 2019, pp. 8561–8568.
+[68] L. Shi, Y. Zhang, J. Cheng, and H. Lu, “Two-stream adaptive graph
+convolutional networks for skeleton-based action recognition,” in Proc.
+IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019,
+pp. 12026–12035.
+[69] L. Shi, Y. Zhang, J. Cheng, and H. Lu, “Skeleton-based action recog-
+nition with directed graph neural networks,” in Proc. IEEE/CVF Conf.
+Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019, pp. 7912–7921.
+[70] Z. Liu, H. Zhang, Z. Chen, Z. Wang, and W. Ouyang, “Disentangling
+and unifying graph convolutions for skeleton-based action recognition,”
+in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR),
+Jun. 2020, pp. 143–152.
+[71] A. Shahroudy, J. Liu, T.-T. Ng, and G. Wang, “NTU RGB+D: A large
+scale dataset for 3D human activity analysis,” in Proc. IEEE Conf.
+Comput. Vis. Pattern Recognit. (CVPR), Jun. 2016, pp. 1010–1019.
+Xiangbo Shu received the Ph.D. degree from the
+Nanjing University of Science and Technology,
+China, in 2016. From 2014 to 2015, he worked as a
+visiting scholar at the National University of Singa-
+pore, Singapore. He is currently a Professor with the
+School of Computer Science and Engineering, Nan-
+jing University of Science and Technology. He has
+authored over 60 journals and conference papers in
+his research areas, including IEEE TRANSACTIONS
+ON PATTERN ANALYSIS AND MACHINE INTELLI-
+GENCE, IEEE TRANSACTIONS ON NEURAL NET-
+WORKS AND LEARNING SYSTEMS, IEEE TRANSACTIONS ON IMAGE
+PROCESSING, CVPR, ICCV, ECCV, and ACM MM. His current research
+interests include computer vision and multimedia. He has received the Best
+Student Paper Award from MMM 2016, the Best Paper Runner-Up from ACM
+MM 2015, the Excellent Doctoral Dissertation of CAAI, and the Excellent
+Doctoral Dissertation of Jiangsu Province.
+Jiawen Yang is currently pursuing the master’s
+degree with the School of Computer Science and
+Engineering, Nanjing University of Science and
+Technology, China. His current research interests are
+computer vision and deep learning.
+Rui Yan received the B.E. degree from Nanjing
+Forestry University in 2017. He is currently pursuing
+the Ph.D. degree with the School of Computer
+Science and Engineering, Nanjing University of Sci-
+ence and Technology, China. From 2018 to 2019,
+he worked as a research intern at the Huawei Noah’s
+Ark Laboratory. He is currently a visiting scholar
+with the Department of Electrical and Computer
+Engineering, National University of Singapore. His
+research interests include multimedia analysis and
+computer vision.
+Yan Song received the Ph.D. degree in computer
+application technology from the Institute of Com-
+puting Technology, Chinese Academy of Sciences,
+China, in 2011. She was a visiting scholar at the
+University of Maryland from 2018 to 2019. She is
+currently an Associate Professor with the School of
+Computer Science and Engineering, Nanjing Univer-
+sity of Science and Technology, China. Her current
+research interest is computer vision especially for
+video content analysis and understanding.
+Authorized licensed use limited to: NANJING UNIVERSITY OF SCIENCE AND TECHNOLOGY. Downloaded on January 31,2023 at 14:11:17 UTC from IEEE Xplore.  Restrictions apply.

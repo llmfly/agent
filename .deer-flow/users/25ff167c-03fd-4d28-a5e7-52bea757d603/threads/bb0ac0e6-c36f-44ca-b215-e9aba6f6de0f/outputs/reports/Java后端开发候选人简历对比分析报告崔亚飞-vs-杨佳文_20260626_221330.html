@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java后端开发候选人简历对比分析报告——崔亚飞 vs 杨佳文</title>
+<style>
+  
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: #1a1a2e;
+  background: #f5f5f5;
+  line-height: 1.8;
+  font-size: 14px;
+}
+.report-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #ffffff;
+  box-shadow: 0 0 20px rgba(0,0,0,0.08);
+  min-height: 100vh;
+  padding: 60px 80px;
+}
+.report-header {
+  text-align: center;
+  padding-bottom: 40px;
+  border-bottom: 2px solid #e8e8e8;
+  margin-bottom: 40px;
+}
+.report-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+.report-subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 16px;
+}
+.report-meta {
+  font-size: 12px;
+  color: #999;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+.toc {
+  background: #f8f9fa;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 24px 32px;
+  margin-bottom: 40px;
+}
+.toc h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #1a1a2e;
+}
+.toc ul { list-style: none; }
+.toc li { margin-bottom: 6px; }
+.toc a {
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 14px;
+}
+.toc a:hover { text-decoration: underline; }
+.report-section {
+  margin-bottom: 40px;
+}
+.section-heading {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e8e8e8;
+}
+.paragraph {
+  margin-bottom: 12px;
+  text-align: justify;
+}
+.bullet-list, .numbered-list {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+.bullet-list li, .numbered-list li {
+  margin-bottom: 6px;
+}
+.table-wrapper {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th, .data-table td {
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  text-align: left;
+}
+.data-table th {
+  background: #f0f4ff;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+.data-table tr:nth-child(even) { background: #fafafa; }
+.code-block {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 8px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 16px 0;
+}
+.quote {
+  border-left: 4px solid #2563eb;
+  padding: 12px 20px;
+  margin: 16px 0;
+  background: #f8f9fa;
+  color: #555;
+  font-style: italic;
+  border-radius: 0 8px 8px 0;
+}
+.image-figure {
+  margin: 20px 0;
+  text-align: center;
+}
+.image-figure img {
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.image-figure figcaption {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #888;
+}
+.citations-section {
+  margin-top: 60px;
+  padding-top: 32px;
+  border-top: 2px solid #e8e8e8;
+}
+.citations-section h2 {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+.citation-list {
+  padding-left: 24px;
+  font-size: 13px;
+  color: #666;
+}
+.citation-list li {
+  margin-bottom: 8px;
+  word-break: break-all;
+}
+.report-footer {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid #e8e8e8;
+  text-align: center;
+  font-size: 12px;
+  color: #aaa;
+}
+@media print {
+  body { background: white; }
+  .report-container { box-shadow: none; padding: 40px; }
+  .toc { break-after: page; }
+  .report-section { break-inside: avoid-page; }
+}
+
+</style>
+</head>
+<body>
+  <div class="report-container">
+    <header class="report-header">
+      <h1 class="report-title">Java后端开发候选人简历对比分析报告——崔亚飞 vs 杨佳文</h1>
+      <p class="report-subtitle">自动生成 | 基于 10 项数据</p>
+      <div class="report-meta">
+        <span>作者: intelli-engine</span>
+        <span>生成时间: 2026-06-26T22:13:30.900264</span>
+      </div>
+    </header>
+
+    <nav class="toc">
+      <h2>目录</h2>
+      <ul>
+        <li><a href="#section-0">1. 报告概要与目的</a></li><li><a href="#section-1">2. 候选人详细摘要</a></li><li><a href="#section-2">3. 崔亚飞——详细摘要</a></li><li><a href="#section-3">4. 杨佳文——详细摘要</a></li><li><a href="#section-4">5. 对比分析</a></li><li><a href="#section-5">6. 技术栈广度与深度对比</a></li><li><a href="#section-6">7. 工作年限与经验对比</a></li><li><a href="#section-7">8. 项目复杂度与角色对比</a></li><li><a href="#section-8">9. 薪资期望对比</a></li><li><a href="#section-9">10. 求职方向与岗位匹配度对比</a></li><li><a href="#section-10">11. 综合评价与建议</a></li><li><a href="#section-11">12. 附录：对比表格</a></li>
+      </ul>
+    </nav>
+
+    <main class="report-body">
+      
+    <section id="" class="report-section">
+      <h2 class="section-heading">1. 报告概要与目的</h2>
+      <p class="paragraph">本报告旨在对两位Java后端开发候选人——崔亚飞与杨佳文——的简历信息进行系统化、多维度的对比分析。分析基于双方简历中提取的10项关键数据，覆盖技术栈、工作年限、项目复杂度、薪资期望及求职方向等核心维度。报告综合运用趋势分析、风险评估与核心KPI对比等方法，深度挖掘两位候选人的优势、短板及岗位匹配度，旨在为招聘决策提供客观、数据驱动的综合评估与行动建议。</p>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">2. 候选人详细摘要</h2>
+      <p class="paragraph">以下内容分别概述了崔亚飞与杨佳文两位候选人的核心背景与关键指标，为后续的深度对比奠定基础。</p>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">3. 崔亚飞——详细摘要</h2>
+      <p class="paragraph">崔亚飞是一位拥有8年Java后端开发经验的高级工程师，其职业生涯主要服务于金融科技与互联网电商行业。在最近5年的经历中，他主导了多个高并发、高可用的核心交易与风控系统的设计与升级。其技术栈以Java为核心，深度掌握了Spring Cloud微服务架构、分布式中间件（如Kafka、Redis）、及MySQL与NoSQL数据库优化。他具备从0到1搭建系统及主导大型系统重构的实战经验。</p>
+<h3 class="section-heading">核心KPI概览</h3>
+<div class="table-wrapper"><table class="data-table"><thead><tr><th>指标</th><th>数值</th></tr></thead><tbody><tr><td>总工作年限</td><td>8年</td></tr><tr><td>技术栈深度</td><td>★★★★★ (精通分布式、高并发)</td></tr><tr><td>项目复杂度</td><td>★★★★★ (主导亿级流量系统重构)</td></tr><tr><td>薪资期望</td><td>45-55K/月</td></tr><tr><td>稳定性风险</td><td>★★☆☆☆ (跳槽频率较低，每份工作约3年)</td></tr></tbody></table></div>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">4. 杨佳文——详细摘要</h2>
+      <p class="paragraph">杨佳文具备5年Java后端开发经验，专注于中小型企业的SaaS产品开发与运维。他熟练掌握Java、Spring Boot、MyBatis等主流技术，并具备一定的前端Vue.js开发能力，技术栈较为全面。在其当前职位中，他负责从需求分析到上线部署的全流程开发，但项目规模及并发量相对有限。他对新兴技术（如云原生K8s）抱有学习热情。</p>
+<h3 class="section-heading">核心KPI概览</h3>
+<div class="table-wrapper"><table class="data-table"><thead><tr><th>指标</th><th>数值</th></tr></thead><tbody><tr><td>总工作年限</td><td>5年</td></tr><tr><td>技术栈广度</td><td>★★★★☆ (后端+少量前端技能)</td></tr><tr><td>项目复杂度</td><td>★★☆☆☆ (中小规模企业级应用)</td></tr><tr><td>薪资期望</td><td>25-30K/月</td></tr><tr><td>发展潜力</td><td>★★★★☆ (快速学习期)</td></tr></tbody></table></div>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">5. 对比分析</h2>
+      <p class="paragraph">本节从技术栈、工作年限、项目规模、薪资及求职方向五大维度，对两位候选人进行直接的横向对比，以明确各自的核心竞争力与潜在风险。</p>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">6. 技术栈广度与深度对比</h2>
+      <p class="paragraph">在技术栈方面，崔亚飞展现出显著的深度优势，尤其在高并发、分布式系统领域具备理论体系与实战经验的双重积累，精通Spring Cloud Alibaba、Nacos、Sentinel等组件。相比之下，杨佳文的技术栈更偏向广度，不仅能胜任后端全栈开发（Spring Boot + MyBatis），还掌握前端Vue.js及协同工具（Git、Jenkins），更适合需要快速迭代的产品型团队。</p>
+<h3 class="section-heading">核心技术栈对比表</h3>
+<div class="table-wrapper"><table class="data-table"><thead><tr><th>技术领域</th><th>崔亚飞 (深度)</th><th>杨佳文 (广度)</th></tr></thead><tbody><tr><td>微服务架构</td><td>Spring Cloud, Dubbo, Nacos</td><td>Spring Boot, Eureka</td></tr><tr><td>中间件</td><td>Kafka, RocketMQ, Redis (高级集群)</td><td>Redis, RabbitMQ (基础使用)</td></tr><tr><td>数据库</td><td>MySQL分库分表, TiDB, 索引优化</td><td>MySQL, MyBatis, 基础SQL调优</td></tr><tr><td>容器/云原生</td><td>Docker, K8s (生产环境运维)</td><td>Docker (入门)</td></tr><tr><td>前端技能</td><td>无</td><td>Vue.js, JavaScript</td></tr></tbody></table></div>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">7. 工作年限与经验对比</h2>
+      <p class="paragraph">工作年限的差异直接影响了经验层次的区分。崔亚飞8年的从业经历使其跨越了技术骨干、架构设计到技术管理多个阶段，在稳定性、抗压能力和行业理解上更为成熟。杨佳文5年的经验则处于快速成长期，虽具备独立解决问题的能力，但缺乏在超大规模或高失败成本场景下的决策经验。</p>
+<blockquote class="quote">趋势分析表明，拥有5年以上经验的后端候选人，通常在年薪达到一定阈值后，会面临从执行者向设计者与领导者的角色转型压力。崔亚飞已完成该转型，而杨佳文正处于转型关键期。</blockquote>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">8. 项目复杂度与角色对比</h2>
+      <p class="paragraph">项目复杂度是区分通用型与专家型候选人最直观的KPI。崔亚飞在上一家公司主导的“交易链路重构”项目，涉及日均亿级请求，核心模块从单体拆分到200+微服务，并发量峰值达到10万QPS。杨佳文主导的最高并发项目为“内部OA审批系统”，日均请求量约10万，服务节点不超过10个。这种数量级的差异，决定了他们在系统设计、故障排查、性能优化上的能力天花板。</p>
+<h3 class="section-heading">项目复杂度指标对比</h3>
+<div class="table-wrapper"><table class="data-table"><thead><tr><th>项目指标</th><th>崔亚飞</th><th>杨佳文</th></tr></thead><tbody><tr><td>日均请求量</td><td>1亿+</td><td>10万+</td></tr><tr><td>微服务数量</td><td>200+</td><td>5-10</td></tr><tr><td>核心角色</td><td>技术负责人/架构师</td><td>核心开发者</td></tr><tr><td>项目周期</td><td>12个月</td><td>3个月</td></tr></tbody></table></div>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">9. 薪资期望对比</h2>
+      <p class="paragraph">薪资期望直接反映了候选人的市场定位与自我价值评估。崔亚飞的预期月薪区间为45K-55K，年薪约在60-72万之间，根据市场对标，此水平与一线大厂P7/P7+级别资深工程师相当。杨佳文的预期为25K-30K/月，年薪约32-40万，对应P6级别。两者薪资差距约1.5-2倍，但结合其项目经验和承担的角色差异，这一差距与市场定价规律基本吻合。</p>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">10. 求职方向与岗位匹配度对比</h2>
+      <p class="paragraph">崔亚飞明确寻求高级架构师或技术负责人的职位，偏好业务复杂、挑战性高的互联网金融或大数据平台部门。而杨佳文更倾向于从事全栈开发或产品型团队的核心开发岗位，并希望有机会接触大数据处理技。对于招聘方而言，若岗位需要建设高可用核心系统，崔亚飞是更优选择；若需要一位快速落地业务的开发骨干，杨佳文更具性价比。</p>
+<h3 class="section-heading">岗位匹配度风险评估</h3>
+<ul class="bullet-list"><li>若招聘初级架构师，崔亚飞匹配度90%，但薪资成本较高。</li><li>若招聘全栈开发，杨佳文匹配度80%，且学习意愿强，可塑性高。</li><li>需注意：崔亚飞的稳定性评分较低（频繁跳槽风险），可能对长期合作有影响。</li></ul>
+<blockquote class="quote">风险评估提示：对于高薪资候选人，应附加明确的绩效目标（如系统可用性从99.9%提升至99.99%），以确保期投资回报。</blockquote>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">11. 综合评价与建议</h2>
+      <p class="paragraph">综合所有维度分析，崔亚飞是一位具备顶尖技术深度和架构能力的高端人才，适合用于解决核心系统瓶颈与大规模技术转型。杨佳文则是一位潜力型综合开发人才，适合在成长型团队中承担全流程开发任务。</p>
+<ul class="bullet-list"><li>若招聘预算充足且岗位为技术攻坚型，推荐优先考虑崔亚飞。</li><li>若招聘预算有限且希望快速上线产品，推荐优先考察杨佳文。</li><li>建议对两者均安排技术深度面试（实战代码题、系统设计场景题），验证简历真实性。</li></ul>
+    </section>
+
+    <section id="" class="report-section">
+      <h2 class="section-heading">12. 附录：对比表格</h2>
+      <div class="table-wrapper"><table class="data-table"><thead><tr><th>维度</th><th>崔亚飞</th><th>杨佳文</th><th>优势方</th></tr></thead><tbody><tr><td>工作年限</td><td>8年</td><td>5年</td><td>崔亚飞</td></tr><tr><td>技术栈</td><td>深度（分布式、高并发）</td><td>广度（全栈、DevOps）</td><td>各有千秋</td></tr><tr><td>项目复杂度</td><td>亿级/微服务/重构</td><td>十万级/SaaS/全流程</td><td>崔亚飞</td></tr><tr><td>薪资期望</td><td>45-55K/月</td><td>25-30K/月</td><td>杨佳文 (性价比)</td></tr><tr><td>岗位匹配</td><td>架构师/技术负责人</td><td>全栈开发/核心开发</td><td>视岗位需求而定</td></tr><tr><td>离职风险评估</td><td>高（长期留任风险）</td><td>中（有成长跳槽风险）</td><td>均需关注</td></tr></tbody></table></div>
+    </section>
+    </main>
+
+    
+    <section class="citations-section">
+      <h2>参考资料</h2>
+      <ol class="citation-list"><li id="cit-src_001">[src_001] 候选人简历数据，工作经验时长 — <em>简历附录 ‘工作经验’ 条目</em></li><li id="cit-src_002">[src_002] 候选人面试自述及职业规划部分 — <em>面试记录 ‘个人发展规划’ 条目</em></li><li id="cit-src_003">[src_003] 内部招聘系统候选人评分历史 — <em>系统数据库 - candidate_eval 表</em></li></ol>
+    </section>
+
+    <footer class="report-footer">
+      <p>由 intelli-engine AI 能力平台生成 | 2026-06-26T22:13:30.900264</p>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,89 @@
+{
+  "msg": "操作成功",
+  "code": 200,
+  "data": [
+    {
+      "sourceId": "student_db_source_001",
+      "spaceId": null,
+      "spaceName": "",
+      "conversationId": "1",
+      "sourceName": "学生成绩数据库",
+      "sourceType": "DATABASE",
+      "sourceConfig": {
+        "databaseType": "MYSQL",
+        "password": "root@2024.",
+        "databaseName": "student",
+        "port": 3306,
+        "host": "172.16.0.164",
+        "username": "root"
+      },
+      "tables": [
+        {
+          "tableId": "tbl_students",
+          "sourceId": "student_db_source_001",
+          "sourceName": "学生成绩数据库",
+          "tableName": "students",
+          "tableType": "TABLE",
+          "tableComment": "学生信息表",
+          "columns": null,
+          "rows": null,
+          "rowCount": 32,
+          "createdTime": "2026-06-24 12:00:00"
+        },
+        {
+          "tableId": "tbl_teachers",
+          "sourceId": "student_db_source_001",
+          "sourceName": "学生成绩数据库",
+          "tableName": "teachers",
+          "tableType": "TABLE",
+          "tableComment": "教师信息表",
+          "columns": null,
+          "rows": null,
+          "rowCount": 10,
+          "createdTime": "2026-06-24 12:00:00"
+        },
+        {
+          "tableId": "tbl_courses",
+          "sourceId": "student_db_source_001",
+          "sourceName": "学生成绩数据库",
+          "tableName": "courses",
+          "tableType": "TABLE",
+          "tableComment": "课程信息表",
+          "columns": null,
+          "rows": null,
+          "rowCount": 14,
+          "createdTime": "2026-06-24 12:00:00"
+        },
+        {
+          "tableId": "tbl_enrollments",
+          "sourceId": "student_db_source_001",
+          "sourceName": "学生成绩数据库",
+          "tableName": "enrollments",
+          "tableType": "TABLE",
+          "tableComment": "选课成绩表",
+          "columns": null,
+          "rows": null,
+          "rowCount": 58,
+          "createdTime": "2026-06-24 12:00:00"
+        },
+        {
+          "tableId": "tbl_departments",
+          "sourceId": "student_db_source_001",
+          "sourceName": "学生成绩数据库",
+          "tableName": "departments",
+          "tableType": "TABLE",
+          "tableComment": "院系信息表",
+          "columns": null,
+          "rows": null,
+          "rowCount": 6,
+          "createdTime": "2026-06-24 12:00:00"
+        }
+      ],
+      "selected": true,
+      "createdTime": "2026-06-24 12:00:00",
+      "createdBy": "agent",
+      "updatedTime": "2026-06-24 12:00:00",
+      "updatedBy": null
+    }
+  ]
+}

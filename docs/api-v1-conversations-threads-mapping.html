@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>/api/v1/conversations 与 /api/threads 接口映射关系</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9dee8;
+      --blue: #2563eb;
+      --green: #14804a;
+      --amber: #a15c07;
+      --red: #b42318;
+      --code: #eef2f7;
+      --shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      line-height: 1.55;
+    }
+
+    header {
+      background: #111827;
+      color: #fff;
+      padding: 28px 32px;
+      border-bottom: 4px solid var(--blue);
+    }
+
+    header h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+
+    header p {
+      max-width: 1120px;
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 15px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 22px;
+      padding: 22px 32px 40px;
+    }
+
+    nav {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    nav h2 {
+      font-size: 14px;
+      margin: 0 0 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    nav a {
+      display: block;
+      color: var(--text);
+      text-decoration: none;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    nav a:hover { background: #edf2ff; color: var(--blue); }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      padding: 20px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 21px;
+    }
+
+    h3 {
+      margin: 18px 0 10px;
+      font-size: 17px;
+    }
+
+    p { margin: 8px 0; }
+
+    code, .mono {
+      background: var(--code);
+      border-radius: 5px;
+      padding: 2px 5px;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 13px;
+    }
+
+    pre {
+      background: #101828;
+      color: #e5e7eb;
+      padding: 12px;
+      overflow: auto;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f2f4f8;
+      text-align: left;
+      color: #344054;
+      font-weight: 650;
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin: 10px 0;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      background: #fbfcff;
+      font-weight: 650;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+    summary::after {
+      content: "展开";
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    details[open] summary::after { content: "收起"; }
+
+    .detail-body { padding: 0 14px 14px; }
+
+    .method {
+      display: inline-flex;
+      justify-content: center;
+      min-width: 58px;
+      border-radius: 5px;
+      color: #fff;
+      font-family: Consolas, monospace;
+      font-size: 12px;
+      padding: 3px 6px;
+    }
+
+    .get { background: var(--green); }
+    .post { background: var(--blue); }
+    .patch { background: var(--amber); }
+    .delete { background: var(--red); }
+    .put { background: #7c3aed; }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      color: #344054;
+      background: #eef2f7;
+      border: 1px solid #d7dde8;
+      white-space: nowrap;
+    }
+
+    .ok { background: #e8f5ee; color: #067647; border-color: #a9dfc2; }
+    .partial { background: #fff7e6; color: #92400e; border-color: #f4c36b; }
+    .missing { background: #fee4e2; color: #b42318; border-color: #fda29b; }
+    .v1only { background: #e7f0ff; color: #1d4ed8; border-color: #a7c5ff; }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 10px 0 14px;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 6px;
+      padding: 7px 10px;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: var(--blue); color: var(--blue); }
+
+    .note {
+      border-left: 4px solid var(--blue);
+      background: #eef5ff;
+      padding: 10px 12px;
+      border-radius: 6px;
+      color: #26374f;
+    }
+
+    .warn {
+      border-left-color: var(--amber);
+      background: #fff8eb;
+    }
+
+    @media (max-width: 920px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      nav { position: static; }
+      summary { grid-template-columns: 64px minmax(0, 1fr); }
+      summary::after { grid-column: 2; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>/api/v1/conversations 与 /api/threads 接口映射关系</h1>
+    <p>基于当前代码静态分析生成。v1 总路由前缀为 <code>/api/v1</code>，其中 conversations 路由前缀为 <code>/conversations</code>；内部大多数能力以 <code>conversation_id = thread_id</code> 的方式复用 Gateway thread/run/upload/artifact 能力。</p>
+  </header>
+
+  <main>
+    <nav>
+      <h2>目录</h2>
+      <a href="#summary">总体结论</a>
+      <a href="#concepts">概念映射</a>
+      <a href="#crud">会话 CRUD</a>
+      <a href="#messages-runs">消息与运行</a>
+      <a href="#state-history">状态与历史</a>
+      <a href="#uploads">上传文件</a>
+      <a href="#artifacts-suggestions">产物与建议</a>
+      <a href="#v1-other">v1 其它资源覆盖</a>
+      <a href="#gaps">缺口与建议</a>
+      <a href="#sources">代码来源</a>
+    </nav>
+
+    <div>
+      <section id="summary">
+        <h2>总体结论</h2>
+        <p class="note">当前 <code>/api/v1/conversations</code> 已覆盖前端聊天工作台的大部分 thread 能力：会话列表、创建、详情、更新、删除、消息、流式发送、运行列表、上传、状态、历史、token usage、建议问题、按路径读取 artifact。</p>
+        <p class="note warn">需要特别关注两类不完全等价：一是 <code>DELETE /api/v1/conversations/{id}</code> 没有完全复用 <code>DELETE /api/threads/{thread_id}</code> 的本地文件清理语义；二是 raw run lifecycle、run events、完整 feedback 管理没有全部放在 conversations 子路径下。</p>
+      </section>
+
+      <section id="concepts">
+        <h2>概念映射</h2>
+        <table>
+          <thead><tr><th>v1 概念</th><th>threads 概念</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>conversation_id</code></td><td><code>thread_id</code></td><td>v1 对外称 conversation，内部直接使用同一 ID 访问 thread/run/checkpoint/upload/artifact。</td></tr>
+            <tr><td><code>agent_id</code></td><td><code>assistant_id</code></td><td>v1 DTO 中叫 agent，内部 run/thread 记录多用 assistant。</td></tr>
+            <tr><td><code>title</code></td><td><code>display_name</code> / <code>values.title</code> / <code>metadata.title</code></td><td>创建/更新时写 thread store display_name；状态更新时 title 可能同步到 display_name。</td></tr>
+            <tr><td><code>message</code></td><td>run event message</td><td>v1 将底层 event row 转成 <code>MessageDTO</code>，统一 role/content/metadata。</td></tr>
+            <tr><td><code>run</code></td><td>RunManager record</td><td>v1 将底层运行记录转成 <code>RunDTO</code>，字段更面向外部调用方。</td></tr>
+            <tr><td><code>artifact</code></td><td>thread virtual path 或 v1 artifact DB record</td><td>conversations 下同时支持 conversation artifact 列表与 thread path 文件读取。</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="crud">
+        <h2>会话 CRUD</h2>
+        <div class="filters">
+          <button data-action="open" data-target="crud">展开本节</button>
+          <button data-action="close" data-target="crud">收起本节</button>
+        </div>
+
+        <details data-group="crud" open>
+          <summary><span class="method get">GET</span><span><code>/api/v1/conversations</code></span><span class="badge partial">间接映射</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>POST /api/threads/search</code></p>
+            <p><strong>用途：</strong>列出当前外部应用和外部用户可见的 conversations。</p>
+            <h3>入参</h3>
+            <table><tbody>
+              <tr><th>Query</th><td><code>limit</code>: 1-100，默认 20；<code>offset</code>: 默认 0；<code>status</code>: 可选。</td></tr>
+              <tr><th>隐式上下文</th><td><code>ExternalContext</code> 提供 <code>app_id</code>、<code>external_user_id</code>，用于 metadata 过滤。</td></tr>
+            </tbody></table>
+            <h3>出参</h3>
+            <pre>{
+  "items": [ConversationDTO],
+  "pagination": {"limit": 20, "offset": 0, "has_more": false}
+}</pre>
+            <p><strong>差异：</strong>底层 <code>/api/threads/search</code> 返回 <code>list[ThreadResponse]</code>；v1 包装分页，并补充 <code>last_message</code>。</p>
+          </div>
+        </details>
+
+        <details data-group="crud">
+          <summary><span class="method post">POST</span><span><code>/api/v1/conversations</code></span><span class="badge partial">间接映射</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>POST /api/threads</code></p>
+            <p><strong>用途：</strong>创建外部 conversation，同时创建 thread meta 和空 checkpoint。</p>
+            <h3>入参</h3>
+            <pre>{
+  "agent_id": "lead-agent",
+  "title": "新会话",
+  "metadata": {"key": "value"}
+}</pre>
+            <h3>出参</h3>
+            <pre>{
+  "conversation_id": "uuid",
+  "agent_id": "lead-agent",
+  "title": "新会话",
+  "status": "idle",
+  "last_message": null,
+  "created_at": "...",
+  "updated_at": "...",
+  "metadata": {}
+}</pre>
+            <p><strong>差异：</strong>底层允许传 <code>thread_id</code> 和 <code>assistant_id</code>；v1 自己生成 UUID，并将 external context 写入 metadata。</p>
+          </div>
+        </details>
+
+        <details data-group="crud">
+          <summary><span class="method post">POST</span><span><code>/api/v1/conversations/search</code></span><span class="badge partial">间接映射</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>POST /api/threads/search</code></p>
+            <h3>入参</h3>
+            <pre>{
+  "metadata": {"project": "demo"},
+  "limit": 20,
+  "offset": 0,
+  "status": "idle"
+}</pre>
+            <h3>出参</h3>
+            <pre>{"items": [ConversationDTO], "pagination": PaginationDTO}</pre>
+            <p><strong>差异：</strong>v1 自动叠加 <code>app_id</code> 和可选 <code>external_user_id</code> metadata 过滤。</p>
+          </div>
+        </details>
+
+        <details data-group="crud">
+          <summary><span class="method get">GET</span><span><code>/api/v1/conversations/{conversation_id}</code></span><span class="badge partial">间接映射</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>GET /api/threads/{thread_id}</code></p>
+            <h3>入参</h3>
+            <p>Path: <code>conversation_id</code>，即内部 <code>thread_id</code>。</p>
+            <h3>出参</h3>
+            <pre>ConversationDTO</pre>
+            <p><strong>差异：</strong>底层会返回 <code>values</code>、<code>interrupts</code>；v1 只返回 conversation 元数据，并尝试 enrich artifact metadata。</p>
+          </div>
+        </details>
+
+        <details data-group="crud">
+          <summary><span class="method patch">PATCH</span><span><code>/api/v1/conversations/{conversation_id}</code></span><span class="badge partial">间接映射</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>PATCH /api/threads/{thread_id}</code></p>
+            <h3>入参</h3>
+            <pre>{"title": "重命名", "metadata": {"key": "value"}}</pre>
+            <h3>出参</h3>
+            <pre>ConversationDTO</pre>
+            <p><strong>差异：</strong>底层 patch 只 merge metadata；v1 还支持 title，并写入 thread store display_name。</p>
+          </div>
+        </details>
+
+        <details data-group="crud">
+          <summary><span class="method delete">DELETE</span><span><code>/api/v1/conversations/{conversation_id}</code></span><span class="badge partial">部分映射</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>DELETE /api/threads/{thread_id}</code></p>
+            <h3>入参</h3>
+            <p>Path: <code>conversation_id</code>。</p>
+            <h3>出参</h3>
+            <p>HTTP <code>204 No Content</code>。</p>
+            <p><strong>差异：</strong>v1 删除 checkpoint 和 thread meta；底层 threads 删除还会清理 DeerFlow thread 本地目录。若外部 API 需要强一致清理，应补齐此语义。</p>
+          </div>
+        </details>
+      </section>
+
+      <section id="messages-runs">
+        <h2>消息与运行</h2>
+        <div class="filters">
+          <button data-action="open" data-target="runs">展开本节</button>
+          <button data-action="close" data-target="runs">收起本节</button>
+        </div>
+
+        <details data-group="runs" open>
+          <summary><span class="method get">GET</span><span><code>/api/v1/conversations/{id}/messages</code></span><span class="badge partial">间接映射</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>GET /api/threads/{thread_id}/messages</code></p>
+            <h3>入参</h3>
+            <p>Query: <code>limit</code> 默认 50，最大 200；<code>before_seq</code>；<code>after_seq</code>。</p>
+            <h3>出参</h3>
+            <pre>{
+  "conversation_id": "id",
+  "items": [{
+    "message_id": "1",
+    "run_id": "run",
+    "role": "user|assistant|tool|system",
+    "content": "text",
+    "created_at": "...",
+    "metadata": {}
+  }],
+  "pagination": {"limit": 50, "has_more": false}
+}</pre>
+            <p><strong>差异：</strong>底层直接返回 message row list；v1 返回标准 DTO 和分页包装。</p>
+          </div>
+        </details>
+
+        <details data-group="runs">
+          <summary><span class="method post">POST</span><span><code>/api/v1/conversations/{id}/messages</code></span><span class="badge partial">语义映射</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>POST /api/threads/{thread_id}/runs/wait</code> 的聊天语义封装。</p>
+            <h3>入参</h3>
+            <pre>{
+  "agent_id": "lead-agent",
+  "content": "帮我分析这份数据",
+  "datasource_ids": ["ds-1"],
+  "options": {
+    "model": "deepseek",
+    "thinking_enabled": true,
+    "reasoning_effort": "medium",
+    "subagent_enabled": true,
+    "max_concurrent_subagents": 3,
+    "citation_required": false,
+    "max_context_tokens": 12000
+  },
+  "metadata": {}
+}</pre>
+            <h3>出参</h3>
+            <pre>{
+  "run_id": "run-id",
+  "conversation_id": "id",
+  "agent_id": "lead-agent",
+  "status": "success|error|interrupted",
+  "message": MessageDTO,
+  "artifacts": [],
+  "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
+}</pre>
+            <p><strong>差异：</strong>v1 会先同步 Starfish 数据源、解析 <code>datasource_ids</code>，再构造底层 <code>RunCreateRequest</code> 并等待完成。</p>
+          </div>
+        </details>
+
+        <details data-group="runs">
+          <summary><span class="method post">POST</span><span><code>/api/v1/conversations/{id}/stream</code></span><span class="badge partial">语义映射</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>POST /api/threads/{thread_id}/runs/stream</code></p>
+            <h3>入参</h3>
+            <p>同 <code>POST /messages</code>。</p>
+            <h3>出参</h3>
+            <p><code>text/event-stream</code>。底层 LangGraph 事件会通过 <code>map_stream_event</code> 转成 v1 SSE 事件；结束时尝试从 checkpoint 同步 artifacts。</p>
+          </div>
+        </details>
+
+        <details data-group="runs">
+          <summary><span class="method get">GET</span><span><code>/api/v1/conversations/{id}/runs</code></span><span class="badge partial">间接映射</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>GET /api/threads/{thread_id}/runs</code></p>
+            <h3>出参</h3>
+            <pre>{
+  "conversation_id": "id",
+  "items": [{
+    "run_id": "run",
+    "conversation_id": "id",
+    "agent_id": "lead-agent",
+    "status": "success",
+    "created_at": "...",
+    "updated_at": "...",
+    "usage": UsageDTO,
+    "error": null,
+    "metadata": {}
+  }]
+}</pre>
+          </div>
+        </details>
+
+        <details data-group="runs">
+          <summary><span class="method get">GET</span><span><code>/api/v1/conversations/{id}/runs/{run_id}/messages</code></span><span class="badge ok">直接复用</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>GET /api/threads/{thread_id}/runs/{run_id}/messages</code></p>
+            <h3>入参</h3>
+            <p>Query: <code>limit</code> 默认 50，最大 200；<code>before_seq</code>；<code>after_seq</code>。</p>
+            <h3>出参</h3>
+            <pre>{"data": [messageRow], "has_more": false}</pre>
+            <p><strong>注意：</strong>此接口当前直接返回底层结构，没有转成 v1 <code>ConversationMessagesResponse</code>。</p>
+          </div>
+        </details>
+
+        <details data-group="runs">
+          <summary><span class="method get">GET</span><span><code>/api/v1/conversations/{id}/token-usage</code></span><span class="badge ok">直接复用</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>GET /api/threads/{thread_id}/token-usage</code></p>
+            <h3>入参</h3>
+            <p>Query: <code>include_active</code>，默认 false。</p>
+            <h3>出参</h3>
+            <pre>{
+  "thread_id": "id",
+  "total_tokens": 0,
+  "total_input_tokens": 0,
+  "total_output_tokens": 0,
+  "total_runs": 0,
+  "by_model": {},
+  "by_caller": {"lead_agent": 0, "subagent": 0, "middleware": 0}
+}</pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="state-history">
+        <h2>状态与历史</h2>
+        <details open>
+          <summary><span class="method get">GET</span><span><code>/api/v1/conversations/{id}/state</code></span><span class="badge ok">直接复用</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>GET /api/threads/{thread_id}/state</code></p>
+            <h3>出参</h3>
+            <pre>{
+  "values": {},
+  "next": [],
+  "metadata": {},
+  "checkpoint": {"id": "checkpoint-id", "ts": "..."},
+  "checkpoint_id": "checkpoint-id",
+  "parent_checkpoint_id": null,
+  "created_at": "...",
+  "tasks": []
+}</pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><span class="method patch">PATCH</span><span><code>/api/v1/conversations/{id}/state</code></span><span class="badge partial">方法改名</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>POST /api/threads/{thread_id}/state</code></p>
+            <h3>入参</h3>
+            <pre>{
+  "values": {"title": "新标题"},
+  "checkpoint_id": "optional",
+  "checkpoint": null,
+  "as_node": "optional-node"
+}</pre>
+            <h3>出参</h3>
+            <p><code>ThreadStateResponse</code>。如果 <code>values.title</code> 存在，底层会同步到 thread meta display_name。</p>
+          </div>
+        </details>
+
+        <details>
+          <summary><span class="method get">GET</span><span><code>/api/v1/conversations/{id}/history</code></span><span class="badge partial">方法/参数改名</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>POST /api/threads/{thread_id}/history</code></p>
+            <h3>入参</h3>
+            <p>Query: <code>limit</code> 默认 10，最大 100；<code>before</code> checkpoint cursor。</p>
+            <h3>出参</h3>
+            <pre>[{
+  "checkpoint_id": "id",
+  "parent_checkpoint_id": null,
+  "metadata": {},
+  "values": {"messages": []},
+  "created_at": "...",
+  "next": []
+}]</pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="uploads">
+        <h2>上传文件</h2>
+        <table>
+          <thead><tr><th>v1 conversations</th><th>对应 threads</th><th>入参</th><th>出参</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr><td><code>POST /api/v1/conversations/{id}/uploads</code></td><td><code>POST /api/threads/{thread_id}/uploads</code></td><td>multipart form: <code>files</code></td><td><code>UploadResponse</code></td><td><span class="badge ok">直接复用</span></td></tr>
+            <tr><td><code>GET /api/v1/conversations/{id}/uploads</code></td><td><code>GET /api/threads/{thread_id}/uploads/list</code></td><td>Path: id</td><td><code>{"files": [...]}</code></td><td><span class="badge partial">路径改名</span></td></tr>
+            <tr><td><code>GET /api/v1/conversations/{id}/uploads/limits</code></td><td><code>GET /api/threads/{thread_id}/uploads/limits</code></td><td>Path: id</td><td><code>{"max_files","max_file_size","max_total_size"}</code></td><td><span class="badge ok">直接复用</span></td></tr>
+            <tr><td><code>DELETE /api/v1/conversations/{id}/uploads/{filename}</code></td><td><code>DELETE /api/threads/{thread_id}/uploads/{filename}</code></td><td>Path: filename</td><td><code>{"success": true}</code> 或删除结果</td><td><span class="badge ok">直接复用</span></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="artifacts-suggestions">
+        <h2>产物与建议</h2>
+        <details open>
+          <summary><span class="method get">GET</span><span><code>/api/v1/conversations/{id}/artifacts</code></span><span class="badge v1only">v1 专属列表</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong>底层 <code>/api/threads</code> 没有完全等价的 artifact list；只提供按 path 取文件。</p>
+            <h3>出参</h3>
+            <pre>[{
+  "artifact_id": "file-or-artifact-id",
+  "conversation_id": "id",
+  "run_id": "run",
+  "filename": "report.md",
+  "mime_type": null,
+  "url": "/api/v1/artifacts/...",
+  "created_at": "...",
+  "metadata": {}
+}]</pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><span class="method get">GET</span><span><code>/api/v1/conversations/{id}/artifacts/by-path/{path}</code></span><span class="badge ok">直接复用</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>GET /api/threads/{thread_id}/artifacts/{path}</code></p>
+            <h3>入参</h3>
+            <p>Path: <code>path</code>，例如 <code>mnt/user-data/outputs/report.md</code>；Query: <code>download</code>。</p>
+            <h3>出参</h3>
+            <p><code>FileResponse</code>、<code>PlainTextResponse</code> 或二进制 <code>Response</code>。HTML/XHTML/SVG 等 active content 会强制下载。</p>
+          </div>
+        </details>
+
+        <details>
+          <summary><span class="method post">POST</span><span><code>/api/v1/conversations/{id}/suggestions</code></span><span class="badge ok">直接复用</span></summary>
+          <div class="detail-body">
+            <p><strong>对应：</strong><code>POST /api/threads/{thread_id}/suggestions</code></p>
+            <h3>入参</h3>
+            <pre>{
+  "messages": [{"role": "user", "content": "上一轮问题"}],
+  "n": 3,
+  "model_name": null
+}</pre>
+            <h3>出参</h3>
+            <pre>{"suggestions": ["可以继续问的问题"]}</pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="v1-other">
+        <h2>v1 其它资源对 threads 子能力的覆盖</h2>
+        <p>部分 thread run 和 artifact 能力没有放在 <code>/api/v1/conversations/{id}</code> 下，而是放在 v1 独立资源下。</p>
+        <table>
+          <thead><tr><th>v1 API</th><th>对应 threads API</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>GET /api/v1/runs/{run_id}</code></td><td><code>GET /api/threads/{thread_id}/runs/{run_id}</code></td><td>通过 run_id 反查 conversation_id。</td></tr>
+            <tr><td><code>POST /api/v1/runs/{run_id}/cancel</code></td><td><code>POST /api/threads/{thread_id}/runs/{run_id}/cancel</code></td><td>v1 使用 body，底层使用 query。</td></tr>
+            <tr><td><code>GET /api/v1/runs/{run_id}/join</code></td><td><code>GET /api/threads/{thread_id}/runs/{run_id}/join</code></td><td>join existing run SSE。</td></tr>
+            <tr><td><code>GET /api/v1/runs/{run_id}/stream</code></td><td><code>GET /api/threads/{thread_id}/runs/{run_id}/stream</code></td><td>订阅已有 run stream。</td></tr>
+            <tr><td><code>POST /api/v1/runs/{run_id}/stream</code></td><td><code>POST /api/threads/{thread_id}/runs/{run_id}/stream</code></td><td>支持 cancel-then-stream。</td></tr>
+            <tr><td><code>PUT /api/v1/runs/{run_id}/feedback</code></td><td><code>PUT /api/threads/{thread_id}/runs/{run_id}/feedback</code></td><td>upsert 当前用户反馈。</td></tr>
+            <tr><td><code>DELETE /api/v1/runs/{run_id}/feedback</code></td><td><code>DELETE /api/threads/{thread_id}/runs/{run_id}/feedback</code></td><td>删除当前用户反馈。</td></tr>
+            <tr><td><code>GET /api/v1/artifacts/{artifact_id}</code></td><td>部分对应 thread artifact</td><td>v1 artifact ID 模型，不是 thread virtual path 模型。</td></tr>
+            <tr><td><code>GET /api/v1/artifacts/{artifact_id}/preview</code></td><td>部分对应 artifact inline</td><td>按 artifact_id 预览。</td></tr>
+            <tr><td><code>GET /api/v1/artifacts/{artifact_id}/download</code></td><td>部分对应 artifact download</td><td>按 artifact_id 下载。</td></tr>
+            <tr><td><code>POST /api/v1/artifacts/{artifact_id}/pin</code></td><td>无对应</td><td>v1 artifact registry 能力。</td></tr>
+            <tr><td><code>POST /api/v1/artifacts/{artifact_id}/unpin</code></td><td>无对应</td><td>v1 artifact registry 能力。</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="gaps">
+        <h2>缺口与建议</h2>
+        <table>
+          <thead><tr><th>底层接口</th><th>当前 v1 状态</th><th>建议</th></tr></thead>
+          <tbody>
+            <tr><td><code>POST /api/threads/{thread_id}/runs</code></td><td><span class="badge missing">conversations 下无 raw create</span></td><td>如果前端需要只创建后台 run、不等待、不流式，补 <code>POST /api/v1/conversations/{id}/runs</code>。</td></tr>
+            <tr><td><code>POST /api/threads/{thread_id}/runs/wait</code></td><td><span class="badge partial">被 /messages 覆盖聊天场景</span></td><td>如果要透传完整 <code>RunCreateRequest</code>，补 <code>POST /api/v1/conversations/{id}/runs/wait</code>。</td></tr>
+            <tr><td><code>POST /api/threads/{thread_id}/runs/stream</code></td><td><span class="badge partial">被 /stream 覆盖聊天场景</span></td><td>如果要兼容 LangGraph SDK 形态，补 <code>POST /api/v1/conversations/{id}/runs/stream</code>。</td></tr>
+            <tr><td><code>GET /api/threads/{thread_id}/runs/{run_id}</code></td><td><span class="badge partial">v1 runs 独立资源已覆盖</span></td><td>可选补 <code>GET /api/v1/conversations/{id}/runs/{run_id}</code>，提高路径对称性。</td></tr>
+            <tr><td><code>GET /api/threads/{thread_id}/runs/{run_id}/events</code></td><td><span class="badge missing">v1 未封装</span></td><td>建议补 <code>GET /api/v1/conversations/{id}/runs/{run_id}/events</code>，用于调试、审计、前端事件回放。</td></tr>
+            <tr><td><code>POST /api/threads/{thread_id}/runs/{run_id}/feedback</code></td><td><span class="badge missing">v1 未覆盖 message_id create</span></td><td>如果前端要对具体消息反馈，建议补。</td></tr>
+            <tr><td><code>GET /api/threads/{thread_id}/runs/{run_id}/feedback</code></td><td><span class="badge missing">v1 未覆盖</span></td><td>管理台或调试需要查看反馈列表时补。</td></tr>
+            <tr><td><code>GET /api/threads/{thread_id}/runs/{run_id}/feedback/stats</code></td><td><span class="badge missing">v1 未覆盖</span></td><td>需要展示满意度统计时补。</td></tr>
+            <tr><td><code>DELETE /api/threads/{thread_id}/runs/{run_id}/feedback/{feedback_id}</code></td><td><span class="badge missing">v1 未覆盖</span></td><td>需要管理员删除指定反馈记录时补。</td></tr>
+            <tr><td><code>DELETE /api/threads/{thread_id}</code></td><td><span class="badge partial">v1 删除语义不完全等价</span></td><td>建议确认是否要在 <code>DELETE /api/v1/conversations/{id}</code> 中补齐本地 filesystem cleanup。</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="sources">
+        <h2>代码来源</h2>
+        <table>
+          <thead><tr><th>模块</th><th>文件</th><th>作用</th></tr></thead>
+          <tbody>
+            <tr><td>v1 conversations</td><td><code>backend/app/gateway/routers/v1/conversations.py</code></td><td>v1 conversation 路由入口。</td></tr>
+            <tr><td>v1 DTO</td><td><code>backend/app/gateway/schemas/v1/conversations.py</code></td><td>Conversation 请求和响应模型。</td></tr>
+            <tr><td>v1 conversation service</td><td><code>backend/app/gateway/services_v1/conversation_service.py</code></td><td>conversation 与 thread/run/checkpoint/event store 的适配逻辑。</td></tr>
+            <tr><td>threads</td><td><code>backend/app/gateway/routers/threads.py</code></td><td>thread CRUD、state、history。</td></tr>
+            <tr><td>thread runs</td><td><code>backend/app/gateway/routers/thread_runs.py</code></td><td>runs 生命周期、messages、events、token usage。</td></tr>
+            <tr><td>uploads</td><td><code>backend/app/gateway/routers/uploads.py</code></td><td>thread 文件上传、列表、limits、删除。</td></tr>
+            <tr><td>artifacts</td><td><code>backend/app/gateway/routers/artifacts.py</code></td><td>按 thread virtual path 读取 artifact 文件。</td></tr>
+            <tr><td>suggestions</td><td><code>backend/app/gateway/routers/suggestions.py</code></td><td>基于消息生成追问建议。</td></tr>
+            <tr><td>feedback</td><td><code>backend/app/gateway/routers/feedback.py</code></td><td>run 反馈增删查和统计。</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    document.querySelectorAll("button[data-action]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = button.getAttribute("data-target");
+        const open = button.getAttribute("data-action") === "open";
+        document.querySelectorAll(`details[data-group="${target}"]`).forEach((details) => {
+          details.open = open;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

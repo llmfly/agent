@@ -1,0 +1,122 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-26T22:27:05.734520Z",
+  "user": {
+    "workContext": {
+      "summary": "用户请求解析两个简历文档并生成总结对比报告。用户正在评估两名候选人：崔亚飞（8.5年经验，数据科学/风控/增长方向高级经理/总监）和杨佳文（5年经验，高级行业分析师）。",
+      "updatedAt": "2026-06-26T22:27:05.725850Z"
+    },
+    "personalContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "topOfMind": {
+      "summary": "用户当前正在进行人才评估工作，需要对比分析两名候选人的简历，聚焦于候选人背景、技能、经验、项目成果和岗位匹配度。用户关注的评估维度包括：学历背景、工作年限、管理经验、技术栈深度、项目量化成果以及职业稳定性。",
+      "updatedAt": "2026-06-26T22:27:05.725850Z"
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "用户进行了简历解析和对比分析工作，具体评估了两名候选人：崔亚飞（985/211计算机本科，8.5年经验，技术栈含Python/SQL/ML/Tableau，有20+人团队管理经验，项目成果量化充分，例如实时风控引擎降低不良率40%、MAU从50万增长至150万）和杨佳文（985全日制经济学硕士，5年经验，偏业务分析方向，擅长市场调研和行业分析，技术深度有限，近2年换工作2次）。",
+      "updatedAt": "2026-06-26T22:27:05.725850Z"
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_09ed97fc",
+      "content": "用户进行了简历文档的解析和对比分析工作",
+      "category": "behavior",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T22:27:05.725850Z",
+      "source": "ec110bfb-2110-4334-b8e8-96f817b5efd8"
+    },
+    {
+      "id": "fact_7111f39d",
+      "content": "崔亚飞，985/211计算机本科，约8.5年工作经验，含3年管理经验，20+人团队管理经验，求职方向为数据科学/风控/增长方向的高级经理/总监",
+      "category": "knowledge",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T22:27:05.725850Z",
+      "source": "ec110bfb-2110-4334-b8e8-96f817b5efd8"
+    },
+    {
+      "id": "fact_7fe424e1",
+      "content": "崔亚飞技术栈全面：Python、SQL、机器学习算法、Tableau、Scrum，并能独立搭建工程化系统",
+      "category": "knowledge",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T22:27:05.725850Z",
+      "source": "ec110bfb-2110-4334-b8e8-96f817b5efd8"
+    },
+    {
+      "id": "fact_2d6a7788",
+      "content": "崔亚飞项目成果：实时风控引擎降低不良率40%，MAU从50万增长至150万（+200%），销售额从5000万增长至1.2亿（+140%）",
+      "category": "knowledge",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T22:27:05.725850Z",
+      "source": "ec110bfb-2110-4334-b8e8-96f817b5efd8"
+    },
+    {
+      "id": "fact_df7ff013",
+      "content": "崔亚飞平均在职时间超过2.5年，稳定性高于行业平均",
+      "category": "knowledge",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T22:27:05.725850Z",
+      "source": "ec110bfb-2110-4334-b8e8-96f817b5efd8"
+    },
+    {
+      "id": "fact_2a01c086",
+      "content": "杨佳文，985全日制经济学硕士，GPA 3.6/4.0，约5年工作经验，无管理经验，求职方向为高级行业分析师",
+      "category": "knowledge",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T22:27:05.725850Z",
+      "source": "ec110bfb-2110-4334-b8e8-96f817b5efd8"
+    },
+    {
+      "id": "fact_b847f4f2",
+      "content": "杨佳文技能偏业务分析方向：数据分析、市场调研、报告撰写、基础回归分析，技术深度有限",
+      "category": "knowledge",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T22:27:05.725850Z",
+      "source": "ec110bfb-2110-4334-b8e8-96f817b5efd8"
+    },
+    {
+      "id": "fact_0eba5fe8",
+      "content": "杨佳文主导/参与9个项目、成功率100%、平均交付周期3个月，但缺少经济效益量化指标",
+      "category": "knowledge",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T22:27:05.725850Z",
+      "source": "ec110bfb-2110-4334-b8e8-96f817b5efd8"
+    },
+    {
+      "id": "fact_19327a75",
+      "content": "杨佳文近2年换工作较密集（2次），稳定性需要关注",
+      "category": "knowledge",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T22:27:05.725850Z",
+      "source": "ec110bfb-2110-4334-b8e8-96f817b5efd8"
+    },
+    {
+      "id": "fact_cc3443f2",
+      "content": "崔亚飞被推荐适合数据科学负责人/技术总监岗位",
+      "category": "knowledge",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T22:27:05.725850Z",
+      "source": "ec110bfb-2110-4334-b8e8-96f817b5efd8"
+    },
+    {
+      "id": "fact_a49380c3",
+      "content": "杨佳文被推荐适合高级行业分析师/商业分析岗位",
+      "category": "knowledge",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T22:27:05.725850Z",
+      "source": "ec110bfb-2110-4334-b8e8-96f817b5efd8"
+    }
+  ]
+}

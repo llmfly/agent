@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-26T19:10:25.561302Z",
+  "user": {
+    "workContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "personalContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "topOfMind": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_7c26b1d5",
+      "content": "The system environment does not support running bash/terminal commands, installing dependencies, or using online conversion services, and read_file only supports UTF-8 text files.",
+      "category": "context",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T18:48:02.756966Z",
+      "source": "4701a749-5761-463e-b5d0-8719d0d7c800"
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "title": "企业出海贸易分析报告",
+  "author": "数据空间研究院",
+  "font_east_asia": "方正仿宋_GB2312",
+  "font_ascii": "Times New Roman",
+  "body_font_size_half_points": 28,
+  "line_spacing_twips": 420,
+  "outline_note": "章节结构与 data/trade_report_template.tex 保持一致：五个一级章节；第一章的 1.1 核心出口产品为父级结构标题，正文位于 1.1.1、1.1.2、1.1.3。",
+  "sections": [
+    {
+      "number": "1",
+      "title": "企业贸易全景概览",
+      "children": [
+        {
+          "number": "1.1",
+          "title": "核心出口产品",
+          "children": [
+            {
+              "number": "1.1.1",
+              "title": "核心出口产品识别",
+              "charts": [
+                {
+                  "field": "chart_product_amount",
+                  "caption": "主要出口产品金额贡献"
+                }
+              ],
+              "tables": [
+                "product_table"
+              ]
+            },
+            {
+              "number": "1.1.2",
+              "title": "产品销售贡献分析"
+            },
+            {
+              "number": "1.1.3",
+              "title": "产品结构变化趋势"
+            }
+          ]
+        },
+        {
+          "number": "1.2",
+          "title": "覆盖市场分布",
+          "charts": [
+            {
+              "field": "chart_country_amount",
+              "caption": "主要出口国家金额分布"
+            }
+          ],
+          "tables": [
+            "country_table"
+          ]
+        },
+        {
+          "number": "1.3",
+          "title": "整体出口体量",
+          "charts": [
+            {
+              "field": "chart_monthly_trend",
+              "caption": "月度出口金额趋势"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "既有市场表现评估",
+      "children": [
+        {
+          "number": "2.1",
+          "title": "各市场出货表现",
+          "tables": [
+            "market_performance"
+          ]
+        },
+        {
+          "number": "2.2",
+          "title": "增长趋势分析"
+        },
+        {
+          "number": "2.3",
+          "title": "市场健康度",
+          "tables": [
+            "market_health"
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "竞争格局与自身定位",
+      "children": [
+        {
+          "number": "3.1",
+          "title": "市场竞争总览"
+        },
+        {
+          "number": "3.2",
+          "title": "竞争对手排行",
+          "tables": [
+            "rival_table"
+          ]
+        },
+        {
+          "number": "3.3",
+          "title": "价格竞争分析"
+        },
+        {
+          "number": "3.4",
+          "title": "自身定位总结"
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "空白市场机会与买家挖掘",
+      "children": [
+        {
+          "number": "4.1",
+          "title": "空白市场识别与排序",
+          "tables": [
+            "ranked_opportunities"
+          ]
+        },
+        {
+          "number": "4.2",
+          "title": "TOP买家挖掘",
+          "tables": [
+            "top_buyers"
+          ]
+        },
+        {
+          "number": "4.3",
+          "title": "切入评估"
+        }
+      ]
+    },
+    {
+      "number": "5",
+      "title": "总结与建议",
+      "children": [
+        {
+          "number": "5.1",
+          "title": "核心结论",
+          "tables": [
+            "core_findings"
+          ]
+        },
+        {
+          "number": "5.2",
+          "title": "风险提示",
+          "tables": [
+            "risks"
+          ]
+        },
+        {
+          "number": "5.3",
+          "title": "战略建议",
+          "tables": [
+            "recommendations"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-26T21:54:16.313525Z",
+  "user": {
+    "workContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "personalContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "topOfMind": {
+      "summary": "用户正在对比分析两份求职简历（崔亚飞和杨佳文），特别关注技术栈、工作经历、核心优势和综合评分等维度，以支持招聘或人才评估决策。",
+      "updatedAt": "2026-06-26T21:54:16.312075Z"
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_a17d85dc",
+      "content": "用户要求解析两份文档（PDF简历）并生成对比报告，涉及候选人崔亚飞和杨佳文（Java后端，简历版本V8）。",
+      "category": "context",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T21:54:16.312075Z",
+      "source": "8867365d-0dd3-41cc-9b98-86d973e9da25"
+    },
+    {
+      "id": "fact_d21f0f4d",
+      "content": "用户关注的简历对比维度包括：基本信息、技术栈、工作经历、核心优势、综合评分。",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T21:54:16.312075Z",
+      "source": "8867365d-0dd3-41cc-9b98-86d973e9da25"
+    }
+  ]
+}

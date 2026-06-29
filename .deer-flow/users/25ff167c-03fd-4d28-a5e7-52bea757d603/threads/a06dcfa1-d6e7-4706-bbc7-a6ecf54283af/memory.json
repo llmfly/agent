@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-26T21:13:31.917734Z",
+  "user": {
+    "workContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "personalContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "topOfMind": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_cadc1a2d",
+      "content": "The conversation was interrupted by a forced stop due to repeated tool calls exceeding safety limits, with no substantive interaction or user input beyond a document parsing request.",
+      "category": "behavior",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T21:13:31.915253Z",
+      "source": "a06dcfa1-d6e7-4706-bbc7-a6ecf54283af"
+    }
+  ]
+}

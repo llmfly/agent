@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-26T22:14:15.423753Z",
+  "user": {
+    "workContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "personalContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "topOfMind": {
+      "summary": "User is currently engaged in recruiting and talent evaluation. The immediate task was to analyze resumes (崔亚飞 and 杨佳文) for a Java backend development role and generate a comparative report. The user is comparing candidates with 8 years and 5 years of experience, spanning senior architect and mid-to-senior developer levels, with salary expectations of 45K-55K/month and 25K-30K/month respectively. The analysis covered technical stack, project complexity, and industry background.",
+      "updatedAt": "2026-06-26T22:14:15.415402Z"
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_0ffe9897",
+      "content": "User is evaluating two Java backend candidates: 崔亚飞 (8 years experience, senior engineer/architect, salary 45K-55K/month) and 杨佳文 (5 years experience, mid-to-senior developer, salary 25K-30K/month).",
+      "category": "context",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T22:14:15.415402Z",
+      "source": "bb0ac0e6-c36f-44ca-b215-e9aba6f6de0f"
+    },
+    {
+      "id": "fact_9da79088",
+      "content": "User requested a comparative resume analysis report, indicating interest in talent recruitment evaluation.",
+      "category": "behavior",
+      "confidence": 0.75,
+      "createdAt": "2026-06-26T22:14:15.415402Z",
+      "source": "bb0ac0e6-c36f-44ca-b215-e9aba6f6de0f"
+    }
+  ]
+}

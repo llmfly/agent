@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>论文解析报告 — ESE-FN</title>
+<style>
+  @page { size: A4; margin: 2.5cm 2cm 2.5cm 2cm; }
+  body { font-family: 'Arial', 'Microsoft YaHei', sans-serif; font-size: 12pt; line-height: 1.7; color: #333; max-width: 21cm; margin: 0 auto; padding: 2.5cm 2cm; }
+  h1 { color: #1a1a2e; font-size: 18pt; border-bottom: 2px solid #1a1a2e; padding-bottom: 6px; margin-top: 30px; }
+  h2 { color: #1a1a2e; font-size: 15pt; margin-top: 24px; }
+  h3 { color: #333; font-size: 13pt; margin-top: 18px; }
+  .cover { text-align: center; padding-top: 120px; page-break-after: always; }
+  .cover h1 { font-size: 28pt; border: none; color: #1a1a2e; margin-bottom: 10px; }
+  .cover .subtitle { font-size: 16pt; color: #445; margin-bottom: 40px; }
+  .cover .meta { font-size: 12pt; color: #666; line-height: 2; }
+  .cover .date { font-size: 11pt; color: #888; margin-top: 60px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+  th { background: #1a1a2e; color: white; }
+  tr:nth-child(even) { background: #f5f5f8; }
+  .code-block { background: #f0f0f5; padding: 12px 16px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 10pt; line-height: 1.5; margin: 12px 0; white-space: pre; overflow-x: auto; }
+  .sota { color: #c00; font-weight: bold; }
+  .highlight { background: #ffffcc; padding: 2px 4px; }
+  ul, ol { margin: 8px 0; padding-left: 24px; }
+  li { margin: 4px 0; }
+  .page-break { page-break-before: always; }
+  .footer { text-align: center; color: #888; font-size: 9pt; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; }
+  .result-box { background: #e8f4e8; border-left: 4px solid #2a8; padding: 10px 14px; margin: 12px 0; border-radius: 0 4px 4px 0; }
+</style>
+</head>
+<body>
+
+<!-- ============ 封面 ============ -->
+<div class="cover">
+  <h1>论文解析报告</h1>
+  <div class="subtitle">
+    Expansion-Squeeze-Excitation Fusion Network<br>
+    for Elderly Activity Recognition
+  </div>
+  <div class="meta">
+    IEEE Transactions on Circuits and Systems for Video Technology<br>
+    Vol. 32, No. 8, August 2022
+  </div>
+  <div class="date">解析日期：2026年6月26日</div>
+</div>
+
+<!-- ============ 一、基本信息 ============ -->
+<h1>一、基本信息</h1>
+
+<table>
+  <tr><th>项目</th><th>内容</th></tr>
+  <tr><td>论文标题</td><td>Expansion-Squeeze-Excitation Fusion Network for Elderly Activity Recognition</td></tr>
+  <tr><td>中文译名</td><td>面向老年人活动识别的扩展-压缩-激励融合网络</td></tr>
+  <tr><td>作者</td><td>Xiangbo Shu, Jiawen Yang, Rui Yan, Yan Song</td></tr>
+  <tr><td>单位</td><td>南京理工大学 计算机科学与工程学院</td></tr>
+  <tr><td>发表期刊</td><td>IEEE TCSVT, Vol. 32, No. 8, Aug. 2022</td></tr>
+  <tr><td>页数</td><td>12页（页码 5281–5292）</td></tr>
+  <tr><td>投稿/录用日期</td><td>2021-11-16投稿 / 2022-01-09录用</td></tr>
+</table>
+
+<!-- ============ 二、研究背景与动机 ============ -->
+<h1>二、研究背景与动机</h1>
+
+<h2>2.1 问题定义</h2>
+<p>本文聚焦于<strong>老年人活动识别（Elderly Activity Recognition）</strong>任务。随着人口老龄化加剧，空巢老人比例不断上升，利用计算机视觉技术对老年人日常活动进行智能监测具有重要意义。</p>
+
+<h2>2.2 核心挑战</h2>
+<p>与常规动作识别相比，老年人活动识别面临以下独特挑战：</p>
+
+<ul>
+  <li><strong>个体动作与人-物交互并存</strong>：老年人活动中既包含纯身体动作（个体动作），也包含与物体交互的行为（如吹头发、梳头）。</li>
+  <li><strong>局部交互微小</strong>：许多人-物交互动作是局部性的（如手部细微动作），容易被忽略。</li>
+  <li><strong>动作幅度不明显</strong>：老年人动作幅度较小，特征不显著。</li>
+  <li><strong>相似动作混淆</strong>：某些动作在时空轨迹上高度相似，仅靠微小局部差异才能区分。</li>
+</ul>
+
+<p><strong>典型案例</strong>：<br>
+「吹头发」vs「梳头」—— 动作轨迹和幅度高度相似，仅交互物体不同（吹风机 vs 梳子）<br>
+「打电话」vs「玩手机」—— 大部分运动和交互对象相同，仅局部手部动作有差异</p>
+
+<!-- ============ 三、核心方法 ============ -->
+<h1>三、核心方法：ESE-FN</h1>
+
+<h2>3.1 总体框架</h2>
+<p>ESE-FN（Expansion-Squeeze-Excitation Fusion Network）的整体框架包含四个核心模块：</p>
+<ol>
+  <li><strong>特征提取模块</strong>：RGB → ResNeXt101；骨架 → Shift-GCN</li>
+  <li><strong>模态融合模块（M-Net）</strong>：通过模态级ESE注意力实现模态间粗粒度融合</li>
+  <li><strong>通道融合模块（C-Net）</strong>：通过通道级ESE注意力实现通道间细粒度融合</li>
+  <li><strong>多模态损失（Multi-modal Loss, ML）</strong>：保持单模态与融合特征的一致性</li>
+</ol>
+
+<div class="code-block">
+RGB视频 → ResNeXt101 → RGB特征 fr
+骨架序列 → Shift-GCN → 骨架特征 fs
+        ↓
+特征拼接 → M-Net（模态级ESE融合）
+         → C-Net（通道级ESE融合）→ 融合特征 frs
+        ↓
+多模态损失 L = α×L_rs + β×(min(L_r,L_s)-L_rs)</div>
+
+<h2>3.2 SENet回顾与改进</h2>
+<p>SENet通过Squeeze（全局平均池化）和Excitation（FC+Sigmoid）两步学习通道级注意力。本文的创新在于引入<strong>Expansion（扩展）</strong>步骤，形成<strong>ESE结构</strong>，实现从局部和全局两个视角特征交互。</p>
+
+<h2>3.3 M-Net（模态融合网络）</h2>
+<p>M-Net通过模态级ESE注意力（M-ESEA）实现模态间粗粒度融合的三个步骤：</p>
+<ol>
+  <li><strong>模态级扩展</strong>：多个不同卷积核的卷积层堆叠，从局部视角扩展模态信息</li>
+  <li><strong>模态级压缩</strong>：全局平均池化，从全局视角获得模态级表示</li>
+  <li><strong>模态级激励</strong>：FC层+Sigmoid学习M-ESEA注意力权重，更新特征</li>
+</ol>
+
+<h2>3.4 C-Net（通道融合网络）</h2>
+<p>C-Net通过通道级ESE注意力（C-ESEA）实现通道间细粒度融合的三个步骤：</p>
+<ol>
+  <li><strong>通道级扩展</strong>：单层卷积扩展通道信息（轻量化设计）</li>
+  <li><strong>通道级压缩</strong>：全局平均池化获得通道级表示</li>
+  <li><strong>通道级激励</strong>：FC层+Sigmoid学习C-ESEA注意力权重</li>
+</ol>
+<p><strong>设计思路</strong>：M-Net（粗融合，多层卷积）→ C-Net（细融合，单层卷积），逐步递进。</p>
+
+<h2>3.5 多模态损失（ML）</h2>
+<p><strong>公式</strong>：<code>L = α × L_rs + β × (min(L_r, L_s) − L_rs)</code></p>
+<p><strong>创新点</strong>：引入惩罚项，促使融合特征的预测损失不低于最优单模态。超参数最优值 <strong>α=0.7, β=0.3</strong>。</p>
+
+<!-- ============ 四、实验设置 ============ -->
+<h1>四、实验设置</h1>
+
+<h2>4.1 数据集</h2>
+<table>
+  <tr><th>数据集</th><th>参数</th></tr>
+  <tr><td>ETRI-Activity3D</td><td>最大老年人活动识别数据集，112,620样本，55类，100人</td></tr>
+  <tr><td>NTU RGB+D</td><td>56,880骨架序列，60类，40人，CS和CV两种协议</td></tr>
+</table>
+
+<h2>4.2 实现细节</h2>
+<table>
+  <tr><th>参数</th><th>设置</th></tr>
+  <tr><td>RGB主干</td><td>ResNeXt101（默认）/ ResNeXt18（消融）</td></tr>
+  <tr><td>骨架主干</td><td>Shift-GCN</td></tr>
+  <tr><td>视频分片</td><td>T=64 clips</td></tr>
+  <tr><td>Batch Size</td><td>32</td></tr>
+  <tr><td>Epochs</td><td>30</td></tr>
+  <tr><td>优化器</td><td>SGD（动量0.9，初始学习率0.1）</td></tr>
+  <tr><td>框架/硬件</td><td>PyTorch / Titan RTX GPU</td></tr>
+</table>
+
+<!-- ============ 五、实验结果 ============ -->
+<h1>五、实验结果</h1>
+
+<h2>5.1 消融实验</h2>
+<p>M-Net、C-Net、ML三个组件均正向贡献，完整ESE-FN最优。ESE-FN比SENet高出0.6%，验证Expansion步骤有效性。双重融合策略（模态+通道）优于单一融合策略。</p>
+
+<h2>5.2 老年人活动识别（ETRI-Activity3D）</h2>
+<div class="result-box">
+  <strong>ESE-FN准确率：95.9% ✦ SOTA</strong><br>
+  比前SOTA方法FSA-CNN（93.7%）高出 <strong>2.2%</strong>
+</div>
+
+<h2>5.3 常规动作识别（NTU RGB+D）</h2>
+<table>
+  <tr><th>方法</th><th>CS</th><th>CV</th></tr>
+  <tr><td>Evolution Pose Map</td><td>91.7%</td><td>-</td></tr>
+  <tr><td>Shift-GCN</td><td>-</td><td>96.5%</td></tr>
+  <tr><td><strong>ESE-FN (Ours)</strong></td><td><strong>92.4%</strong></td><td><strong>96.7% ✦</strong></td></tr>
+</table>
+<p>CS提升0.7%，CV提升0.2%，验证泛化能力。</p>
+
+<!-- ============ 六、贡献总结 ============ -->
+<h1>六、论文贡献总结</h1>
+<ol>
+  <li><strong>提出ESE-FN框架</strong>：首次将Expansion引入SENet家族，形成ESE注意力结构用于多模态特征融合</li>
+  <li><strong>设计M-Net和C-Net</strong>：分别从模态级和通道级捕获特征依赖，实现从粗到细的递进式融合</li>
+  <li><strong>提出多模态损失ML</strong>：通过惩罚项保持单模态与融合特征之间的一致性</li>
+  <li><strong>取得SOTA性能</strong>：ETRI-Activity3D上95.9%，NTU RGB+D上验证泛化能力</li>
+</ol>
+
+<!-- ============ 七、论文结构 ============ -->
+<h1>七、论文结构</h1>
+<table>
+  <tr><th>章节</th><th>内容</th></tr>
+  <tr><td>I. Introduction</td><td>研究背景、问题定义、挑战、贡献总结</td></tr>
+  <tr><td>II. Related Work</td><td>RGB/骨架/多模态融合方法综述</td></tr>
+  <tr><td>III. Methodology</td><td>SENet回顾、ESE-FN框架、M-Net/C-Net/ML详述</td></tr>
+  <tr><td>IV. Experiments</td><td>数据集、实验细节、消融实验、对比实验</td></tr>
+  <tr><td>V. Conclusion</td><td>方法总结、贡献重申、讨论与展望</td></tr>
+</table>
+
+<!-- ============ 八、讨论与展望 ============ -->
+<h1>八、讨论与展望</h1>
+<p>本文在SENet基础上首次引入Expansion步骤，实现上采样和下采样的特征交互，是SENet家族中的新尝试。ESE-FN不仅限于老年人活动识别，还可推广到一般特征学习和多模态特征融合任务，为后续研究提供了新的思路。</p>
+
+<hr>
+
+<div class="footer">
+  — 报告完 —<br>
+  生成日期：2026-06-26 | 源文件：IEEE TCSVT 2022 | Expansion-Squeeze-Excitation Fusion Network for Elderly Activity Recognition
+</div>
+
+</body>
+</html>

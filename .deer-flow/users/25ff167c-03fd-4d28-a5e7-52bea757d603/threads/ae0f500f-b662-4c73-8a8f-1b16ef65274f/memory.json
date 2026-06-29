@@ -1,0 +1,82 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-26T21:18:01.333011Z",
+  "user": {
+    "workContext": {
+      "summary": "User is engaged in a candidate comparison analysis task, specifically comparing two candidates (崔亚飞 and 杨佳文) for a Java backend developer position. The analysis included PDF document parsing and structured report generation with 13 chapters, 8 data evidences, and 6 analytical insights.",
+      "updatedAt": "2026-06-26T21:18:01.318543Z"
+    },
+    "personalContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "topOfMind": {
+      "summary": "The user is focused on completing a candidate resume comparison analysis report (崔亚飞 vs 杨佳文) for a Java backend developer position. They are tracking the progress of PDF document parsing and report rendering. The user needs the final rendered DOCX report output and is checking whether the system-generated PDF report is visible. Additional ongoing priorities include ensuring the analysis covers 13 planned chapters with comprehensive data evidence and analytical insights.",
+      "updatedAt": "2026-06-26T21:18:01.318543Z"
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "The user has been working on a candidate comparison analysis task, processing two PDF resumes (崔亚飞.pdf and 杨佳文-java后端-v8.pdf) for a Java backend developer position. The task involved using a multi-layer analysis system with planning, data extraction, worker execution, evidence aggregation, and analytical insight generation across 13 report chapters.",
+      "updatedAt": "2026-06-26T21:18:01.318543Z"
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_f41d8d5f",
+      "content": "The agent encountered errors due to binary format incompatibility when attempting to process a PDF document with read_file tool.",
+      "category": "correction",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T21:18:01.318543Z",
+      "source": "ae0f500f-b662-4c73-8a8f-1b16ef65274f"
+    },
+    {
+      "id": "fact_08f78922",
+      "content": "The system forced a stop due to repeated tool calls exceeding the safety limit during report generation.",
+      "category": "correction",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T21:18:01.318543Z",
+      "source": "ae0f500f-b662-4c73-8a8f-1b16ef65274f"
+    },
+    {
+      "id": "fact_e92318a8",
+      "content": "The user is analyzing two candidates: 崔亚飞 and 杨佳文, for a Java backend developer position.",
+      "category": "context",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T21:18:01.318543Z",
+      "source": "ae0f500f-b662-4c73-8a8f-1b16ef65274f"
+    },
+    {
+      "id": "fact_e3be8e32",
+      "content": "The analysis report contains 13 chapters, 8 data evidences, and 6 analytical insights.",
+      "category": "context",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T21:18:01.318543Z",
+      "source": "ae0f500f-b662-4c73-8a8f-1b16ef65274f"
+    },
+    {
+      "id": "fact_ba3e144c",
+      "content": "The report covers: overview, basic info comparison, education, work experience, technical skills, project experience, career trajectory, strengths/weaknesses, job matching assessment, comprehensive scoring, interview suggestions, hiring recommendation, and conclusion.",
+      "category": "context",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T21:18:01.318543Z",
+      "source": "ae0f500f-b662-4c73-8a8f-1b16ef65274f"
+    },
+    {
+      "id": "fact_2f517a92",
+      "content": "The user is tracking the rendering status of a DOCX report artifact (art_b25f6ce37785).",
+      "category": "behavior",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T21:18:01.318543Z",
+      "source": "ae0f500f-b662-4c73-8a8f-1b16ef65274f"
+    }
+  ]
+}

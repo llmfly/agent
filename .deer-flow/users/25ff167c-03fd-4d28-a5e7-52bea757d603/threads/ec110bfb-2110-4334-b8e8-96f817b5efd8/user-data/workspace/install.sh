@@ -1,0 +1,1 @@
+python3 -m pip install pymupdf 2>&1 | tail -5

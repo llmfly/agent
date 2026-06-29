@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-26T18:24:46.413616Z",
+  "user": {
+    "workContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "personalContext": {
+      "summary": "The user speaks Chinese (你好).",
+      "updatedAt": "2026-06-26T18:24:46.411103Z"
+    },
+    "topOfMind": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_b387a5dc",
+      "content": "The user communicates in Chinese.",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T18:24:46.411103Z",
+      "source": "f814b831-2f31-4763-99b7-b6a3d0b9a7f2"
+    }
+  ]
+}

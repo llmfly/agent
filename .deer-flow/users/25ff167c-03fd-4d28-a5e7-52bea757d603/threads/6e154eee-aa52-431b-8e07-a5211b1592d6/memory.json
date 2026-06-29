@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-26T20:33:33.956595Z",
+  "user": {
+    "workContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "personalContext": {
+      "summary": "The conversation involves the user requesting an analysis of a document, which appears to be a resume for a third party named 崔亚飞. No personal information about the user themselves was disclosed.",
+      "updatedAt": "2026-06-26T20:33:33.951510Z"
+    },
+    "topOfMind": {
+      "summary": "The user asked the assistant to parse a document and generate a report. The assistant processed a resume belonging to 崔亚飞, a recent graduate seeking a Java developer position. There is no indication of the user's own ongoing priorities or focus areas.",
+      "updatedAt": "2026-06-26T20:33:33.951510Z"
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "The user requested document parsing and report generation. The assistant processed a resume for 崔亚飞, a master's graduate from Nanjing University of Science and Technology. No other recent activities by the user are evident.",
+      "updatedAt": "2026-06-26T20:33:33.951510Z"
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_6e9bb2f4",
+      "content": "The user asked to parse a document and generate a report, which was the resume of 崔亚飞.",
+      "category": "behavior",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T20:33:33.951510Z",
+      "source": "6e154eee-aa52-431b-8e07-a5211b1592d6"
+    }
+  ]
+}

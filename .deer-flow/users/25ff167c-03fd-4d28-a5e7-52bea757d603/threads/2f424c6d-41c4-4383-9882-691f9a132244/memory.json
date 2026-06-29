@@ -1,0 +1,74 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-26T20:45:27.720488Z",
+  "user": {
+    "workContext": {
+      "summary": "User is working with a document analysis system, specifically requesting PDF parsing and report generation. The current interaction involved attempting to analyze a PDF resume (杨佳文-Java后端简历).",
+      "updatedAt": "2026-06-26T20:45:27.706870Z"
+    },
+    "personalContext": {
+      "summary": "User communicates in Chinese and expects document analysis capabilities including PDF parsing and automated report generation.",
+      "updatedAt": "2026-06-26T20:45:27.706870Z"
+    },
+    "topOfMind": {
+      "summary": "The user's primary focus is having a PDF document (specifically a Java backend resume for 杨佳文) parsed and a comprehensive analysis report generated. The user has made this request twice, indicating urgency. The system encountered technical limitations in reading/processing the PDF file (binary format restrictions, grep/search tool limitations on compressed PDF streams, report generation tool errors, and script execution environment restrictions). The user likely needs a working PDF parsing solution or alternative route (text content upload, screenshot) to complete the resume analysis task.",
+      "updatedAt": "2026-06-26T20:45:27.706870Z"
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "User is engaged in document processing tasks, specifically PDF-based resume analysis for a Java backend developer position (candidate 杨佳文). The system attempted multiple approaches (read_file, grep, generate_report) but failed to parse the binary PDF. A partial report framework was generated at /mnt/user-data/outputs/杨佳文-Java后端简历分析报告.md.",
+      "updatedAt": "2026-06-26T20:45:27.706870Z"
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_1ca7169f",
+      "content": "User needs PDF parsing capability to analyze documents, specifically resumes for Java backend developer positions.",
+      "category": "context",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T20:45:27.706870Z",
+      "source": "2f424c6d-41c4-4383-9882-691f9a132244"
+    },
+    {
+      "id": "fact_145c1fbc",
+      "content": "User is analyzing a resume for candidate 杨佳文 (Yang Jiawen) for a Java backend developer role.",
+      "category": "context",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T20:45:27.706870Z",
+      "source": "2f424c6d-41c4-4383-9882-691f9a132244"
+    },
+    {
+      "id": "fact_6174e683",
+      "content": "The system attempted to parse a PDF using multiple methods (read_file, grep, generate_report) but all failed due to binary format restrictions and execution environment limitations.",
+      "category": "correction",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T20:45:27.706870Z",
+      "source": "2f424c6d-41c4-4383-9882-691f9a132244"
+    },
+    {
+      "id": "fact_e50d8ac5",
+      "content": "The system generated a partial resume analysis report framework at /mnt/user-data/outputs/杨佳文-Java后端简历分析报告.md in Markdown format.",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T20:45:27.706870Z",
+      "source": "2f424c6d-41c4-4383-9882-691f9a132244"
+    },
+    {
+      "id": "fact_78f964f6",
+      "content": "User communicates in Chinese and expects document analysis services including PDF parsing and report generation.",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-26T20:45:27.706870Z",
+      "source": "2f424c6d-41c4-4383-9882-691f9a132244"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-26T21:30:53.012578Z",
+  "user": {
+    "workContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "personalContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "topOfMind": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_5bc1789a",
+      "content": "用户要求解析文档并给出报告，但系统工具调用失败导致报告未完成渲染。",
+      "category": "correction",
+      "confidence": 0.95,
+      "createdAt": "2026-06-26T21:30:53.011800Z",
+      "source": "da8f19f9-f76c-4aa6-8763-c51ffb6bee23"
+    }
+  ]
+}
