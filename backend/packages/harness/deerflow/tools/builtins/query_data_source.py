@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+import time
 from pathlib import Path
 
 from langchain.tools import tool
@@ -9,36 +10,31 @@ from deerflow.tools.types import Runtime
 
 logger = logging.getLogger(__name__)
 
-# ── Per-thread tool call guard ────────────────────────────────────────
-# Prevents the LLM from looping on query_data_source in the same turn.
-# Key: thread_id, Value: {"count": int, "sources": list | None}
-_tool_call_registry: dict[str, dict] = {}
-_MAX_TOOL_CALLS = 3
+# ── In-process source cache per thread ───────────────────────────────
+# Key: thread_id, Value: {"sources": list | None, "_ts": float}
+# Avoids redundant DB queries on repeated LLM tool calls within the
+# same 120s window. This is NOT a throttling mechanism — the tool
+# is always available.
+_source_cache: dict[str, dict] = {}
 
 
-def _get_call_state(thread_id: str) -> dict:
-    """Get or create per-thread call state, with auto-cleanup after 120s."""
-    import time
-
+def _get_source_cache(thread_id: str) -> dict:
+    """Get or create per-thread source cache, with auto-cleanup after 120s."""
     now = time.monotonic()
-    state = _tool_call_registry.get(thread_id)
-    if state is None or now - state.get("_ts", 0) > 120:
-        state = {"count": 0, "sources": None, "_ts": now}
-        _tool_call_registry[thread_id] = state
+    entry = _source_cache.get(thread_id)
+    if entry is None or now - entry.get("_ts", 0) > 120:
+        entry = {"sources": None, "_ts": now}
+        _source_cache[thread_id] = entry
         # Clean stale entries
-        stale = [k for k, v in _tool_call_registry.items() if now - v.get("_ts", 0) > 120]
+        stale = [k for k, v in _source_cache.items() if now - v.get("_ts", 0) > 120]
         for k in stale:
-            _tool_call_registry.pop(k, None)
-    return state
+            _source_cache.pop(k, None)
+    return entry
 
 
-# ── Report-intent detection ─────────────────────────────────────────────
-# If the user's query looks like they want a report or to understand
-# the data structure, redirect them to generate_report instead.
+# ── Report-intent detection (soft redirect, never refuse) ─────────────
 _REPORT_INTENT_PATTERNS = re.compile(
-    r"(报告|报表|生成.*报告|写.*报告|出.*报告|分析.*报告"
-    r"|表结构|数据库结构|有哪些表|有什么表|schema|表名|字段名"
-    r"|列名|所有表|数据字典|数据目录|元数据|表信息)"
+    r"(报告|报表|生成.*报告|写.*报告|出.*报告|分析.*报告)"
 )
 
 
@@ -47,26 +43,40 @@ def _build_schema_block(sources: list[dict]) -> str:
     schema_summaries = []
     for ds in sources:
         ss = ds.get("schema_summary") or {}
+        meta = ds.get("metadata") or {}
         name = ds.get("name", "?")
         ds_type = ds.get("type", "?")
         tables = ss.get("tables", [])
+
         if tables:
             summary_parts = [f"📦 {name} ({ds_type})"]
-            for t in tables[:5]:
+            for t in tables[:10]:
                 cols = ", ".join(
                     f"{c['name']}({c['type']})"
-                    for c in t.get("columns", [])[:6]
+                    for c in t.get("columns", [])[:10]
                 )
-                summary_parts.append(f"  - {t['name']} : {cols}")
+                rows = t.get("row_count", "?")
+                summary_parts.append(f"  - {t['name']} (~{rows} 行) : {cols}")
             schema_summaries.append("\n".join(summary_parts))
+        elif ds_type in ("pdf", "docx", "txt", "xlsx", "csv"):
+            file_path = meta.get("file_path", "")
+            doc_summary = ss.get("document_summary") or {}
+            chapters = doc_summary.get("chapters") or doc_summary.get("key_topics") or []
+            preview = doc_summary.get("content_preview", "")[:200]
+            summary_parts = [f"📄 {name} ({ds_type})"]
+            if file_path:
+                summary_parts.append(f"  路径: {file_path}")
+            if doc_summary.get("page_count"):
+                summary_parts.append(f"  页数: {doc_summary['page_count']}")
+            if chapters:
+                summary_parts.append(f"  章节: {', '.join(chapters)}")
+            if preview:
+                summary_parts.append(f"  预览: {preview}")
+            schema_summaries.append("\n".join(summary_parts))
+        else:
+            schema_summaries.append(f"  {name} ({ds_type})")
 
-    if schema_summaries:
-        return "\n".join(schema_summaries)
-    # Fallback: basic info only
-    return "\n".join(
-        f"  {ds.get('name', '?')} ({ds.get('type', '?')})"
-        for ds in sources
-    )
+    return "\n".join(schema_summaries) if schema_summaries else "（无数据源）"
 
 def _get_thread_id(runtime: Runtime) -> str | None:
     """Resolve the current conversation/thread id from runtime context."""
@@ -117,39 +127,13 @@ async def query_data_source_tool(
     """
     conversation_id = _get_thread_id(runtime)
 
-    # ── Per-thread call guard ──────────────────────────────────────
-    # Prevents the LLM from spinning in a loop calling this tool.
-    state = None
-    if conversation_id:
-        state = _get_call_state(conversation_id)
-        state["count"] += 1
-        if state["count"] > _MAX_TOOL_CALLS:
-            logger.warning(
-                "query_data_source called %d times for thread %s — throttling",
-                state["count"], conversation_id,
-            )
-            # Include available schema so LLM can still make informed decisions
-            cached_sources = state.get("sources")
-            if cached_sources:
-                summary = _build_schema_block(cached_sources)
-                return (
-                    f"⚠️ **query_data_source 已调用太多次（{state['count']}次）**\n\n"
-                    f"已掌握的数据源结构：\n{summary}\n\n"
-                    f"如需生成报告，请直接调用 `generate_report(title=..., user_query=...)`，"
-                    f"无需手动查询数据。如确实需要数据查询，请整合到一个问题中。"
-                )
-            return (
-                f"⚠️ **query_data_source 已调用太多次（{state['count']}次）**\n\n"
-                f"如需生成报告，请直接调用 `generate_report`，无需逐个查询数据源。"
-            )
-
     # 1. Resolve selected data sources
-    # Priority: runtime context → runtime config → memory cache (v1 API registered)
     selected_sources = None
 
     # ── Try in-process cache first ─────────────────────────────────
-    if state and state.get("sources"):
-        selected_sources = state["sources"]
+    cache = _get_source_cache(conversation_id) if conversation_id else None
+    if cache and cache.get("sources"):
+        selected_sources = cache["sources"]
         logger.debug("query_data_source: using cached sources for thread %s", conversation_id)
 
     if not selected_sources:
@@ -191,24 +175,35 @@ async def query_data_source_tool(
     if not selected_sources:
         return "Error: No data sources are selected or configured for this conversation."
 
-    # ── Cache resolved sources for subsequent calls in this turn ──
-    if state and not state.get("sources"):
-        state["sources"] = selected_sources
+    # ── Cache resolved sources ─────────────────────────────────────
+    if cache and not cache.get("sources"):
+        cache["sources"] = selected_sources
         logger.debug("query_data_source: cached %d sources for thread %s", len(selected_sources), conversation_id)
 
-    # ── Report-intent guard ────────────────────────────────────────
-    # If the query looks like "give me a report" or "show me the table
-    # structure", refuse and direct to generate_report. This tool is
-    # for ad-hoc data exploration, not report generation.
-    if _REPORT_INTENT_PATTERNS.search(query):
-        schema_block = _build_schema_block(selected_sources)
+    # ── Handle "查看数据源" / "schema overview" queries ────────────
+    # If the query is about seeing what data sources are available
+    # (rather than a specific data query), return the full snapshot.
+    schema_query_patterns = re.compile(
+        r"(数据源|有哪些|有什么|查看|结构|schema|表结构|所有表|表名|字段|"
+        r"files?|documents?|pdf|连接|绑定|关联|当前)"
+    )
+    if schema_query_patterns.search(query) and not any(
+        kw in query for kw in ("查询", "统计", "计算", "分析", "检索", "搜索", "count", "sum", "group")
+    ):
+        block = _build_schema_block(selected_sources)
         return (
-            f"⚠️ **请使用 `generate_report` 工具生成报告**\n\n"
-            f"已了解的数据源结构：\n{schema_block}\n\n"
-            f"直接调用 `generate_report(title=..., user_query=...)` 即可自动完成"
-            f"数据查询→分析→报告渲染全流程，无需手动查询数据。"
-            f"\n\n(query_data_source 返回了以上数据源信息，但查询内容 '{query[:80]}' 看起来像是报告需求，"
-            f"请切换到 generate_report。如确实需要查询原始数据，请使用具体的数据查询语句。)"
+            f"当前对话绑定了以下数据源：\n\n"
+            f"{block}\n\n"
+            f"如需生成报告，请调用 `generate_report(title=..., user_query=...)`。"
+        )
+
+    # ── Soft redirect for report-intent queries ────────────────────
+    if _REPORT_INTENT_PATTERNS.search(query):
+        block = _build_schema_block(selected_sources)
+        return (
+            f"检测到报告需求。当前数据源：\n\n"
+            f"{block}\n\n"
+            f"请调用 `generate_report(title=..., user_query=...)` 自动完成报告生成。"
         )
 
     # 2. Match target data source

@@ -119,116 +119,113 @@ def _context_from_options(body: ConversationMessageRequest) -> dict[str, Any]:
 
 
 def _format_data_sources_for_prompt(ds_list: list[dict[str, Any]]) -> str:
-    """Format data sources into an XML block with workflow guidance for the LLM.
+    """Format system instructions about data sources for the LLM.
 
-    Includes structured schema_summary (table/column metadata, document overview)
-    so the agent and downstream pipeline (e.g. ReportPlanner) understand exactly
-    what data is available without needing to probe the source.
+    Only includes report rules and a brief summary count. The actual
+    schema details are injected as a separate system message (see
+    ``_build_datasource_message``) that updates only on change, saving
+    tokens on every turn. The LLM can call ``query_data_source`` at any
+    time to get the full current data source snapshot.
     """
-    lines = [
-        "<system_instructions>",
-        "当前对话已关联以下数据源。",
-        "",
-        "## 数据真实性规则（必须遵守）",
-        "⚠️ **所有结论、数据、分析结果必须完全来源于以下指定的数据源和已上传的文件。**",
-        "- 禁止捏造、虚构、编造任何数据、统计数字或事实",
-        "- 如果数据源中没有某项数据，**必须明确告知用户「以下数据不在当前数据源中」**",
-        "- 禁止根据常识或外部知识补充数据源的缺失数据",
-        "- 引用的每条数据必须标注来源的数据源名称或文件名称",
-        "",
-        "## 报告生成规则（必须遵守）",
-        "当用户要求「生成报告」「分析数据并出报告」「解析文档生成报告」「导出为文档」时，",
-        "**必须调用 `generate_report` 工具**，不得使用其他替代方案。",
-        "",
-        "### generate_report 的使用方法",
-        "- **有 SQL 数据源时**: generate_report(title=\"报告标题\", user_query=\"分析需求描述\")",
-        "  工具会全自动完成数据查询、分析、DOCX 渲染全流程",
-        "- **有文件类型数据源时（XML 中包含 <file_path> 的 datasource）**: "
-        "generate_report(title=\"报告标题\", document_path=\"<file_path 的值>\")",
-        "  工具会自动解析该文件",
-        "- **同时有 SQL 和文件数据源时**: 两个参数都传",
-        "  例如: generate_report(title=\"分析报告\", user_query=\"结合文档分析\", document_path=\"/data/.../file.pdf\")",
-        "",
-        "工具会全自动完成六层流程：Planning → Execution (Worker) → Evidence → Analysis → Composition → Rendering",
-        "",
-        "### 禁止行为",
-        "- ❌ 禁止使用 query_data_source 手动查询数据——generate_report 会自动查询",
-        "- ❌ **禁止调用 `parse_pdf` / `parse_docx`**——generate_report 内部自动解析文档",
-        "- ❌ 禁止用 bash 或 Python 脚本生成 Word 文档——generate_report 会自动渲染",
-        "- ❌ 禁止在对话中输出大量 Markdown 格式的报告内容",
-        "- ❌ 如果 generate_report 第一次失败，最多重试1次；仍失败就告诉用户，不要切到手动方案",
-        "- ❌ **禁止虚构数据源中不存在的数据**",
-        "",
-        "违反以上规则将导致流程错误。",
-        "</system_instructions>",
-        "",
-        "<data_sources>",
-    ]
+    sql_count = sum(1 for ds in ds_list if ds.get("type") in ("sql", "mysql", "postgresql"))
+    file_count = sum(1 for ds in ds_list if ds.get("type") in ("pdf", "docx", "txt", "xlsx", "csv"))
+    parts = []
+    if sql_count:
+        parts.append(f"{sql_count} 个 SQL 数据库")
+    if file_count:
+        parts.append(f"{file_count} 个文档文件")
+
+    summary = "、".join(parts) if parts else f"{len(ds_list)} 个数据源"
+
+    return f"""<system_instructions>
+当前对话已关联 {summary}。
+
+## 数据真实性规则（必须遵守）
+⚠️ **所有结论、数据、分析结果必须完全来源于以下指定的数据源和已上传的文件。**
+- 禁止捏造、虚构、编造任何数据、统计数字或事实
+- 如果数据源中没有某项数据，**必须明确告知用户「以下数据不在当前数据源中」**
+- 禁止根据常识或外部知识补充数据源的缺失数据
+- 引用的每条数据必须标注来源的数据源名称或文件名称
+
+## 报告生成规则（必须遵守）
+当用户要求「生成报告」「分析数据并出报告」「解析文档生成报告」「导出为文档」时，
+**必须调用 `generate_report` 工具**，不得使用其他替代方案。
+
+### generate_report 的使用方法
+- **有 SQL 数据源时**: generate_report(title="报告标题", user_query="分析需求描述")
+  工具会全自动完成数据查询、分析、DOCX 渲染全流程
+- **有文件类型数据源时**: generate_report(title="报告标题", document_path="<文件路径>")
+  工具会自动解析该文件，document_path 可以在下方附带的 <datasources> 系统消息中获取
+- **同时有 SQL 和文件数据源时**: 两个参数都传
+
+工具会全自动完成六层流程：Planning → Execution (Worker) → Evidence → Analysis → Composition → Rendering
+
+### 禁止行为
+- ❌ **禁止调用 `parse_pdf` / `parse_docx`**——generate_report 内部自动解析文档
+- ❌ 禁止用 bash 或 Python 脚本生成 Word 文档——generate_report 会自动渲染
+- ❌ 禁止在对话中输出大量 Markdown 格式的报告内容
+- ❌ 如果 generate_report 连续失败 2 次，告诉用户失败原因，不要切到手动方案
+- ❌ **禁止虚构数据源中不存在的数据**
+
+## 查询绑定数据源
+调用 `query_data_source(query="查看当前绑定的数据源")` 即可获取当前对话绑定的
+所有数据源的详细结构（表名、字段、文件路径等），**此工具不再限制调用次数**。
+
+违反以上规则将导致流程错误。
+</system_instructions>"""
+
+
+def _build_datasource_system_message(ds_list: list[dict[str, Any]]) -> str:
+    """Build a compact system message describing the current data sources.
+
+    This is injected as a separate system message (not in the user message
+    prefix) so it only needs to be updated when data sources change, saving
+    tokens on normal turns.
+    """
+    lines = ["<datasources>"]
     for ds in ds_list:
         ds_id = ds.get("datasource_id", "?")
         ds_type = ds.get("type", "?")
         ds_name = ds.get("name", "?")
         meta = ds.get("metadata") or {}
-        schema_summary = ds.get("schema_summary") or {}
+        ss = ds.get("schema_summary") or {}
 
         lines.append(f'  <datasource id="{ds_id}" type="{ds_type}" name="{ds_name}">')
 
-        # ── Connection info for SQL types ────────────────────────
+        # SQL types: table names + row counts
         if ds_type in ("sql", "mysql", "postgresql"):
             host = meta.get("host", "?")
             port = meta.get("port", "?")
             database = meta.get("database", "?")
-            lines.append(f"    <connection>mysql://{host}:{port}/{database}</connection>")
+            lines.append(f"    <connection>{host}:{port}/{database}</connection>")
+            tables = ss.get("tables", [])
+            if tables:
+                for t in tables:
+                    tname = t.get("name", "?")
+                    rows = t.get("row_count", "?")
+                    cols = ", ".join(
+                        f"{c['name']}({c['type']})"
+                        for c in t.get("columns", [])[:6]
+                    )
+                    lines.append(f"    <table name=\"{tname}\" rows=\"{rows}\" columns=\"{cols}\"/>")
 
-        # ── File path for file-type data sources ──────────────────
+        # File types: path + preview
         if ds_type in ("pdf", "docx", "txt", "xlsx", "csv"):
             file_path = meta.get("file_path", "")
             if file_path:
                 lines.append(f"    <file_path>{file_path}</file_path>")
-
-        # ── Schema detail (table structures for SQL) ──────────────
-        tables = schema_summary.get("tables", [])
-        if tables:
-            lines.append("    <schema>")
-            for t in tables:
-                tname = t.get("name", "?")
-                rows = t.get("row_count", "?")
-                lines.append(f'      <table name="{tname}" rows="{rows}">')
-                for col in t.get("columns", []):
-                    cname = col.get("name", "")
-                    ctype = col.get("type", "")
-                    pk = ' pk="true"' if col.get("pk") else ""
-                    lines.append(f'        <column name="{cname}" type="{ctype}"{pk}/>')
-                lines.append("      </table>")
-            lines.append("    </schema>")
-
-        # ── Document summary for file types ──────────────────────
-        doc_summary = schema_summary.get("document_summary")
-        if doc_summary:
-            chapters = doc_summary.get("chapters") or doc_summary.get("key_topics") or []
-            content_preview = doc_summary.get("content_preview", "")
-            filename = doc_summary.get("filename", "") or doc_summary.get("file_path", "")
-            lines.append(f"    <document type=\"{doc_summary.get('type', ds_type)}\""
-                         f" filename=\"{filename}\""
-                         f" pages=\"{doc_summary.get('page_count', '?')}\""
-                         f" size=\"{doc_summary.get('file_size', '?')}\">")
-            if chapters:
-                lines.append(f"      <topics>{', '.join(chapters)}</topics>")
-            if content_preview:
-                lines.append(f"      <preview>{content_preview[:300]}</preview>")
-            lines.append("    </document>")
-
-        # ── Status note when extraction is still pending ──────────
-        status = schema_summary.get("status", "pending")
-        if status == "pending":
-            lines.append("    <note>数据源元数据正在提取中，稍后即可使用</note>")
-        elif status == "error":
-            err_msg = schema_summary.get("error", "unknown error")
-            lines.append(f"    <note>数据源元数据提取失败: {err_msg}</note>")
+            doc_summary = ss.get("document_summary")
+            if doc_summary:
+                pages = doc_summary.get("page_count", "?")
+                preview = doc_summary.get("content_preview", "")[:300]
+                chapters = doc_summary.get("chapters") or doc_summary.get("key_topics") or []
+                if chapters:
+                    lines.append(f"    <topics>{', '.join(chapters)}</topics>")
+                lines.append(f"    <file pages=\"{pages}\"/>")
 
         lines.append("  </datasource>")
 
-    lines.append("</data_sources>")
+    lines.append("</datasources>")
     return "\n".join(lines)
 
 
@@ -250,9 +247,6 @@ def build_run_create_request(
     has_sources = bool(selected_data_sources)
 
     # ── Pre-routing: check if user wants a report ──────────────────
-    # This runs BEFORE the Lead Agent sees the message, acting as a
-    # true Intent Layer. If the intent is "generate report", we route
-    # directly to the pipeline instead of letting the LLM decide.
     intent = _detect_report_intent(user_content)
     if intent.is_report:
         logger.info(
@@ -260,27 +254,48 @@ def build_run_create_request(
             "bypassing Lead Agent",
             intent.decision, intent.confidence,
         )
-        # Mark the context so downstream knows this is a report request
         context["_report_intent"] = intent.decision
         context["_report_confidence"] = intent.confidence
 
-    # Inject data source info / report instructions into the user message.
+    # ════════════════════════════════════════════════════════════════
+    # Build the messages list for the run input
+    # ════════════════════════════════════════════════════════════════
+    messages: list[dict] = []
+
+    # Inject data source instructions + system message
     if has_sources:
         context["selected_data_sources"] = selected_data_sources
+
+        # [A] System instructions (compact, every turn — ~400 tokens)
         ds_block = _format_data_sources_for_prompt(selected_data_sources)
         user_content = f"{ds_block}\n\n{body.content}"
-        logger.info("build_run_create_request: injected %d data sources into prompt", len(selected_data_sources))
+
+        # [B] Data source detail system message
+        # Compact schema snapshot so the LLM knows table names, columns,
+        # file paths, etc. This is always injected on each new run — it
+        # replaces the old approach of putting full schema XML into the
+        # user message prefix, saving ~1500+ tokens per turn.
+        ds_system_msg = _build_datasource_system_message(selected_data_sources)
+        messages.append({
+            "type": "system",
+            "content": [{"type": "text", "text": ds_system_msg}],
+        })
+
+        logger.info(
+            "build_run_create_request: %d data sources for prompt",
+            len(selected_data_sources),
+        )
     else:
-        # Still inject report-generation instructions so the Lead Agent
-        # knows to use generate_report even without SQL datasources
-        # (e.g. document-based reports).
         instructions = _NO_SOURCE_INSTRUCTIONS
-        user_content = "{}\n\n{}".format(instructions, body.content)
+        user_content = f"{instructions}\n\n{body.content}"
         logger.info("build_run_create_request: injected report instructions (no datasources)")
+
+    # [C] User message
+    messages.append({"type": "human", "content": [{"type": "text", "text": user_content}]})
 
     return RunCreateRequest(
         assistant_id=body.agent_id,
-        input={"messages": [{"type": "human", "content": [{"type": "text", "text": user_content}]}]},
+        input={"messages": messages},
         metadata=metadata,
         context=context,
         stream_mode=["messages-tuple", "values", "updates", "custom", "events"],
