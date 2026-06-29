@@ -148,17 +148,23 @@ def _format_data_sources_for_prompt(ds_list: list[dict[str, Any]]) -> str:
 - 引用的每条数据必须标注来源的数据源名称或文件名称
 
 ## 报告生成规则（必须遵守）
-当用户要求「生成报告」「分析数据并出报告」「解析文档生成报告」「导出为文档」时，
-**必须调用 `generate_report` 工具**，不得使用其他替代方案。
+当用户要求「生成报告」「分析数据并出报告」「解析文档」「解析文档生成报告」「导出为文档」时，
+**必须立即调用 `generate_report` 工具**，不得使用其他替代方案。
 
 ### generate_report 的使用方法
 - **有 SQL 数据源时**: generate_report(title="报告标题", user_query="分析需求描述")
   工具会全自动完成数据查询、分析、DOCX 渲染全流程
 - **有文件类型数据源时**: generate_report(title="报告标题", document_path="<文件路径>")
   工具会自动解析该文件，document_path 可以在下方附带的 <datasources> 系统消息中获取
+  ⚠️ **文件路径已在 <datasources> 中提供，不要要求用户上传或去文件系统查找**
 - **同时有 SQL 和文件数据源时**: 两个参数都传
 
 工具会全自动完成六层流程：Planning → Execution (Worker) → Evidence → Analysis → Composition → Rendering
+
+### ⚠️ 关键行为约束
+- ✅ **优先使用已关联的数据源**：如果数据源中已有 PDF/DOCX 文件，直接从 <datasources> 中提取 `file_path` 调用 `generate_report`，**不要要求用户上传文件**
+- ❌ **禁止执行 bash/Python 命令**来查看文件系统目录（如 `/mnt/user-data/uploads/`、`/mnt/user-data/outputs/`）以寻找数据源文件——数据源文件的路径已在 <datasources> 中提供
+- ❌ **禁止要求用户上传文件**——如果当前对话已关联文件类型数据源，直接使用它
 
 ### 禁止行为
 - ❌ **禁止调用 `parse_pdf` / `parse_docx`**——generate_report 内部自动解析文档

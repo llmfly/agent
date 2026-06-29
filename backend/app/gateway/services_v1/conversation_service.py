@@ -20,7 +20,10 @@ from app.gateway.schemas.v1.conversations import (
     ConversationUpdateRequest,
 )
 from app.gateway.services import start_run, wait_for_run_completion
-from app.gateway.services_v1.data_source_service import resolve_selected_data_sources
+from app.gateway.services_v1.data_source_service import (
+    resolve_selected_data_sources,
+    resolve_workspace_data_sources,
+)
 from app.gateway.services_v1.external_context import ExternalContext, build_external_metadata
 from app.gateway.services_v1.run_adapter import build_run_create_request
 from deerflow.utils.time import coerce_iso, now_iso
@@ -261,6 +264,19 @@ async def send_message(request: Request, conversation_id: str, body: Conversatio
     if selected_data_sources:
         for ds in selected_data_sources:
             logger.info("  data_source: id=%s type=%s name=%s", ds.get("datasource_id"), ds.get("type"), ds.get("name"))
+
+    # Also resolve workspace-attached data sources and merge
+    workspace_sources = await resolve_workspace_data_sources(conversation_id)
+    if workspace_sources:
+        existing_ids = {ds.get("datasource_id") for ds in selected_data_sources}
+        for ws in workspace_sources:
+            if ws.get("datasource_id") not in existing_ids:
+                selected_data_sources.append(ws)
+                existing_ids.add(ws.get("datasource_id"))
+        logger.info(
+            "send_message: merged %d workspace data sources for conversation %s (total=%d)",
+            len(workspace_sources), conversation_id, len(selected_data_sources),
+        )
 
     run_body = build_run_create_request(body, context, selected_data_sources=selected_data_sources)
     logger.info("run_body: assistant_id=%s context_keys=%s stream_mode=%s", run_body.assistant_id, list(run_body.context or {}), run_body.stream_mode)
