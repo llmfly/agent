@@ -16,7 +16,7 @@ from app.gateway.services_v1.artifact_service import (
     register_existing_artifact,
     set_artifact_pinned,
 )
-from app.gateway.services_v1.external_context import ExternalContext, get_external_context
+from app.gateway.services_v1.external_context import ExternalContext, get_optional_context
 
 router = APIRouter(prefix="/artifacts", tags=["v1-artifacts"])
 
@@ -183,7 +183,7 @@ async def get_artifact_metadata(
     request: Request,
     artifact_id: str = FPath(description="Artifact ID"),
     download: bool = False,
-    context: ExternalContext = Depends(get_external_context),
+    context: ExternalContext = Depends(get_optional_context),
 ) -> ArtifactMetadataResponse | Response:
     if download:
         return await _file_response(artifact_id, context, request, download=True)
@@ -195,7 +195,7 @@ async def get_artifact_metadata(
 async def preview_artifact(
     request: Request,
     artifact_id: str = FPath(description="Artifact ID"),
-    context: ExternalContext = Depends(get_external_context),
+    context: ExternalContext = Depends(get_optional_context),
 ) -> Response:
     return await _file_response(artifact_id, context, request, download=False)
 
@@ -204,7 +204,7 @@ async def preview_artifact(
 async def download_artifact(
     request: Request,
     artifact_id: str = FPath(description="Artifact ID"),
-    context: ExternalContext = Depends(get_external_context),
+    context: ExternalContext = Depends(get_optional_context),
 ) -> Response:
     return await _file_response(artifact_id, context, request, download=True)
 
@@ -213,7 +213,7 @@ async def download_artifact(
 async def pin_artifact(
     request: Request,
     artifact_id: str = FPath(description="Artifact ID"),
-    context: ExternalContext = Depends(get_external_context),
+    context: ExternalContext = Depends(get_optional_context),
 ) -> ArtifactMetadataResponse:
     await _record_or_legacy(artifact_id, context, request)
     record = set_artifact_pinned(artifact_id, pinned=True)
@@ -226,7 +226,7 @@ async def pin_artifact(
 async def unpin_artifact(
     request: Request,
     artifact_id: str = FPath(description="Artifact ID"),
-    context: ExternalContext = Depends(get_external_context),
+    context: ExternalContext = Depends(get_optional_context),
 ) -> ArtifactMetadataResponse:
     await _record_or_legacy(artifact_id, context, request)
     record = set_artifact_pinned(artifact_id, pinned=False)
