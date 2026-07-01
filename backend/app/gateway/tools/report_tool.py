@@ -1,13 +1,17 @@
 """Report generation tool — triggers the 7-layer report pipeline.
 
 Entry point: one tool call → full 7-layer pipeline does everything.
-Returns ``Command(goto=END)`` to force-stop the agent graph after completion."""
+Returns ``Command(goto=END)`` to force-stop the agent graph after completion.
+
+Context extraction (data sources, thread ID, user ID, server URL) is
+delegated to :mod:`app.gateway.runtime.context_accessor`, which reads from
+the standardized context dict built by ``ContextBuilder``.
+"""
 
 from __future__ import annotations
 
 import logging
-import os
-from typing import Annotated, Any
+from typing import Annotated
 
 from langchain.tools import InjectedToolCallId, tool
 from langchain_core.messages import ToolMessage
@@ -15,114 +19,18 @@ from langgraph.types import Command
 
 from deerflow.tools.types import Runtime
 
+from app.gateway.runtime.context_accessor import (
+    get_file_data_sources,
+    get_first_file_path,
+    get_first_sql_metadata,
+    get_first_sql_schema_summary,
+    get_server_base_url,
+    get_thread_id,
+    get_user_id,
+)
 from app.gateway.runtime.report_pipeline import ReportPipeline
 
 logger = logging.getLogger(__name__)
-
-
-def _get_thread_id(runtime: Runtime) -> str | None:
-    thread_id = runtime.context.get("thread_id") if runtime.context else None
-    if thread_id:
-        return thread_id
-    cfg = getattr(runtime, "config", None) or {}
-    thread_id = cfg.get("configurable", {}).get("thread_id")
-    if thread_id:
-        return thread_id
-    try:
-        from langgraph.config import get_config
-        return get_config().get("configurable", {}).get("thread_id")
-    except RuntimeError:
-        return None
-
-
-def _get_sql_sources(runtime: Runtime) -> list[dict]:
-    selected_sources = None
-    if runtime.context:
-        selected_sources = runtime.context.get("selected_data_sources")
-    if not selected_sources:
-        cfg = getattr(runtime, "config", None) or {}
-        selected_sources = (
-            cfg.get("configurable", {}).get("selected_data_sources")
-            or cfg.get("context", {}).get("selected_data_sources")
-        )
-    if not selected_sources:
-        return []
-    return [ds for ds in selected_sources if ds.get("type") == "sql"]
-
-
-def _get_schema_summary(runtime: Runtime) -> dict[str, Any]:
-    """Extract schema_summary from the first SQL data source (if any)."""
-    selected_sources = None
-    if runtime.context:
-        selected_sources = runtime.context.get("selected_data_sources")
-    if not selected_sources:
-        cfg = getattr(runtime, "config", None) or {}
-        selected_sources = (
-            cfg.get("configurable", {}).get("selected_data_sources")
-            or cfg.get("context", {}).get("selected_data_sources")
-        )
-    if not selected_sources:
-        return {}
-    sql_sources = [ds for ds in selected_sources if ds.get("type") == "sql"]
-    if not sql_sources:
-        return {}
-    ss = sql_sources[0].get("schema_summary") or {}
-    return ss
-
-
-_FILE_DATA_SOURCE_TYPES = {"pdf", "docx", "txt", "xlsx", "csv"}
-
-
-def _resolve_file_data_sources(runtime: Runtime) -> list[dict]:
-    """Extract file-type data sources with their file_path from the runtime context.
-
-    Returns a list of dicts like:
-        [{"name": "...", "type": "pdf", "file_path": "/data/..."}]
-    """
-    selected_sources = None
-    if runtime.context:
-        selected_sources = runtime.context.get("selected_data_sources")
-    if not selected_sources:
-        cfg = getattr(runtime, "config", None) or {}
-        selected_sources = (
-            cfg.get("configurable", {}).get("selected_data_sources")
-            or cfg.get("context", {}).get("selected_data_sources")
-        )
-    if not selected_sources:
-        return []
-
-    file_sources = []
-    for ds in selected_sources:
-        ds_type = ds.get("type", "")
-        if ds_type not in _FILE_DATA_SOURCE_TYPES:
-            continue
-        meta = ds.get("metadata") or {}
-        file_path = meta.get("file_path", "")
-        if file_path:
-            file_sources.append({
-                "name": ds.get("name", "?"),
-                "type": ds_type,
-                "file_path": file_path,
-            })
-    return file_sources
-
-
-def _get_server_base_url(runtime: Runtime) -> str:
-    """Get the server base URL for constructing absolute download links.
-
-    Priority:
-    1. SERVER_BASE_URL env var (set in deploy config)
-    2. runtime configurable
-    3. Fallback to relative path
-    """
-    url = os.environ.get("SERVER_BASE_URL")
-    if url:
-        return url.rstrip("/")
-    cfg = getattr(runtime, "config", None) or {}
-    url = cfg.get("configurable", {}).get("server_base_url")
-    if url:
-        return url.rstrip("/")
-    return ""
 
 
 @tool(parse_docstring=True)
@@ -172,7 +80,7 @@ async def generate_report(
     **禁止**再次调用 generate_report、check_report_status 或任何其他工具。
     **禁止**使用 bash/Python 搜索或操作报告文件。
     """
-    conversation_id = _get_thread_id(runtime)
+    conversation_id = get_thread_id(runtime)
     logger.info("[generate_report] conversation=%s title=%s query=%s", conversation_id, title, user_query)
 
     if not conversation_id:
@@ -186,33 +94,26 @@ async def generate_report(
             },
         )
 
-    sql_sources = _get_sql_sources(runtime)
-    datasource_metadata = {}
-    schema_summary: dict[str, Any] = {}
-    if sql_sources:
-        datasource_metadata = sql_sources[0].get("metadata") or {}
-        schema_summary = sql_sources[0].get("schema_summary") or {}
+    datasource_metadata = get_first_sql_metadata(runtime)
+    schema_summary = get_first_sql_schema_summary(runtime)
 
     # ════════════════════════════════════════════════════════════════
     # Auto-resolve document_path from file-type data sources
     # ════════════════════════════════════════════════════════════════
-    file_sources = _resolve_file_data_sources(runtime)
-    document_path = ""
+    document_path = get_first_file_path(runtime)
+    file_sources = get_file_data_sources(runtime)
     if len(file_sources) == 1:
-        document_path = file_sources[0]["file_path"]
         logger.info(
             "[generate_report] auto-resolved document_path from file data source '%s': %s",
             file_sources[0]["name"], document_path,
         )
     elif len(file_sources) > 1:
-        # Multiple file data sources — use the first one and log a warning
-        document_path = file_sources[0]["file_path"]
         logger.warning(
             "[generate_report] %d file data sources found, auto-using first: %s",
             len(file_sources), document_path,
         )
 
-    user_id = runtime.context.get("user_id", "anonymous") if runtime.context else "anonymous"
+    user_id = get_user_id(runtime)
 
     pipeline = ReportPipeline()
     result = await pipeline.run(
@@ -242,7 +143,7 @@ async def generate_report(
         )
 
     # ── Construct absolute download URL with server IP ───────────────
-    base_url = _get_server_base_url(runtime)
+    base_url = get_server_base_url(runtime)
     if base_url:
         absolute_download_url = f"{base_url}{result.download_url}"
         download_line = f"   - 📥 **下载链接**: [点击下载]({absolute_download_url})"

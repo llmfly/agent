@@ -17,7 +17,14 @@ def test_run_adapter_maps_external_message_request_to_run_create_request():
     run_body = build_run_create_request(body, context)
 
     assert run_body.assistant_id == "brand-agent"
-    assert run_body.input == {"messages": [{"type": "human", "content": [{"type": "text", "text": prompt}]}]}
+    # When no selected_data_sources is passed, instructions are prepended
+    assert len(run_body.input["messages"]) == 1
+    human_msg = run_body.input["messages"][0]
+    assert human_msg["type"] == "human"
+    text = human_msg["content"][0]["text"]
+    assert text.startswith("<system_instructions>")
+    assert text.endswith(prompt), f"Expected message to end with {prompt!r}, got ...{text[-80:]!r}"
+    assert "<system_instructions>" in text
     assert run_body.metadata == {
         "project_id": "p-1",
         "datasource_ids": ["ds-1", "ds-2"],
