@@ -132,22 +132,26 @@ async def generate_report(
     tool_call_id: Annotated[str, InjectedToolCallId],
     user_query: str = "",
     format: str = "docx",
-    document_path: str = "",
 ) -> Command:
-    """通过七层架构一键生成结构化分析报告。
+    """通过七层架构一键生成结构化分析报告。数据源（SQL / PDF / DOCX / Excel 等）由系统自动解析，**调用时不需要传入任何数据源路径**。
 
-    ⚠️ **何时必须调用此工具：**
-    - 用户要求「生成报告」「分析数据并出报告」「导出为文档」「写一份报告」「出分析报告」等
-    - 已经上传了文档（PDF/DOCX），需要基于文档生成报告 → **同时传入 `document_path`**
+    ⚠️ **何时必须调用此工具（关键）：**
+    只要 **当前对话绑定了数据源**（SQL 数据库、PDF 文件、Word 文档、Excel 文件等），
+    且用户要求 **生成报告、分析数据、解析文档、导出为文档、出分析报告** 时，**必须**调用此工具。
+    - 用户说任何涉及「数据」「文档」「文件」「PDF」「数据库」「分析」+「报告」「导出」含义的话
+    - **不要要求用户上传或指定文件路径**——数据源已绑定在对话中，工具会自动使用
+
+    正例：用户说「帮我分析出口数据」「依据文档生成报告」「结合两个数据源出报告」「把刚才的数据整理成报告导出」
+    反例：用户只是问「出口数据怎么样」「有哪些数据源」——不需要调此工具
 
     ⚠️ **何时不使用此工具：**
     - 用户需求涉及 **「企业出海」「出海贸易」「出口贸易」「海关交易分析」「企业出海洞察」** → 应使用 **`company-insight-report` Skill**
     - 用户只是问问题、查询数据，不要求生成文档
 
-    **使用方式：**
-    - 如果已上传文档（PDF/DOCX），传入 `document_path`（如 `/mnt/user-data/uploads/file.pdf`）
-    - 七层架构的 Layer 2 ExecutionRuntime 会自动调用 PdfWorker/DocxWorker 解析文件
-    - 不需要先调 parse_pdf/parse_docx，Worker 会处理
+    **工作原理：**
+    - 工具内部自动从当前对话的绑定数据源中解析 SQL 表结构、文档文件路径等
+    - 不需要先调 parse_pdf/parse_docx/query_data_source，七层架构全自动处理
+    - 同时支持 SQL + 文件类型数据源
 
     七层流程（全部 7 层都会执行）：
     Layer 1: Planning (生成计划) → ReportPlannerAgent (产生大纲 + 数据任务)
@@ -162,7 +166,6 @@ async def generate_report(
         title: 报告标题。从用户对话中提取，例如"2024年出口贸易分析报告"。
         user_query: 用户的自然语言需求描述，例如"按目的国统计出口金额，按月度分析趋势"。如果不传会使用 title。
         format: 输出格式。可选值: docx, html。默认为 docx。
-        document_path: 上传的文档路径（如 `/mnt/user-data/uploads/file.pdf`）。如有已上传的文档，**必须**传此参数。
 
     ⚠️ **重要：调用成功后的行为：**
     此工具返回结果后，**必须立即停止**，直接将结果呈现给用户。
@@ -193,52 +196,28 @@ async def generate_report(
     # ════════════════════════════════════════════════════════════════
     # Auto-resolve document_path from file-type data sources
     # ════════════════════════════════════════════════════════════════
-    if not document_path:
-        file_sources = _resolve_file_data_sources(runtime)
-        if len(file_sources) == 1:
-            document_path = file_sources[0]["file_path"]
-            logger.info(
-                "[generate_report] auto-resolved document_path from file data source '%s': %s",
-                file_sources[0]["name"], document_path,
-            )
-        elif len(file_sources) > 1:
-            # Multiple file data sources — use the first one and log a warning
-            document_path = file_sources[0]["file_path"]
-            logger.warning(
-                "[generate_report] %d file data sources found, auto-using first: %s",
-                len(file_sources), document_path,
-            )
-
-    # ════════════════════════════════════════════════════════════════
-    # Auto-enrich user_query with all available data sources
-    # ════════════════════════════════════════════════════════════════
-    enriched_query = user_query or title
-    sql_sources_for_prompt = _get_sql_sources(runtime)
     file_sources = _resolve_file_data_sources(runtime)
-    if sql_sources_for_prompt or file_sources:
-        hints = []
-        if file_sources:
-            names = ", ".join(f"{s['name']}({s['type']})" for s in file_sources)
-            hints.append(f"[已关联的文件数据源: {names}]")
-        if sql_sources_for_prompt:
-            ss = schema_summary
-            if ss:
-                table_names = list(ss.keys())
-                hints.append(f"[已关联的SQL数据库，包含 {len(table_names)} 张表: {', '.join(table_names[:8])}{'...' if len(table_names) > 8 else ''}]")
-            else:
-                hints.append("[已关联的SQL数据库]")
-        # Only append if user_query didn't already mention the sources
-        hint_text = " ".join(hints)
-        if hint_text:
-            enriched_query = f"{enriched_query}\n\n注意：{hint_text} 请充分利用所有已关联的数据源进行综合分析。"
-            logger.info("[generate_report] enriched user_query with data source hints")
+    document_path = ""
+    if len(file_sources) == 1:
+        document_path = file_sources[0]["file_path"]
+        logger.info(
+            "[generate_report] auto-resolved document_path from file data source '%s': %s",
+            file_sources[0]["name"], document_path,
+        )
+    elif len(file_sources) > 1:
+        # Multiple file data sources — use the first one and log a warning
+        document_path = file_sources[0]["file_path"]
+        logger.warning(
+            "[generate_report] %d file data sources found, auto-using first: %s",
+            len(file_sources), document_path,
+        )
 
     user_id = runtime.context.get("user_id", "anonymous") if runtime.context else "anonymous"
 
     pipeline = ReportPipeline()
     result = await pipeline.run(
         title=title,
-        user_query=enriched_query,
+        user_query=user_query or title,
         datasource_metadata=datasource_metadata,
         schema_summary=schema_summary,
         document_path=document_path,

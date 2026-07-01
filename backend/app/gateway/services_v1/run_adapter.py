@@ -18,10 +18,18 @@ class _IntentResult:
 
 
 def _detect_report_intent(content: str) -> _IntentResult:
-    """Quick pre-routing check before the Lead Agent sees the message.
+    """Quick keyword-based pre-routing check.
 
-    Uses keyword detection (not LLM) for speed. If report intent is
-    detected, the pipeline can bypass the Lead Agent entirely.
+    **Role**: lightweight optimization — sets ``_report_intent`` and
+    ``_report_confidence`` in the context for possible fast-path routing.
+    The **primary mechanism** for driving LLM behavior is the Few-shot
+    examples injected via ``_format_data_sources_for_prompt``.
+
+    This function uses keyword matching (not LLM) for speed. It is
+    deliberately conservative — false negatives are fine because the
+    Few-shot examples in the system prompt will guide the LLM to call
+    ``generate_report`` correctly. False positives set a flag that
+    downstream code may use for routing optimization.
     """
     msg = content.lower()
     report_kw = [
@@ -36,51 +44,45 @@ def _detect_report_intent(content: str) -> _IntentResult:
 
 
 _NO_SOURCE_INSTRUCTIONS = """<system_instructions>
-## 数据真实性规则（必须遵守）
-⚠️ **所有结论、数据、分析结果必须完全来源于上传的文档内容。**
-- 禁止捏造、虚构、编造任何数据、统计数字或事实
-- 如果文档中没有某项数据，**必须明确告知用户「以下数据不在当前文档中」**
-- 禁止根据常识或外部知识补充文档缺失的数据
-- 引用的每条信息必须标注来源的文档名称
+当前对话未关联数据源。
 
-## 报告生成规则（必须遵守）
-当用户要求「生成报告」「解析文档生成报告」「分析文档并出报告」「导出为文档」时，
-**必须调用 `generate_report` 工具**，不得使用其他替代方案。
+## 数据真实性规则
+如果用户上传了文档，所有分析结果必须完全来源于文档内容，禁止捏造数据。
 
-### generate_report 的使用方法
-- **有数据源时**: generate_report(title="报告标题", user_query="分析需求描述")
-- **有上传的文档时**: generate_report(title="报告标题", document_path="/mnt/user-data/uploads/文件名")
-  document_path 参数指向已上传的 PDF/DOCX 文件路径
+## Examples — 什么时候该调用 generate_report
 
-工具会全自动完成六层流程：Planning → Execution (Worker) → Evidence → Analysis → Composition → Rendering
-- **文档解析由六层内部的 PdfWorker/DocxWorker 自动处理**
-- **禁止先调 parse_pdf/parse_docx 再传 parse 结果给 generate_report**
-- **禁止先调 parse_pdf/parse_docx 再自己在对话里输出解析内容**
+### ✅ 正例 1：用户上传了文档，要求解析出报告
 
-### generate_report 成功后的行为（必须遵守）
-一旦 `generate_report` 返回成功结果，必须立即结束，**禁止**：
+User: 我上传了一份 PDF，帮我解析并生成报告
+Assistant:
+<function=generate_report>
+{{"title": "文档分析报告"}}
+</function>
 
-- ❌ **禁止再次调用 `generate_report`** — 哪怕用户还有另一个人的报告需求
-- ❌ **禁止调用 `check_report_status`** — 结果已返回，不需要再查
-- ❌ **禁止使用 bash/Python 搜索、读取、操作报告文件**
-- ❌ **禁止调用 `parse_pdf` / `parse_docx` / `query_data_source` 等任何其他工具**
-- ❌ **禁止尝试在沙箱或服务器上寻找报告文件**
+### ✅ 正例 2：用户要求导出分析结果为文档
 
-✅ **唯一允许的行为**：直接将工具返回的结果呈现给用户。
+User: 把刚才的分析整理成报告导出
+Assistant:
+<function=generate_report>
+{{"title": "分析报告", "user_query": "把之前的分析整理成报告导出"}}
+</function>
 
-### generate_report 失败后的行为（必须遵守）
-- 如果 `generate_report` 返回失败结果，**最多重试1次**（修改参数后）
-- 如果仍然失败，**告诉用户失败原因，不要继续尝试其他方式生成报告**
-- **禁止**使用 bash/Python 脚本生成 Word/HTML 文档作为替代
+### ❌ 反例 1：没有文档，用户只是要求分析
 
-### 禁止行为
-- ❌ **禁止调用 `parse_pdf` / `parse_docx`**——generate_report 内部自动解析文档
-- ❌ 禁止用 bash 或 Python 脚本生成 Word 文档——generate_report 会自动渲染
-- ❌ 禁止在对话中输出大量 Markdown 格式的报告内容
-- ❌ 如果 generate_report 第一次失败，最多重试1次；仍失败就告诉用户
-- ❌ **禁止虚构文档中不存在的数据**
+User: 帮我分析一下当前情况
+Assistant: 当前没有关联数据源，请先上传文件或配置数据源。
+（不需要调 generate_report，因为没有数据）
 
-违反以上规则将导致流程错误。
+### ❌ 反例 2：闲聊
+
+User: 你好
+Assistant: 你好！有什么可以帮你的？
+（不需要调用任何工具）
+
+## 补充说明
+- generate_report 内部自动解析文档和渲染
+- 禁止先调 parse_pdf/parse_docx 再自己拼接
+- generate_report 成功后立即结束，禁止再调其他工具
 </system_instructions>"""
 
 
@@ -119,13 +121,14 @@ def _context_from_options(body: ConversationMessageRequest) -> dict[str, Any]:
 
 
 def _format_data_sources_for_prompt(ds_list: list[dict[str, Any]]) -> str:
-    """Format system instructions about data sources for the LLM.
+    """Format Few-shot examples about data sources and report generation.
 
-    Only includes report rules and a brief summary count. The actual
-    schema details are injected as a separate system message (see
-    ``_build_datasource_message``) that updates only on change, saving
-    tokens on every turn. The LLM can call ``query_data_source`` at any
-    time to get the full current data source snapshot.
+    Uses examples (正例 + 反例) instead of verbose rules. The LLM learns
+    the pattern naturally — when to call ``generate_report`` vs when to
+    just chat.
+
+    The actual schema details are injected as a separate system message
+    (see ``_build_datasource_message``) that updates only on change.
     """
     sql_count = sum(1 for ds in ds_list if ds.get("type") in ("sql", "mysql", "postgresql"))
     file_count = sum(1 for ds in ds_list if ds.get("type") in ("pdf", "docx", "txt", "xlsx", "csv"))
@@ -140,44 +143,72 @@ def _format_data_sources_for_prompt(ds_list: list[dict[str, Any]]) -> str:
     return f"""<system_instructions>
 当前对话已关联 {summary}。
 
-## 数据真实性规则（必须遵守）
-⚠️ **所有结论、数据、分析结果必须完全来源于以下指定的数据源和已上传的文件。**
-- 禁止捏造、虚构、编造任何数据、统计数字或事实
-- 如果数据源中没有某项数据，**必须明确告知用户「以下数据不在当前数据源中」**
-- 禁止根据常识或外部知识补充数据源的缺失数据
-- 引用的每条数据必须标注来源的数据源名称或文件名称
+**注意：以下词语都指代当前已绑定的数据源，不要要求用户重新上传或指定路径：**
+「文档」「文件」「PDF」「Word」「数据」「数据库」「上传的数据」「资料」「分析」
+当用户说"依据文档""根据文件""分析数据""结合数据源"时，**默认就是指下方 <datasources> 中已绑定的数据源**。
 
-## 报告生成规则（必须遵守）
-当用户要求「生成报告」「分析数据并出报告」「解析文档」「解析文档生成报告」「导出为文档」时，
-**必须立即调用 `generate_report` 工具**，不得使用其他替代方案。
+## 数据真实性规则
+所有结论、数据、分析结果必须完全来源于以下指定的数据源和已上传的文件。禁止捏造数据。
 
-### generate_report 的使用方法
-- **有 SQL 数据源时**: generate_report(title="报告标题", user_query="分析需求描述")
-  工具会全自动完成数据查询、分析、DOCX 渲染全流程
-- **有文件类型数据源时**: generate_report(title="报告标题", document_path="<文件路径>")
-  工具会自动解析该文件，document_path 可以在下方的 <uploaded_files> 或 <datasources> 系统消息中获取
-  ⚠️ **工作区关联的文件在 <uploaded_files> 中已列出，直接使用其中的 Path 即可**
+## Examples — 什么时候该调用 generate_report（数据源由工具自动解析，不需要传路径）
 
-工具会全自动完成六层流程：Planning → Execution (Worker) → Evidence → Analysis → Composition → Rendering
+### ✅ 正例 1：SQL 数据源分析出报告
 
-### ⚠️ 关键行为约束
-- ✅ **优先使用已关联的数据源**：如果 <uploaded_files> 或 <datasources> 中已有 PDF/DOCX 文件，直接从其中提取 `file_path` 或 `Path` 调用 `generate_report`，**不要要求用户上传文件**
-- ✅ 文件数据源的类型包括：PDF、DOCX、Excel（xlsx）、CSV、TXT
-- ❌ **禁止执行 bash/Python 命令**来查看文件系统目录（如 `/mnt/user-data/uploads/`、`/mnt/user-data/outputs/`）以寻找数据源文件——文件路径已在 <uploaded_files> 中提供
-- ❌ **禁止要求用户上传文件**——如果当前对话已关联文件类型数据源，直接使用它
+User: 帮我分析出口数据
+Assistant:
+<function=generate_report>
+{{"title": "出口数据分析报告", "user_query": "分析出口数据"}}
+</function>
 
-### 禁止行为
-- ❌ **禁止调用 `parse_pdf` / `parse_docx`**——generate_report 内部自动解析文档
-- ❌ 禁止用 bash 或 Python 脚本生成 Word 文档——generate_report 会自动渲染
-- ❌ 禁止在对话中输出大量 Markdown 格式的报告内容
-- ❌ 如果 generate_report 连续失败 2 次，告诉用户失败原因，不要切到手动方案
-- ❌ **禁止虚构数据源中不存在的数据**
+### ✅ 正例 2：已上传文档，解析并出报告
 
-## 查询绑定数据源
-调用 `query_data_source(query="查看当前绑定的数据源")` 即可获取当前对话绑定的
-所有数据源的详细结构（表名、字段、文件路径等），**此工具不再限制调用次数**。
+当前数据源：一个 PDF 文件
+User: 解析文档，给出报告
+Assistant:
+<function=generate_report>
+{{"title": "文档分析报告", "user_query": "解析文档内容，给出分析报告"}}
+</function>
 
-违反以上规则将导致流程错误。
+### ✅ 正例 3：同时有 SQL 和文档数据源
+
+当前数据源：1 个 MySQL 数据库 + 1 个 PDF 文件
+User: 结合两个数据源，给我一份对比分析报告
+Assistant:
+<function=generate_report>
+{{"title": "综合对比分析报告", "user_query": "结合数据库中的出口数据和上传的文档，做一份对比分析报告"}}
+</function>
+
+### ✅ 正例 4：已经出过报告，用户要求重新生成或调整
+
+User: 报告里数据分析不够深入，重新出一份，重点分析趋势
+Assistant:
+<function=generate_report>
+{{"title": "出口数据趋势分析报告（修订版）", "user_query": "重点分析出口数据趋势"}}
+</function>
+
+### ❌ 反例 1：用户只是问问题，不需要出报告
+
+User: 最近出口数据怎么样，有什么异常
+Assistant: 我来查一下数据。[调用 query_data_source 或其他工具查询]
+（不需要调用 generate_report，除非用户明确要求出报告文档）
+
+### ❌ 反例 2：查看数据源有哪些
+
+User: 当前关联了哪些数据源
+Assistant: 我来查一下。[调用 query_data_source]
+（不需要调用 generate_report）
+
+### ❌ 反例 3：闲聊或无关话题
+
+User: 你好，你是谁
+Assistant: 你好！我是 DeerFlow 助手...
+（不需要调用任何工具）
+
+## 补充说明
+- generate_report 内部自动解析文档、执行 SQL 查询、分析、排版和渲染，**调用时不需要传任何文件路径**
+- 禁止先调 parse_pdf/parse_docx，再自己拼接内容——generate_report 全自动处理
+- 如果 generate_report 失败，最多重试 1 次（调整参数），仍失败则告知用户原因
+- generate_report 成功后立即结束，禁止再调任何其他工具或搜索文件系统
 </system_instructions>"""
 
 
@@ -233,54 +264,6 @@ def _build_datasource_system_message(ds_list: list[dict[str, Any]]) -> str:
 
     lines.append("</datasources>")
     return "\n".join(lines)
-
-
-_FILE_DATA_SOURCE_TYPES = {"pdf", "docx", "txt", "xlsx", "csv"}
-
-
-def _build_workspace_file_upload_block(ds_list: list[dict[str, Any]]) -> str:
-    """Build an ``<uploaded_files>`` block for workspace-attached file-type data sources.
-
-    These are files that were attached via the data source management page,
-    NOT uploaded through the frontend upload endpoint. The ``UploadsMiddleware``
-    only lists files physically in ``/mnt/user-data/uploads/``, so we inject
-    them here as a synthetic block so the LLM sees them in the familiar
-    uploaded-files context.
-    """
-    file_entries = []
-    for ds in ds_list:
-        ds_type = ds.get("type", "")
-        if ds_type not in _FILE_DATA_SOURCE_TYPES:
-            continue
-        meta = ds.get("metadata") or {}
-        file_path = meta.get("file_path", "")
-        if not file_path:
-            continue
-        ds_name = ds.get("name", "?")
-        ss = ds.get("schema_summary") or {}
-        doc_summary = ss.get("document_summary") or {}
-        page_count = doc_summary.get("page_count")
-        chapters = doc_summary.get("chapters") or doc_summary.get("key_topics") or []
-
-        entry = f"- {ds_name} ({ds_type})"
-        entry += f"\n  Path: {file_path}"
-        if page_count:
-            entry += f"\n  Page count: {page_count}"
-        if chapters:
-            entry += f"\n  Topics: {', '.join(chapters[:5])}"
-        file_entries.append(entry)
-
-    if not file_entries:
-        return ""
-
-    lines = [
-        '<uploaded_files>',
-        'The following files are attached to this conversation as data sources:',
-        '',
-    ]
-    lines.extend(file_entries)
-    lines.append('</uploaded_files>')
-    return '\n'.join(lines)
 
 
 def build_run_create_request(
