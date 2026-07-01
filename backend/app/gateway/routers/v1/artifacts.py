@@ -182,7 +182,7 @@ def _metadata_response(record) -> ArtifactMetadataResponse:
 async def get_artifact_metadata(
     request: Request,
     artifact_id: str = FPath(description="Artifact ID"),
-    download: bool = False,
+    download: bool = True,
     context: ExternalContext = Depends(get_optional_context),
 ) -> ArtifactMetadataResponse | Response:
     if download:
