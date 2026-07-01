@@ -49,6 +49,14 @@ _NO_SOURCE_INSTRUCTIONS = """<system_instructions>
 ## 数据真实性规则
 如果用户上传了文档，所有分析结果必须完全来源于文档内容，禁止捏造数据。
 
+## ⚠️ 核心规则：用户要求出报告时，直接调 generate_report，禁止先做其他操作
+
+当用户明确要求「生成报告」「解析文档」「导出报告」时：
+**必须且仅能调用 `generate_report`，不得先做任何其他操作。**
+
+❌ 禁止先翻文件系统目录
+❌ 禁止先调用其他工具
+
 ## Examples — 什么时候该调用 generate_report
 
 ### ✅ 正例 1：用户上传了文档，要求解析出报告
@@ -150,6 +158,19 @@ def _format_data_sources_for_prompt(ds_list: list[dict[str, Any]]) -> str:
 ## 数据真实性规则
 所有结论、数据、分析结果必须完全来源于以下指定的数据源和已上传的文件。禁止捏造数据。
 
+## ⚠️ 核心规则：用户要求出报告时，直接调 generate_report，禁止先做其他操作
+
+当用户明确要求「生成报告」「解析数据」「解析文档」「分析数据并出报告」时：
+**必须且仅能调用 `generate_report`，不得先做任何其他操作。**
+
+❌ 禁止先翻文件系统目录（ls /mnt/user-data/ 等）
+❌ 禁止先调 query_data_source 查询数据源结构
+❌ 禁止先调 parse_pdf / parse_docx
+❌ 禁止先搜索文件
+
+generate_report 内部会自动查询数据、解析文档、分析、排版、渲染。
+**调用前不需要做任何准备工作。**
+
 ## Examples — 什么时候该调用 generate_report（数据源由工具自动解析，不需要传路径）
 
 ### ✅ 正例 1：SQL 数据源分析出报告
@@ -162,7 +183,6 @@ Assistant:
 
 ### ✅ 正例 2：已上传文档，解析并出报告
 
-当前数据源：一个 PDF 文件
 User: 解析文档，给出报告
 Assistant:
 <function=generate_report>
@@ -171,11 +191,10 @@ Assistant:
 
 ### ✅ 正例 3：同时有 SQL 和文档数据源
 
-当前数据源：1 个 MySQL 数据库 + 1 个 PDF 文件
 User: 结合两个数据源，给我一份对比分析报告
 Assistant:
 <function=generate_report>
-{{"title": "综合对比分析报告", "user_query": "结合数据库中的出口数据和上传的文档，做一份对比分析报告"}}
+{{"title": "综合对比分析报告", "user_query": "结合两个数据源做对比分析报告"}}
 </function>
 
 ### ✅ 正例 4：已经出过报告，用户要求重新生成或调整
@@ -184,6 +203,14 @@ User: 报告里数据分析不够深入，重新出一份，重点分析趋势
 Assistant:
 <function=generate_report>
 {{"title": "出口数据趋势分析报告（修订版）", "user_query": "重点分析出口数据趋势"}}
+</function>
+
+### ✅ 正例 5：直接说分析数据给报告
+
+User: 解析数据，给出报告
+Assistant:
+<function=generate_report>
+{{"title": "数据分析报告", "user_query": "解析当前所有数据源，给出分析报告"}}
 </function>
 
 ### ❌ 反例 1：用户只是问问题，不需要出报告
